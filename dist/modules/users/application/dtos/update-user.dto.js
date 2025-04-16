@@ -9,40 +9,35 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RegisterUserDto = void 0;
+exports.UpdateUserDto = void 0;
 const client_1 = require("@prisma/client");
 const class_validator_1 = require("class-validator");
-class RegisterUserDto {
+class UpdateUserDto {
 }
-exports.RegisterUserDto = RegisterUserDto;
+exports.UpdateUserDto = UpdateUserDto;
 __decorate([
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
-], RegisterUserDto.prototype, "name", void 0);
-__decorate([
-    (0, class_validator_1.IsEmail)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    __metadata("design:type", String)
-], RegisterUserDto.prototype, "email", void 0);
+], UpdateUserDto.prototype, "name", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.MinLength)(6),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
-], RegisterUserDto.prototype, "password", void 0);
+], UpdateUserDto.prototype, "email", void 0);
 __decorate([
     (0, class_validator_1.IsEnum)(client_1.UserRole),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
-], RegisterUserDto.prototype, "role", void 0);
+], UpdateUserDto.prototype, "role", void 0);
+__decorate([
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], UpdateUserDto.prototype, "isActive", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
-], RegisterUserDto.prototype, "companyId", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    (0, class_validator_1.ValidateIf)((o) => o.role === client_1.UserRole.COLLABORATOR),
-    __metadata("design:type", String)
-], RegisterUserDto.prototype, "managerId", void 0);
-//# sourceMappingURL=register-user.dto.js.map
+], UpdateUserDto.prototype, "managerId", void 0);
+//# sourceMappingURL=update-user.dto.js.map

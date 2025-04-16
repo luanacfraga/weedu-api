@@ -44,6 +44,7 @@ model User {
   role            UserRole
   plan            PlanType          @default(FREE)
   maxCompanies    Int               @default(1)
+  isActive        Boolean           @default(true)
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   deletedAt       DateTime?

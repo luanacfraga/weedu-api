@@ -43,7 +43,7 @@ exports.AuthModule = AuthModule = __decorate([
             jwt_auth_guard_1.JwtAuthGuard,
             consultant_guard_1.ConsultantGuard,
         ],
-        exports: [auth_service_1.AuthService, jwt_auth_guard_1.JwtAuthGuard, consultant_guard_1.ConsultantGuard],
+        exports: [auth_service_1.AuthService, jwt_auth_guard_1.JwtAuthGuard, consultant_guard_1.ConsultantGuard, jwt_1.JwtModule],
     })
 ], AuthModule);
 //# sourceMappingURL=auth.module.js.map

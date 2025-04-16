@@ -31,6 +31,6 @@ import { AuthController } from './presentation/controllers/auth.controller';
     JwtAuthGuard,
     ConsultantGuard,
   ],
-  exports: [AuthService, JwtAuthGuard, ConsultantGuard],
+  exports: [AuthService, JwtAuthGuard, ConsultantGuard, JwtModule],
 })
 export class AuthModule {}

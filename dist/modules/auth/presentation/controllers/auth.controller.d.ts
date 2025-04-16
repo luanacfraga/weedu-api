@@ -10,10 +10,10 @@ export declare class AuthController {
         accessToken: string;
         refreshToken: string;
         user: {
-            id: string;
-            name: string;
             email: string;
+            name: string;
             role: import(".prisma/client").$Enums.UserRole;
+            id: string;
         };
     }>;
     registerBusiness(registerBusinessDto: RegisterBusinessDto): Promise<{
@@ -46,10 +46,10 @@ export declare class AuthController {
         accessToken: string;
         refreshToken: string;
         user: {
-            id: string;
-            name: string;
             email: string;
+            name: string;
             role: import(".prisma/client").$Enums.UserRole;
+            id: string;
         };
     }>;
 }
