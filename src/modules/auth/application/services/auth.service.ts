@@ -200,6 +200,29 @@ export class AuthService {
       throw new BadRequestException('Empresa não encontrada');
     }
 
+    if (registerUserDto.role === 'COLLABORATOR') {
+      const manager = await this.prisma.user.findUnique({
+        where: { id: registerUserDto.managerId },
+        include: { companies: true },
+      });
+
+      if (!manager) {
+        throw new BadRequestException('Gestor não encontrado');
+      }
+
+      if (manager.role !== 'MANAGER') {
+        throw new BadRequestException('O usuário indicado não é um gestor');
+      }
+
+      const managerBelongsToCompany = manager.companies.some(
+        (c) => c.id === registerUserDto.companyId,
+      );
+
+      if (!managerBelongsToCompany) {
+        throw new BadRequestException('O gestor não pertence à mesma empresa');
+      }
+    }
+
     const hashedPassword = await bcrypt.hash(registerUserDto.password, 10);
 
     const user = await this.prisma.user.create({
@@ -213,6 +236,13 @@ export class AuthService {
             id: registerUserDto.companyId,
           },
         },
+        ...(registerUserDto.role === 'COLLABORATOR' && {
+          manager: {
+            connect: {
+              id: registerUserDto.managerId,
+            },
+          },
+        }),
       },
     });
 

@@ -13,6 +13,12 @@ exports.RegisterUserDto = void 0;
 const client_1 = require("@prisma/client");
 const class_validator_1 = require("class-validator");
 class RegisterUserDto {
+    name;
+    email;
+    password;
+    role;
+    companyId;
+    managerId;
 }
 exports.RegisterUserDto = RegisterUserDto;
 __decorate([
@@ -39,4 +45,10 @@ __decorate([
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], RegisterUserDto.prototype, "companyId", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.ValidateIf)((o) => o.role === client_1.UserRole.COLLABORATOR),
+    __metadata("design:type", String)
+], RegisterUserDto.prototype, "managerId", void 0);
 //# sourceMappingURL=register-user.dto.js.map

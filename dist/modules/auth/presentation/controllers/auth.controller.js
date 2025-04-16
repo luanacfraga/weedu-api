@@ -22,6 +22,7 @@ const register_business_dto_1 = require("../dtos/register-business.dto");
 const register_user_dto_1 = require("../dtos/register-user.dto");
 const register_dto_1 = require("../dtos/register.dto");
 let AuthController = class AuthController {
+    authService;
     constructor(authService) {
         this.authService = authService;
     }

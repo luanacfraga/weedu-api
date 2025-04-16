@@ -5,6 +5,7 @@ import {
     IsNotEmpty,
     IsString,
     MinLength,
+    ValidateIf,
 } from 'class-validator';
 
 export class RegisterUserDto {
@@ -26,4 +27,9 @@ export class RegisterUserDto {
   @IsString()
   @IsNotEmpty()
   companyId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ValidateIf((o) => o.role === UserRole.COLLABORATOR)
+  managerId: string;
 }
