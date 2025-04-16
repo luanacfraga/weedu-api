@@ -13,10 +13,6 @@ exports.RegisterDto = void 0;
 const client_1 = require("@prisma/client");
 const class_validator_1 = require("class-validator");
 class RegisterDto {
-    email;
-    password;
-    name;
-    role;
 }
 exports.RegisterDto = RegisterDto;
 __decorate([

@@ -8,8 +8,9 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from '../../presentation/dtos/login.dto';
+import { RegisterBusinessDto } from '../../presentation/dtos/register-business.dto';
+import { RegisterUserDto } from '../../presentation/dtos/register-user.dto';
 import { RegisterDto } from '../../presentation/dtos/register.dto';
-import { RegisterBusinessDto } from '../dtos/register-business.dto';
 
 @Injectable()
 export class AuthService {
@@ -178,6 +179,51 @@ export class AuthService {
         name: company.name,
         cnpj: company.cnpj,
         plan: company.plan,
+      },
+    };
+  }
+
+  async registerUser(registerUserDto: RegisterUserDto) {
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: registerUserDto.email },
+    });
+
+    if (existingUser) {
+      throw new BadRequestException('Email já cadastrado');
+    }
+
+    const company = await this.prisma.company.findUnique({
+      where: { id: registerUserDto.companyId },
+    });
+
+    if (!company) {
+      throw new BadRequestException('Empresa não encontrada');
+    }
+
+    const hashedPassword = await bcrypt.hash(registerUserDto.password, 10);
+
+    const user = await this.prisma.user.create({
+      data: {
+        name: registerUserDto.name,
+        email: registerUserDto.email,
+        password: hashedPassword,
+        role: registerUserDto.role,
+        companies: {
+          connect: {
+            id: registerUserDto.companyId,
+          },
+        },
+      },
+    });
+
+    const payload = { sub: user.id, email: user.email, role: user.role };
+    return {
+      access_token: await this.jwtService.signAsync(payload),
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
       },
     };
   }

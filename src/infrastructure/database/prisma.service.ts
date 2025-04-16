@@ -3,7 +3,9 @@ import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class PrismaService
-  extends PrismaClient
+  extends PrismaClient<{
+    log: ['query', 'info', 'warn', 'error'];
+  }>
   implements OnModuleInit, OnModuleDestroy
 {
   async onModuleInit() {

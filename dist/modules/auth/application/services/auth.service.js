@@ -16,9 +16,6 @@ const config_1 = require("@nestjs/config");
 const jwt_1 = require("@nestjs/jwt");
 const bcrypt = require("bcrypt");
 let AuthService = class AuthService {
-    prisma;
-    jwtService;
-    configService;
     constructor(prisma, jwtService, configService) {
         this.prisma = prisma;
         this.jwtService = jwtService;
@@ -153,6 +150,44 @@ let AuthService = class AuthService {
                 name: company.name,
                 cnpj: company.cnpj,
                 plan: company.plan,
+            },
+        };
+    }
+    async registerUser(registerUserDto) {
+        const existingUser = await this.prisma.user.findUnique({
+            where: { email: registerUserDto.email },
+        });
+        if (existingUser) {
+            throw new common_1.BadRequestException('Email já cadastrado');
+        }
+        const company = await this.prisma.company.findUnique({
+            where: { id: registerUserDto.companyId },
+        });
+        if (!company) {
+            throw new common_1.BadRequestException('Empresa não encontrada');
+        }
+        const hashedPassword = await bcrypt.hash(registerUserDto.password, 10);
+        const user = await this.prisma.user.create({
+            data: {
+                name: registerUserDto.name,
+                email: registerUserDto.email,
+                password: hashedPassword,
+                role: registerUserDto.role,
+                companies: {
+                    connect: {
+                        id: registerUserDto.companyId,
+                    },
+                },
+            },
+        });
+        const payload = { sub: user.id, email: user.email, role: user.role };
+        return {
+            access_token: await this.jwtService.signAsync(payload),
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
             },
         };
     }

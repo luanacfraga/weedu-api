@@ -12,11 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateCompanyDto = void 0;
 const class_validator_1 = require("class-validator");
 class CreateCompanyDto {
-    name;
-    cnpj;
-    address;
-    phone;
-    email;
 }
 exports.CreateCompanyDto = CreateCompanyDto;
 __decorate([

@@ -15,11 +15,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
 const common_1 = require("@nestjs/common");
 const auth_service_1 = require("../../application/services/auth.service");
+const consultant_guard_1 = require("../../infrastructure/guards/consultant.guard");
+const jwt_auth_guard_1 = require("../../infrastructure/guards/jwt-auth.guard");
 const login_dto_1 = require("../dtos/login.dto");
 const register_business_dto_1 = require("../dtos/register-business.dto");
+const register_user_dto_1 = require("../dtos/register-user.dto");
 const register_dto_1 = require("../dtos/register.dto");
 let AuthController = class AuthController {
-    authService;
     constructor(authService) {
         this.authService = authService;
     }
@@ -28,6 +30,9 @@ let AuthController = class AuthController {
     }
     async registerBusiness(registerBusinessDto) {
         return this.authService.registerBusiness(registerBusinessDto);
+    }
+    async registerUser(registerUserDto) {
+        return this.authService.registerUser(registerUserDto);
     }
     async login(loginDto) {
         return this.authService.login(loginDto);
@@ -48,6 +53,14 @@ __decorate([
     __metadata("design:paramtypes", [register_business_dto_1.RegisterBusinessDto]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "registerBusiness", null);
+__decorate([
+    (0, common_1.Post)('register/user'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, consultant_guard_1.ConsultantGuard),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [register_user_dto_1.RegisterUserDto]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "registerUser", null);
 __decorate([
     (0, common_1.Post)('login'),
     __param(0, (0, common_1.Body)()),

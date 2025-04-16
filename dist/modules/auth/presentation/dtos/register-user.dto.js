@@ -9,14 +9,34 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UpdatePlanDto = void 0;
+exports.RegisterUserDto = void 0;
 const client_1 = require("@prisma/client");
 const class_validator_1 = require("class-validator");
-class UpdatePlanDto {
+class RegisterUserDto {
 }
-exports.UpdatePlanDto = UpdatePlanDto;
+exports.RegisterUserDto = RegisterUserDto;
 __decorate([
-    (0, class_validator_1.IsEnum)(client_1.PlanType),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
-], UpdatePlanDto.prototype, "plan", void 0);
-//# sourceMappingURL=update-plan.dto.js.map
+], RegisterUserDto.prototype, "name", void 0);
+__decorate([
+    (0, class_validator_1.IsEmail)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], RegisterUserDto.prototype, "email", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(6),
+    __metadata("design:type", String)
+], RegisterUserDto.prototype, "password", void 0);
+__decorate([
+    (0, class_validator_1.IsEnum)(client_1.UserRole),
+    __metadata("design:type", String)
+], RegisterUserDto.prototype, "role", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], RegisterUserDto.prototype, "companyId", void 0);
+//# sourceMappingURL=register-user.dto.js.map

@@ -1,72 +1,75 @@
 import { PrismaService } from '@infrastructure/database/prisma.service';
 import { CreateCompanyDto } from '../../presentation/dtos/create-company.dto';
-import { UpdatePlanDto } from '../dtos/update-plan.dto';
+import { UpdatePlanDto } from '../../presentation/dtos/update-plan.dto';
 export declare class CompanyService {
-    private readonly prisma;
+    private prisma;
     constructor(prisma: PrismaService);
     private validateCNPJ;
     register(createCompanyDto: CreateCompanyDto): Promise<{
-        id: string;
+        email: string | null;
         name: string;
         cnpj: string;
         address: string | null;
         phone: string | null;
-        email: string | null;
+        id: string;
+        plan: import(".prisma/client").$Enums.PlanType;
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
     }>;
     create(createCompanyDto: CreateCompanyDto): Promise<{
-        id: string;
+        email: string | null;
         name: string;
         cnpj: string;
         address: string | null;
         phone: string | null;
-        email: string | null;
+        id: string;
+        plan: import(".prisma/client").$Enums.PlanType;
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
     }>;
     findAll(): Promise<{
-        id: string;
+        email: string;
         name: string;
         cnpj: string;
-        address: string | null;
-        phone: string | null;
-        email: string | null;
+        address: string;
+        phone: string;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
     }[]>;
     findOne(id: string): Promise<{
-        id: string;
+        email: string;
         name: string;
         cnpj: string;
-        address: string | null;
-        phone: string | null;
-        email: string | null;
+        address: string;
+        phone: string;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
         users: {
-            id: string;
-            name: string;
             email: string;
+            name: string;
             role: import(".prisma/client").$Enums.UserRole;
+            id: string;
         }[];
         consultants: {
             consultant: {
-                id: string;
-                name: string;
                 email: string;
+                name: string;
+                id: string;
             };
         }[];
-    } | null>;
+    }>;
     updatePlan(id: string, updatePlanDto: UpdatePlanDto): Promise<{
-        id: string;
+        email: string | null;
         name: string;
         cnpj: string;
         address: string | null;
         phone: string | null;
-        email: string | null;
+        id: string;
+        plan: import(".prisma/client").$Enums.PlanType;
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;

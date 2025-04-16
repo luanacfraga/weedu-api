@@ -13,6 +13,8 @@ const config_1 = require("@nestjs/config");
 const jwt_1 = require("@nestjs/jwt");
 const passport_1 = require("@nestjs/passport");
 const auth_service_1 = require("./application/services/auth.service");
+const consultant_guard_1 = require("./infrastructure/guards/consultant.guard");
+const jwt_auth_guard_1 = require("./infrastructure/guards/jwt-auth.guard");
 const jwt_strategy_1 = require("./infrastructure/strategies/jwt.strategy");
 const auth_controller_1 = require("./presentation/controllers/auth.controller");
 let AuthModule = class AuthModule {
@@ -25,17 +27,23 @@ exports.AuthModule = AuthModule = __decorate([
             jwt_1.JwtModule.registerAsync({
                 imports: [config_1.ConfigModule],
                 useFactory: async (configService) => ({
-                    secret: configService.get('app.jwt.secret'),
+                    secret: configService.get('JWT_SECRET'),
                     signOptions: {
-                        expiresIn: configService.get('app.jwt.expiresIn'),
+                        expiresIn: configService.get('JWT_EXPIRATION'),
                     },
                 }),
                 inject: [config_1.ConfigService],
             }),
         ],
         controllers: [auth_controller_1.AuthController],
-        providers: [auth_service_1.AuthService, jwt_strategy_1.JwtStrategy, prisma_service_1.PrismaService],
-        exports: [auth_service_1.AuthService],
+        providers: [
+            auth_service_1.AuthService,
+            jwt_strategy_1.JwtStrategy,
+            prisma_service_1.PrismaService,
+            jwt_auth_guard_1.JwtAuthGuard,
+            consultant_guard_1.ConsultantGuard,
+        ],
+        exports: [auth_service_1.AuthService, jwt_auth_guard_1.JwtAuthGuard, consultant_guard_1.ConsultantGuard],
     })
 ], AuthModule);
 //# sourceMappingURL=auth.module.js.map

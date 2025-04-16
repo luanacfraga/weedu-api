@@ -3,9 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
 const base_entity_1 = require("../../../../core/abstracts/base.entity");
 class User extends base_entity_1.BaseEntity {
-    email;
-    password;
-    name;
     constructor(partial) {
         super(partial);
         Object.assign(this, partial);

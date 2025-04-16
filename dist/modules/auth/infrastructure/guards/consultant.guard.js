@@ -9,21 +9,23 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateExampleDto = void 0;
-const class_validator_1 = require("class-validator");
-class CreateExampleDto {
-    name;
-    description;
-}
-exports.CreateExampleDto = CreateExampleDto;
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
-    __metadata("design:type", String)
-], CreateExampleDto.prototype, "name", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], CreateExampleDto.prototype, "description", void 0);
-//# sourceMappingURL=create-example.dto.js.map
+exports.ConsultantGuard = void 0;
+const common_1 = require("@nestjs/common");
+const core_1 = require("@nestjs/core");
+const client_1 = require("@prisma/client");
+let ConsultantGuard = class ConsultantGuard {
+    constructor(reflector) {
+        this.reflector = reflector;
+    }
+    canActivate(context) {
+        const request = context.switchToHttp().getRequest();
+        const user = request.user;
+        return user.role === client_1.UserRole.CONSULTANT;
+    }
+};
+exports.ConsultantGuard = ConsultantGuard;
+exports.ConsultantGuard = ConsultantGuard = __decorate([
+    (0, common_1.Injectable)(),
+    __metadata("design:paramtypes", [core_1.Reflector])
+], ConsultantGuard);
+//# sourceMappingURL=consultant.guard.js.map

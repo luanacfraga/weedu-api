@@ -20,7 +20,6 @@ const company_service_1 = require("../../application/services/company.service");
 const create_company_dto_1 = require("../dtos/create-company.dto");
 const update_plan_dto_1 = require("../dtos/update-plan.dto");
 let CompanyController = class CompanyController {
-    companyService;
     constructor(companyService) {
         this.companyService = companyService;
     }

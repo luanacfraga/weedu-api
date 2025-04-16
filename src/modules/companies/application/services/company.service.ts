@@ -1,15 +1,11 @@
 import { PrismaService } from '@infrastructure/database/prisma.service';
-import {
-    BadRequestException,
-    ConflictException,
-    Injectable,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { CreateCompanyDto } from '../../presentation/dtos/create-company.dto';
-import { UpdatePlanDto } from '../dtos/update-plan.dto';
+import { UpdatePlanDto } from '../../presentation/dtos/update-plan.dto';
 
 @Injectable()
 export class CompanyService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) {}
 
   private validateCNPJ(cnpj: string): boolean {
     // Remove caracteres não numéricos
