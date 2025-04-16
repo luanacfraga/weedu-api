@@ -1,4 +1,10 @@
-import { IsDateString, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import {
+    IsDateString,
+    IsNotEmpty,
+    IsOptional,
+    IsString,
+    IsUUID,
+} from 'class-validator';
 
 export class CreateActionDto {
   @IsString()
@@ -18,11 +24,11 @@ export class CreateActionDto {
   actionPlan: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   why?: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   observation?: string;
 
   @IsDateString()
@@ -44,4 +50,8 @@ export class CreateActionDto {
   @IsUUID()
   @IsNotEmpty()
   creatorId: string;
+
+  @IsString()
+  @IsOptional()
+  checklist?: string;
 }

@@ -35,6 +35,7 @@ export class ActionService {
         companyId: createActionDto.companyId,
         managerId: createActionDto.managerId,
         creatorId: createActionDto.creatorId,
+        checklist: createActionDto.checklist,
       },
     });
 

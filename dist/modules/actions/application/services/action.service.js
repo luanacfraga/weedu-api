@@ -13,6 +13,7 @@ exports.ActionService = void 0;
 const prisma_service_1 = require("../../../../infrastructure/database/prisma.service");
 const common_1 = require("@nestjs/common");
 let ActionService = class ActionService {
+    prisma;
     constructor(prisma) {
         this.prisma = prisma;
     }
@@ -40,6 +41,7 @@ let ActionService = class ActionService {
                 companyId: createActionDto.companyId,
                 managerId: createActionDto.managerId,
                 creatorId: createActionDto.creatorId,
+                checklist: createActionDto.checklist,
             },
         });
         await this.prisma.company.update({

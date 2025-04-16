@@ -81,7 +81,7 @@ model Action {
   description     String
   problem         String
   actionPlan      String
-  observation    String?
+  observation     String?
   why             String?
   startDate       DateTime
   endDate         DateTime
@@ -89,12 +89,13 @@ model Action {
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   deletedAt       DateTime?
-  company         Company           @relation(fields: [companyId], references: [id])
   companyId       String
-  manager         User              @relation("ActionManager", fields: [managerId], references: [id])
   managerId       String
-  creator         User              @relation("ActionCreator", fields: [creatorId], references: [id])
   creatorId       String
+  checklist       String?           @db.Text
+  company         Company           @relation(fields: [companyId], references: [id])
+  manager         User              @relation("ActionManager", fields: [managerId], references: [id])
+  creator         User              @relation("ActionCreator", fields: [creatorId], references: [id])
   metrics         ActionMetric[]
 }
 

@@ -10,4 +10,5 @@ export declare class CreateActionDto {
     companyId: string;
     managerId: string;
     creatorId: string;
+    checklist?: string;
 }

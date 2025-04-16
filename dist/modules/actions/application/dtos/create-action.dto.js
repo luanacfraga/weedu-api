@@ -36,12 +36,12 @@ __decorate([
 ], CreateActionDto.prototype, "actionPlan", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateActionDto.prototype, "why", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateActionDto.prototype, "observation", void 0);
 __decorate([
@@ -69,4 +69,9 @@ __decorate([
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], CreateActionDto.prototype, "creatorId", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateActionDto.prototype, "checklist", void 0);
 //# sourceMappingURL=create-action.dto.js.map
