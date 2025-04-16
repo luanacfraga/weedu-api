@@ -148,4 +148,25 @@ export class ActionService {
       where: { id },
     });
   }
+
+  async findTodayActions(companyId: string) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    return this.prisma.action.findMany({
+      where: {
+        companyId,
+        endDate: {
+          gte: today,
+          lt: tomorrow,
+        },
+        deletedAt: null,
+      },
+      orderBy: {
+        endDate: 'asc',
+      },
+    });
+  }
 }

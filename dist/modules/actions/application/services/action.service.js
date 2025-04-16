@@ -14,7 +14,6 @@ const prisma_service_1 = require("../../../../infrastructure/database/prisma.ser
 const common_1 = require("@nestjs/common");
 const client_1 = require("@prisma/client");
 let ActionService = class ActionService {
-    prisma;
     constructor(prisma) {
         this.prisma = prisma;
     }
@@ -118,6 +117,25 @@ let ActionService = class ActionService {
     async findOne(id) {
         return this.prisma.action.findUnique({
             where: { id },
+        });
+    }
+    async findTodayActions(companyId) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        return this.prisma.action.findMany({
+            where: {
+                companyId,
+                endDate: {
+                    gte: today,
+                    lt: tomorrow,
+                },
+                deletedAt: null,
+            },
+            orderBy: {
+                endDate: 'asc',
+            },
         });
     }
 };

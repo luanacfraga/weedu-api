@@ -79,6 +79,25 @@ export declare class ActionController {
         creatorId: string;
         checklist: string | null;
     }[]>;
+    findTodayActions(companyId: string): Promise<{
+        id: string;
+        title: string;
+        description: string;
+        problem: string;
+        actionPlan: string;
+        observation: string | null;
+        why: string | null;
+        startDate: Date;
+        endDate: Date;
+        status: import(".prisma/client").$Enums.ActionStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
+        companyId: string;
+        managerId: string;
+        creatorId: string;
+        checklist: string | null;
+    }[]>;
     findOne(id: string): Promise<{
         id: string;
         title: string;
@@ -97,5 +116,5 @@ export declare class ActionController {
         managerId: string;
         creatorId: string;
         checklist: string | null;
-    } | null>;
+    }>;
 }

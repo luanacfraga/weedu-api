@@ -36,6 +36,11 @@ export class ActionController {
     return this.actionService.findAll(companyId);
   }
 
+  @Get('company/:companyId/today')
+  async findTodayActions(@Param('companyId') companyId: string) {
+    return this.actionService.findTodayActions(companyId);
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.actionService.findOne(id);

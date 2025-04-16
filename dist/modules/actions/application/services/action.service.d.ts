@@ -98,5 +98,24 @@ export declare class ActionService {
         managerId: string;
         creatorId: string;
         checklist: string | null;
-    } | null>;
+    }>;
+    findTodayActions(companyId: string): Promise<{
+        id: string;
+        title: string;
+        description: string;
+        problem: string;
+        actionPlan: string;
+        observation: string | null;
+        why: string | null;
+        startDate: Date;
+        endDate: Date;
+        status: import(".prisma/client").$Enums.ActionStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
+        companyId: string;
+        managerId: string;
+        creatorId: string;
+        checklist: string | null;
+    }[]>;
 }

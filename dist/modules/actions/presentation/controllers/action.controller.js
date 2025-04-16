@@ -33,6 +33,9 @@ let ActionController = class ActionController {
     async findAll(companyId) {
         return this.actionService.findAll(companyId);
     }
+    async findTodayActions(companyId) {
+        return this.actionService.findTodayActions(companyId);
+    }
     async findOne(id) {
         return this.actionService.findOne(id);
     }
@@ -66,6 +69,13 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], ActionController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Get)('company/:companyId/today'),
+    __param(0, (0, common_1.Param)('companyId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], ActionController.prototype, "findTodayActions", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),
