@@ -24,6 +24,12 @@ let ActionController = class ActionController {
     async create(createActionDto) {
         return this.actionService.create(createActionDto);
     }
+    async start(id) {
+        return this.actionService.startAction(id);
+    }
+    async complete(id) {
+        return this.actionService.completeAction(id);
+    }
     async findAll(companyId) {
         return this.actionService.findAll(companyId);
     }
@@ -39,6 +45,20 @@ __decorate([
     __metadata("design:paramtypes", [create_action_dto_1.CreateActionDto]),
     __metadata("design:returntype", Promise)
 ], ActionController.prototype, "create", null);
+__decorate([
+    (0, common_1.Put)(':id/start'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], ActionController.prototype, "start", null);
+__decorate([
+    (0, common_1.Put)(':id/complete'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], ActionController.prototype, "complete", null);
 __decorate([
     (0, common_1.Get)('company/:companyId'),
     __param(0, (0, common_1.Param)('companyId')),

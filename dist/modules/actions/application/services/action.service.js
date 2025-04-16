@@ -12,10 +12,30 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ActionService = void 0;
 const prisma_service_1 = require("../../../../infrastructure/database/prisma.service");
 const common_1 = require("@nestjs/common");
+const client_1 = require("@prisma/client");
 let ActionService = class ActionService {
     prisma;
     constructor(prisma) {
         this.prisma = prisma;
+    }
+    calculateStatus(startDate, endDate, actualStartDate, actualEndDate) {
+        const now = new Date();
+        if (!actualStartDate) {
+            if (now > startDate) {
+                return client_1.ActionStatus.TO_START_DELAYED;
+            }
+            return client_1.ActionStatus.TO_START;
+        }
+        if (!actualEndDate) {
+            if (now > endDate) {
+                return client_1.ActionStatus.IN_PROGRESS_DELAYED;
+            }
+            return client_1.ActionStatus.IN_PROGRESS;
+        }
+        if (actualEndDate <= endDate) {
+            return client_1.ActionStatus.COMPLETED_ON_TIME;
+        }
+        return client_1.ActionStatus.COMPLETED_DELAYED;
     }
     async create(createActionDto) {
         const company = await this.prisma.company.findUnique({
@@ -37,7 +57,7 @@ let ActionService = class ActionService {
                 observation: createActionDto.observation,
                 startDate: new Date(createActionDto.startDate),
                 endDate: new Date(createActionDto.endDate),
-                status: 'PENDING',
+                status: client_1.ActionStatus.TO_START,
                 companyId: createActionDto.companyId,
                 managerId: createActionDto.managerId,
                 creatorId: createActionDto.creatorId,
@@ -53,6 +73,40 @@ let ActionService = class ActionService {
             },
         });
         return action;
+    }
+    async startAction(id) {
+        const action = await this.prisma.action.findUnique({
+            where: { id },
+        });
+        if (!action) {
+            throw new common_1.BadRequestException('Plano de ação não encontrado');
+        }
+        const actualStartDate = new Date();
+        const status = this.calculateStatus(action.startDate, action.endDate, actualStartDate, action.actualEndDate);
+        return this.prisma.action.update({
+            where: { id },
+            data: {
+                actualStartDate,
+                status,
+            },
+        });
+    }
+    async completeAction(id) {
+        const action = await this.prisma.action.findUnique({
+            where: { id },
+        });
+        if (!action) {
+            throw new common_1.BadRequestException('Plano de ação não encontrado');
+        }
+        const actualEndDate = new Date();
+        const status = this.calculateStatus(action.startDate, action.endDate, action.actualStartDate, actualEndDate);
+        return this.prisma.action.update({
+            where: { id },
+            data: {
+                actualEndDate,
+                status,
+            },
+        });
     }
     async findAll(companyId) {
         return this.prisma.action.findMany({

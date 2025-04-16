@@ -6,6 +6,9 @@ export declare class CompanyController {
     constructor(companyService: CompanyService);
     register(createCompanyDto: CreateCompanyDto): Promise<{
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
         name: string;
         cnpj: string;
         address: string | null;
@@ -14,12 +17,12 @@ export declare class CompanyController {
         plan: import(".prisma/client").$Enums.PlanType;
         actionCount: number;
         maxActions: number;
-        createdAt: Date;
-        updatedAt: Date;
-        deletedAt: Date | null;
     }>;
     create(createCompanyDto: CreateCompanyDto): Promise<{
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
         name: string;
         cnpj: string;
         address: string | null;
@@ -28,29 +31,26 @@ export declare class CompanyController {
         plan: import(".prisma/client").$Enums.PlanType;
         actionCount: number;
         maxActions: number;
-        createdAt: Date;
-        updatedAt: Date;
-        deletedAt: Date | null;
     }>;
     findAll(): Promise<{
         id: string;
-        name: string;
-        cnpj: string;
-        address: string;
-        phone: string;
-        email: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        cnpj: string;
+        address: string | null;
+        phone: string | null;
+        email: string | null;
     }[]>;
     findOne(id: string): Promise<{
         id: string;
-        name: string;
-        cnpj: string;
-        address: string;
-        phone: string;
-        email: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string;
+        cnpj: string;
+        address: string | null;
+        phone: string | null;
+        email: string | null;
         users: {
             id: string;
             name: string;
@@ -64,9 +64,12 @@ export declare class CompanyController {
                 email: string;
             };
         }[];
-    }>;
+    } | null>;
     updatePlan(id: string, updatePlanDto: UpdatePlanDto): Promise<{
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
         name: string;
         cnpj: string;
         address: string | null;
@@ -75,8 +78,5 @@ export declare class CompanyController {
         plan: import(".prisma/client").$Enums.PlanType;
         actionCount: number;
         maxActions: number;
-        createdAt: Date;
-        updatedAt: Date;
-        deletedAt: Date | null;
     }>;
 }

@@ -15,11 +15,13 @@ enum UserRole {
 }
 
 enum ActionStatus {
-  PENDING
+  TO_START
+  TO_START_DELAYED
   IN_PROGRESS
+  IN_PROGRESS_DELAYED
+  COMPLETED_ON_TIME
+  COMPLETED_DELAYED
   PAUSED
-  COMPLETED
-  DELAYED
 }
 
 enum SubscriptionStatus {
@@ -85,7 +87,9 @@ model Action {
   why             String?
   startDate       DateTime
   endDate         DateTime
-  status          ActionStatus      @default(PENDING)
+  actualStartDate DateTime?
+  actualEndDate   DateTime?
+  status          ActionStatus      @default(TO_START)
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   deletedAt       DateTime?

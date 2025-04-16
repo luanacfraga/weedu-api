@@ -3,11 +3,9 @@ import { CreateActionDto } from '../dtos/create-action.dto';
 export declare class ActionService {
     private prisma;
     constructor(prisma: PrismaService);
+    private calculateStatus;
     create(createActionDto: CreateActionDto): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        deletedAt: Date | null;
         title: string;
         description: string;
         problem: string;
@@ -17,6 +15,47 @@ export declare class ActionService {
         startDate: Date;
         endDate: Date;
         status: import(".prisma/client").$Enums.ActionStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
+        companyId: string;
+        managerId: string;
+        creatorId: string;
+        checklist: string | null;
+    }>;
+    startAction(id: string): Promise<{
+        id: string;
+        title: string;
+        description: string;
+        problem: string;
+        actionPlan: string;
+        observation: string | null;
+        why: string | null;
+        startDate: Date;
+        endDate: Date;
+        status: import(".prisma/client").$Enums.ActionStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
+        companyId: string;
+        managerId: string;
+        creatorId: string;
+        checklist: string | null;
+    }>;
+    completeAction(id: string): Promise<{
+        id: string;
+        title: string;
+        description: string;
+        problem: string;
+        actionPlan: string;
+        observation: string | null;
+        why: string | null;
+        startDate: Date;
+        endDate: Date;
+        status: import(".prisma/client").$Enums.ActionStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
         companyId: string;
         managerId: string;
         creatorId: string;
@@ -24,9 +63,6 @@ export declare class ActionService {
     }>;
     findAll(companyId: string): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        deletedAt: Date | null;
         title: string;
         description: string;
         problem: string;
@@ -36,6 +72,9 @@ export declare class ActionService {
         startDate: Date;
         endDate: Date;
         status: import(".prisma/client").$Enums.ActionStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
         companyId: string;
         managerId: string;
         creatorId: string;
@@ -43,9 +82,6 @@ export declare class ActionService {
     }[]>;
     findOne(id: string): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        deletedAt: Date | null;
         title: string;
         description: string;
         problem: string;
@@ -55,9 +91,12 @@ export declare class ActionService {
         startDate: Date;
         endDate: Date;
         status: import(".prisma/client").$Enums.ActionStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
         companyId: string;
         managerId: string;
         creatorId: string;
         checklist: string | null;
-    }>;
+    } | null>;
 }
