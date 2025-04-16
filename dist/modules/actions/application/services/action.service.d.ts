@@ -1,0 +1,60 @@
+import { PrismaService } from '@infrastructure/database/prisma.service';
+import { CreateActionDto } from '../dtos/create-action.dto';
+export declare class ActionService {
+    private prisma;
+    constructor(prisma: PrismaService);
+    create(createActionDto: CreateActionDto): Promise<{
+        title: string;
+        description: string;
+        problem: string;
+        actionPlan: string;
+        why: string | null;
+        observation: string | null;
+        startDate: Date;
+        endDate: Date;
+        companyId: string;
+        managerId: string;
+        creatorId: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
+        status: import(".prisma/client").$Enums.ActionStatus;
+    }>;
+    findAll(companyId: string): Promise<{
+        title: string;
+        description: string;
+        problem: string;
+        actionPlan: string;
+        why: string | null;
+        observation: string | null;
+        startDate: Date;
+        endDate: Date;
+        companyId: string;
+        managerId: string;
+        creatorId: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
+        status: import(".prisma/client").$Enums.ActionStatus;
+    }[]>;
+    findOne(id: string): Promise<{
+        title: string;
+        description: string;
+        problem: string;
+        actionPlan: string;
+        why: string | null;
+        observation: string | null;
+        startDate: Date;
+        endDate: Date;
+        companyId: string;
+        managerId: string;
+        creatorId: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
+        status: import(".prisma/client").$Enums.ActionStatus;
+    }>;
+}

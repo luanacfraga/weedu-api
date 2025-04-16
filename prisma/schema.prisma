@@ -64,6 +64,8 @@ model Company {
   phone           String?
   email           String?
   plan            PlanType          @default(FREE)
+  actionCount     Int               @default(0)
+  maxActions      Int               @default(30)
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   deletedAt       DateTime?

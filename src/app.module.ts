@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import appConfig from './config/app.config';
+import { ActionsModule } from './modules/actions/actions.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CompaniesModule } from './modules/companies/companies.module';
 
@@ -19,6 +20,7 @@ import { CompaniesModule } from './modules/companies/companies.module';
     }),
     AuthModule,
     CompaniesModule,
+    ActionsModule,
   ],
   controllers: [],
   providers: [],

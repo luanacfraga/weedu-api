@@ -14,20 +14,20 @@ export declare class AuthService {
         accessToken: string;
         refreshToken: string;
         user: {
-            email: string;
-            name: string;
-            role: import(".prisma/client").$Enums.UserRole;
             id: string;
+            name: string;
+            email: string;
+            role: import(".prisma/client").$Enums.UserRole;
         };
     }>;
     login(loginDto: LoginDto): Promise<{
         accessToken: string;
         refreshToken: string;
         user: {
-            email: string;
-            name: string;
-            role: import(".prisma/client").$Enums.UserRole;
             id: string;
+            name: string;
+            email: string;
+            role: import(".prisma/client").$Enums.UserRole;
         };
     }>;
     private generateTokens;
