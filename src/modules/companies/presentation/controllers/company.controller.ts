@@ -1,0 +1,51 @@
+import { AdminGuard } from '@modules/auth/infrastructure/guards/admin.guard';
+import { JwtAuthGuard } from '@modules/auth/infrastructure/guards/jwt-auth.guard';
+import {
+    Body,
+    Controller,
+    Get,
+    Param,
+    Post,
+    Put,
+    UseGuards,
+} from '@nestjs/common';
+import { CompanyService } from '../../application/services/company.service';
+import { CreateCompanyDto } from '../dtos/create-company.dto';
+import { UpdatePlanDto } from '../dtos/update-plan.dto';
+
+@Controller('companies')
+export class CompanyController {
+  constructor(private readonly companyService: CompanyService) {}
+
+  @Post('register')
+  async register(@Body() createCompanyDto: CreateCompanyDto) {
+    return this.companyService.register(createCompanyDto);
+  }
+
+  @Post()
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  async create(@Body() createCompanyDto: CreateCompanyDto) {
+    return this.companyService.create(createCompanyDto);
+  }
+
+  @Get()
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  async findAll() {
+    return this.companyService.findAll();
+  }
+
+  @Get(':id')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  async findOne(@Param('id') id: string) {
+    return this.companyService.findOne(id);
+  }
+
+  @Put(':id/plan')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  async updatePlan(
+    @Param('id') id: string,
+    @Body() updatePlanDto: UpdatePlanDto,
+  ) {
+    return this.companyService.updatePlan(id, updatePlanDto);
+  }
+}

@@ -3,6 +3,8 @@ import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import appConfig from './config/app.config';
+import { AuthModule } from './modules/auth/auth.module';
+import { CompaniesModule } from './modules/companies/companies.module';
 
 @Module({
   imports: [
@@ -15,6 +17,8 @@ import appConfig from './config/app.config';
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: process.env.JWT_EXPIRATION },
     }),
+    AuthModule,
+    CompaniesModule,
   ],
   controllers: [],
   providers: [],

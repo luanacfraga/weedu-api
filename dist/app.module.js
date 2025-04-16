@@ -12,6 +12,8 @@ const config_1 = require("@nestjs/config");
 const jwt_1 = require("@nestjs/jwt");
 const passport_1 = require("@nestjs/passport");
 const app_config_1 = require("./config/app.config");
+const auth_module_1 = require("./modules/auth/auth.module");
+const companies_module_1 = require("./modules/companies/companies.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -27,6 +29,8 @@ exports.AppModule = AppModule = __decorate([
                 secret: process.env.JWT_SECRET,
                 signOptions: { expiresIn: process.env.JWT_EXPIRATION },
             }),
+            auth_module_1.AuthModule,
+            companies_module_1.CompaniesModule,
         ],
         controllers: [],
         providers: [],
