@@ -24,16 +24,23 @@ let JwtAuthGuard = class JwtAuthGuard {
         const request = context.switchToHttp().getRequest();
         const token = this.extractTokenFromHeader(request);
         if (!token) {
-            return false;
+            throw new common_1.UnauthorizedException('Token não fornecido');
         }
         try {
             const payload = await this.jwtService.verifyAsync(token, {
                 secret: this.configService.get('JWT_SECRET'),
             });
-            request.user = payload;
+            if (!payload.sub || !payload.email || !payload.role) {
+                throw new common_1.UnauthorizedException('Token inválido');
+            }
+            request.user = {
+                id: payload.sub,
+                email: payload.email,
+                role: payload.role,
+            };
         }
         catch {
-            return false;
+            throw new common_1.UnauthorizedException('Token inválido');
         }
         return true;
     }

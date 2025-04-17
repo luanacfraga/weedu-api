@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CompanyController = void 0;
 const admin_guard_1 = require("../../../auth/infrastructure/guards/admin.guard");
+const consultant_guard_1 = require("../../../auth/infrastructure/guards/consultant.guard");
 const jwt_auth_guard_1 = require("../../../auth/infrastructure/guards/jwt-auth.guard");
 const common_1 = require("@nestjs/common");
 const company_service_1 = require("../../application/services/company.service");
@@ -37,6 +38,12 @@ let CompanyController = class CompanyController {
     }
     async updatePlan(id, updatePlanDto) {
         return this.companyService.updatePlan(id, updatePlanDto);
+    }
+    async findMyCompanies(req) {
+        return this.companyService.findConsultantCompanies(req.user.id);
+    }
+    async addCompany(req, createCompanyDto) {
+        return this.companyService.addCompanyToConsultant(req.user.id, createCompanyDto);
     }
 };
 exports.CompanyController = CompanyController;
@@ -79,6 +86,23 @@ __decorate([
     __metadata("design:paramtypes", [String, update_plan_dto_1.UpdatePlanDto]),
     __metadata("design:returntype", Promise)
 ], CompanyController.prototype, "updatePlan", null);
+__decorate([
+    (0, common_1.Get)('consultant/my-companies'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, consultant_guard_1.ConsultantGuard),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], CompanyController.prototype, "findMyCompanies", null);
+__decorate([
+    (0, common_1.Post)('consultant/add-company'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, consultant_guard_1.ConsultantGuard),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, create_company_dto_1.CreateCompanyDto]),
+    __metadata("design:returntype", Promise)
+], CompanyController.prototype, "addCompany", null);
 exports.CompanyController = CompanyController = __decorate([
     (0, common_1.Controller)('companies'),
     __metadata("design:paramtypes", [company_service_1.CompanyService])

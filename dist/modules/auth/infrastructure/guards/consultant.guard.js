@@ -20,6 +20,12 @@ let ConsultantGuard = class ConsultantGuard {
     canActivate(context) {
         const request = context.switchToHttp().getRequest();
         const user = request.user;
+        if (!user || !user.id || !user.role) {
+            throw new common_1.UnauthorizedException('Usuário não autenticado');
+        }
+        console.log('ConsultantGuard - User:', user);
+        console.log('ConsultantGuard - User Role:', user.role);
+        console.log('ConsultantGuard - Expected Role:', client_1.UserRole.CONSULTANT);
         return user.role === client_1.UserRole.CONSULTANT;
     }
 };

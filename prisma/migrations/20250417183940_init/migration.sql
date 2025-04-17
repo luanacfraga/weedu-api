@@ -1,21 +1,32 @@
-/*
-  Warnings:
-
-  - Added the required column `role` to the `User` table without a default value. This is not possible if the table is not empty.
-
-*/
 -- CreateEnum
 CREATE TYPE "UserRole" AS ENUM ('ADMIN', 'CONSULTANT', 'MANAGER', 'COLLABORATOR');
 
 -- CreateEnum
-CREATE TYPE "ActionStatus" AS ENUM ('PENDING', 'IN_PROGRESS', 'PAUSED', 'COMPLETED', 'DELAYED');
+CREATE TYPE "ActionStatus" AS ENUM ('TO_START', 'TO_START_DELAYED', 'IN_PROGRESS', 'IN_PROGRESS_DELAYED', 'COMPLETED_ON_TIME', 'COMPLETED_DELAYED', 'PAUSED');
 
 -- CreateEnum
 CREATE TYPE "SubscriptionStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'CANCELLED', 'EXPIRED');
 
--- AlterTable
-ALTER TABLE "User" ADD COLUMN     "managerId" TEXT,
-ADD COLUMN     "role" "UserRole" NOT NULL;
+-- CreateEnum
+CREATE TYPE "PlanType" AS ENUM ('FREE', 'PAID');
+
+-- CreateTable
+CREATE TABLE "User" (
+    "id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "role" "UserRole" NOT NULL,
+    "plan" "PlanType" NOT NULL DEFAULT 'FREE',
+    "maxCompanies" INTEGER NOT NULL DEFAULT 1,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "deletedAt" TIMESTAMP(3),
+    "managerId" TEXT,
+
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "Company" (
@@ -25,6 +36,9 @@ CREATE TABLE "Company" (
     "address" TEXT,
     "phone" TEXT,
     "email" TEXT,
+    "plan" "PlanType" NOT NULL DEFAULT 'FREE',
+    "actionCount" INTEGER NOT NULL DEFAULT 0,
+    "maxActions" INTEGER NOT NULL DEFAULT 30,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
@@ -43,13 +57,16 @@ CREATE TABLE "Action" (
     "why" TEXT,
     "startDate" TIMESTAMP(3) NOT NULL,
     "endDate" TIMESTAMP(3) NOT NULL,
-    "status" "ActionStatus" NOT NULL DEFAULT 'PENDING',
+    "actualStartDate" TIMESTAMP(3),
+    "actualEndDate" TIMESTAMP(3),
+    "status" "ActionStatus" NOT NULL DEFAULT 'TO_START',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
     "companyId" TEXT NOT NULL,
     "managerId" TEXT NOT NULL,
     "creatorId" TEXT NOT NULL,
+    "checklist" TEXT,
 
     CONSTRAINT "Action_pkey" PRIMARY KEY ("id")
 );
@@ -91,6 +108,18 @@ CREATE TABLE "Subscription" (
 );
 
 -- CreateTable
+CREATE TABLE "RefreshToken" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "token" TEXT NOT NULL,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "RefreshToken_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_CompanyUsers" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL,
@@ -99,10 +128,19 @@ CREATE TABLE "_CompanyUsers" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Company_cnpj_key" ON "Company"("cnpj");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ConsultantCompany_consultantId_companyId_key" ON "ConsultantCompany"("consultantId", "companyId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "RefreshToken_token_key" ON "RefreshToken"("token");
+
+-- CreateIndex
+CREATE INDEX "RefreshToken_userId_idx" ON "RefreshToken"("userId");
 
 -- CreateIndex
 CREATE INDEX "_CompanyUsers_B_index" ON "_CompanyUsers"("B");
@@ -133,6 +171,9 @@ ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_userId_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "RefreshToken" ADD CONSTRAINT "RefreshToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_CompanyUsers" ADD CONSTRAINT "_CompanyUsers_A_fkey" FOREIGN KEY ("A") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;

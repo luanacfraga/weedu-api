@@ -33,7 +33,8 @@ export declare class AuthService {
     private generateTokens;
     private saveRefreshToken;
     registerBusiness(registerBusinessDto: RegisterBusinessDto): Promise<{
-        access_token: string;
+        accessToken: string;
+        refreshToken: string;
         user: {
             id: string;
             name: string;

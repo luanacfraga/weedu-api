@@ -14,7 +14,7 @@ const prisma_service_1 = require("../../../../infrastructure/database/prisma.ser
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const jwt_1 = require("@nestjs/jwt");
-const bcrypt = require("bcrypt");
+const bcrypt_1 = require("bcrypt");
 let AuthService = class AuthService {
     constructor(prisma, jwtService, configService) {
         this.prisma = prisma;
@@ -22,7 +22,7 @@ let AuthService = class AuthService {
         this.configService = configService;
     }
     async register(registerDto) {
-        const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+        const hashedPassword = await (0, bcrypt_1.hash)(registerDto.password, 10);
         const user = await this.prisma.user.create({
             data: {
                 ...registerDto,
@@ -35,7 +35,7 @@ let AuthService = class AuthService {
                 role: true,
             },
         });
-        const tokens = await this.generateTokens(user.id, user.email);
+        const tokens = await this.generateTokens(user.id, user.email, user.role);
         await this.saveRefreshToken(user.id, tokens.refreshToken);
         return {
             user,
@@ -56,25 +56,25 @@ let AuthService = class AuthService {
         if (!user) {
             throw new common_1.UnauthorizedException('Credenciais inválidas');
         }
-        const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
+        const isPasswordValid = await (0, bcrypt_1.compare)(loginDto.password, user.password);
         if (!isPasswordValid) {
             throw new common_1.UnauthorizedException('Credenciais inválidas');
         }
-        const { password, ...userWithoutPassword } = user;
-        const tokens = await this.generateTokens(user.id, user.email);
+        const { password: _, ...userWithoutPassword } = user;
+        const tokens = await this.generateTokens(user.id, user.email, user.role);
         await this.saveRefreshToken(user.id, tokens.refreshToken);
         return {
             user: userWithoutPassword,
             ...tokens,
         };
     }
-    async generateTokens(userId, email) {
+    async generateTokens(userId, email, role) {
         const [accessToken, refreshToken] = await Promise.all([
-            this.jwtService.signAsync({ sub: userId, email }, {
+            this.jwtService.signAsync({ sub: userId, email, role }, {
                 secret: this.configService.get('JWT_SECRET'),
                 expiresIn: this.configService.get('JWT_EXPIRATION') || '15m',
             }),
-            this.jwtService.signAsync({ sub: userId, email }, {
+            this.jwtService.signAsync({ sub: userId, email, role }, {
                 secret: this.configService.get('JWT_SECRET'),
                 expiresIn: '7d',
             }),
@@ -108,7 +108,7 @@ let AuthService = class AuthService {
         if (existingCompany) {
             throw new common_1.BadRequestException('CNPJ já cadastrado');
         }
-        const hashedPassword = await bcrypt.hash(registerBusinessDto.password, 10);
+        const hashedPassword = await (0, bcrypt_1.hash)(registerBusinessDto.password, 10);
         const user = await this.prisma.user.create({
             data: {
                 name: registerBusinessDto.name,
@@ -132,11 +132,18 @@ let AuthService = class AuthService {
                         id: user.id,
                     },
                 },
+                consultants: {
+                    create: {
+                        consultantId: user.id,
+                    },
+                },
             },
         });
-        const payload = { sub: user.id, email: user.email, role: user.role };
+        const tokens = await this.generateTokens(user.id, user.email, user.role);
+        await this.saveRefreshToken(user.id, tokens.refreshToken);
         return {
-            access_token: await this.jwtService.signAsync(payload),
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
             user: {
                 id: user.id,
                 name: user.name,
@@ -182,7 +189,7 @@ let AuthService = class AuthService {
                 throw new common_1.BadRequestException('O gestor não pertence à mesma empresa');
             }
         }
-        const hashedPassword = await bcrypt.hash(registerUserDto.password, 10);
+        const hashedPassword = await (0, bcrypt_1.hash)(registerUserDto.password, 10);
         const user = await this.prisma.user.create({
             data: {
                 name: registerUserDto.name,

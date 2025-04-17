@@ -1,4 +1,5 @@
 import { AdminGuard } from '@modules/auth/infrastructure/guards/admin.guard';
+import { ConsultantGuard } from '@modules/auth/infrastructure/guards/consultant.guard';
 import { JwtAuthGuard } from '@modules/auth/infrastructure/guards/jwt-auth.guard';
 import {
     Body,
@@ -7,6 +8,7 @@ import {
     Param,
     Post,
     Put,
+    Request,
     UseGuards,
 } from '@nestjs/common';
 import { CompanyService } from '../../application/services/company.service';
@@ -47,5 +49,20 @@ export class CompanyController {
     @Body() updatePlanDto: UpdatePlanDto,
   ) {
     return this.companyService.updatePlan(id, updatePlanDto);
+  }
+
+  @Get('consultant/my-companies')
+  @UseGuards(JwtAuthGuard, ConsultantGuard)
+  async findMyCompanies(@Request() req) {
+    return this.companyService.findConsultantCompanies(req.user.id);
+  }
+
+  @Post('consultant/add-company')
+  @UseGuards(JwtAuthGuard, ConsultantGuard)
+  async addCompany(@Request() req, @Body() createCompanyDto: CreateCompanyDto) {
+    return this.companyService.addCompanyToConsultant(
+      req.user.id,
+      createCompanyDto,
+    );
   }
 }

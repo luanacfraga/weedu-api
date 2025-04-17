@@ -1,5 +1,9 @@
 import { PrismaService } from '@infrastructure/database/prisma.service';
-import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { CreateCompanyDto } from '../../presentation/dtos/create-company.dto';
 import { UpdatePlanDto } from '../../presentation/dtos/update-plan.dto';
 
@@ -146,5 +150,94 @@ export class CompanyService {
         plan: updatePlanDto.plan,
       },
     });
+  }
+
+  async findConsultantCompanies(consultantId: string) {
+    const consultant = await this.prisma.user.findUnique({
+      where: { id: consultantId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        consultantCompanies: {
+          select: {
+            company: {
+              select: {
+                id: true,
+                name: true,
+                cnpj: true,
+                address: true,
+                phone: true,
+                email: true,
+                plan: true,
+                actionCount: true,
+                maxActions: true,
+                createdAt: true,
+                updatedAt: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!consultant) {
+      throw new BadRequestException('Consultor não encontrado');
+    }
+
+    return {
+      id: consultant.id,
+      name: consultant.name,
+      email: consultant.email,
+      role: consultant.role,
+      companies: consultant.consultantCompanies.map((cc) => cc.company),
+    };
+  }
+
+  async addCompanyToConsultant(
+    consultantId: string,
+    createCompanyDto: CreateCompanyDto,
+  ) {
+    const consultant = await this.prisma.user.findUnique({
+      where: { id: consultantId },
+      select: {
+        maxCompanies: true,
+        consultantCompanies: {
+          select: {
+            companyId: true,
+          },
+        },
+      },
+    });
+
+    if (!consultant) {
+      throw new BadRequestException('Consultor não encontrado');
+    }
+
+    if (consultant.consultantCompanies.length >= consultant.maxCompanies) {
+      throw new BadRequestException('Limite de empresas atingido');
+    }
+
+    const existingCompany = await this.prisma.company.findUnique({
+      where: { cnpj: createCompanyDto.cnpj },
+    });
+
+    if (existingCompany) {
+      throw new ConflictException('CNPJ já cadastrado');
+    }
+
+    const company = await this.prisma.company.create({
+      data: {
+        ...createCompanyDto,
+        consultants: {
+          create: {
+            consultantId,
+          },
+        },
+      },
+    });
+
+    return company;
   }
 }

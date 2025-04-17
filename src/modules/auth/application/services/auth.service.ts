@@ -1,12 +1,15 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { PrismaService } from '@infrastructure/database/prisma.service';
 import {
-    BadRequestException,
-    Injectable,
-    UnauthorizedException,
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
+import { compare, hash } from 'bcrypt';
 import { LoginDto } from '../../presentation/dtos/login.dto';
 import { RegisterBusinessDto } from '../../presentation/dtos/register-business.dto';
 import { RegisterUserDto } from '../../presentation/dtos/register-user.dto';
@@ -21,7 +24,7 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto) {
-    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+    const hashedPassword = await hash(registerDto.password, 10);
 
     const user = await this.prisma.user.create({
       data: {
@@ -36,7 +39,7 @@ export class AuthService {
       },
     });
 
-    const tokens = await this.generateTokens(user.id, user.email);
+    const tokens = await this.generateTokens(user.id, user.email, user.role);
     await this.saveRefreshToken(user.id, tokens.refreshToken);
 
     return {
@@ -61,17 +64,14 @@ export class AuthService {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
-    const isPasswordValid = await bcrypt.compare(
-      loginDto.password,
-      user.password,
-    );
+    const isPasswordValid = await compare(loginDto.password, user.password);
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
-    const { password, ...userWithoutPassword } = user;
-    const tokens = await this.generateTokens(user.id, user.email);
+    const { password: _, ...userWithoutPassword } = user;
+    const tokens = await this.generateTokens(user.id, user.email, user.role);
     await this.saveRefreshToken(user.id, tokens.refreshToken);
 
     return {
@@ -80,17 +80,17 @@ export class AuthService {
     };
   }
 
-  private async generateTokens(userId: string, email: string) {
+  private async generateTokens(userId: string, email: string, role: string) {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
-        { sub: userId, email },
+        { sub: userId, email, role },
         {
           secret: this.configService.get('JWT_SECRET'),
           expiresIn: this.configService.get('JWT_EXPIRATION') || '15m',
         },
       ),
       this.jwtService.signAsync(
-        { sub: userId, email },
+        { sub: userId, email, role },
         {
           secret: this.configService.get('JWT_SECRET'),
           expiresIn: '7d',
@@ -134,7 +134,7 @@ export class AuthService {
       throw new BadRequestException('CNPJ já cadastrado');
     }
 
-    const hashedPassword = await bcrypt.hash(registerBusinessDto.password, 10);
+    const hashedPassword = await hash(registerBusinessDto.password, 10);
 
     const user = await this.prisma.user.create({
       data: {
@@ -160,12 +160,20 @@ export class AuthService {
             id: user.id,
           },
         },
+        consultants: {
+          create: {
+            consultantId: user.id,
+          },
+        },
       },
     });
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const tokens = await this.generateTokens(user.id, user.email, user.role);
+    await this.saveRefreshToken(user.id, tokens.refreshToken);
+
     return {
-      access_token: await this.jwtService.signAsync(payload),
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
       user: {
         id: user.id,
         name: user.name,
@@ -223,7 +231,7 @@ export class AuthService {
       }
     }
 
-    const hashedPassword = await bcrypt.hash(registerUserDto.password, 10);
+    const hashedPassword = await hash(registerUserDto.password, 10);
 
     const user = await this.prisma.user.create({
       data: {

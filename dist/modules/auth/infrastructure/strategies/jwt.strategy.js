@@ -26,19 +26,26 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
         this.prisma = prisma;
     }
     async validate(payload) {
+        console.log('JwtStrategy - Payload:', payload);
         const user = await this.prisma.user.findUnique({
             where: { id: payload.sub },
             select: {
                 id: true,
                 email: true,
-                role: true,
                 name: true,
+                role: true,
             },
         });
+        console.log('JwtStrategy - User:', user);
         if (!user) {
-            throw new common_1.UnauthorizedException('Token inválido');
+            return null;
         }
-        return user;
+        return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+        };
     }
 };
 exports.JwtStrategy = JwtStrategy;
