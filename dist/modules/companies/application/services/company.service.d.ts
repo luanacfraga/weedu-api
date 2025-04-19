@@ -85,7 +85,11 @@ export declare class CompanyService {
         name: string;
         email: string;
         role: import(".prisma/client").$Enums.UserRole;
+        plan: import(".prisma/client").$Enums.PlanType;
+        maxCompanies: number;
         companies: {
+            managers: number;
+            collaborators: number;
             email: string;
             name: string;
             cnpj: string;
@@ -97,6 +101,10 @@ export declare class CompanyService {
             updatedAt: Date;
             actionCount: number;
             maxActions: number;
+            users: {
+                role: import(".prisma/client").$Enums.UserRole;
+                id: string;
+            }[];
         }[];
     }>;
     addCompanyToConsultant(consultantId: string, createCompanyDto: CreateCompanyDto): Promise<{
@@ -113,4 +121,14 @@ export declare class CompanyService {
         actionCount: number;
         maxActions: number;
     }>;
+    findAllForSelect(): Promise<{
+        name: string;
+        cnpj: string;
+        id: string;
+    }[]>;
+    findConsultantCompaniesForSelect(consultantId: string): Promise<{
+        name: string;
+        cnpj: string;
+        id: string;
+    }[]>;
 }

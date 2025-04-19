@@ -147,6 +147,8 @@ let CompanyService = class CompanyService {
                 name: true,
                 email: true,
                 role: true,
+                plan: true,
+                maxCompanies: true,
                 consultantCompanies: {
                     select: {
                         company: {
@@ -162,6 +164,12 @@ let CompanyService = class CompanyService {
                                 maxActions: true,
                                 createdAt: true,
                                 updatedAt: true,
+                                users: {
+                                    select: {
+                                        id: true,
+                                        role: true,
+                                    },
+                                },
                             },
                         },
                     },
@@ -171,12 +179,24 @@ let CompanyService = class CompanyService {
         if (!consultant) {
             throw new common_1.BadRequestException('Consultor não encontrado');
         }
+        const companies = consultant.consultantCompanies.map((cc) => {
+            const company = cc.company;
+            const managers = company.users.filter((user) => user.role === 'MANAGER').length;
+            const collaborators = company.users.filter((user) => user.role === 'COLLABORATOR').length;
+            return {
+                ...company,
+                managers,
+                collaborators,
+            };
+        });
         return {
             id: consultant.id,
             name: consultant.name,
             email: consultant.email,
             role: consultant.role,
-            companies: consultant.consultantCompanies.map((cc) => cc.company),
+            plan: consultant.plan,
+            maxCompanies: consultant.maxCompanies,
+            companies,
         };
     }
     async addCompanyToConsultant(consultantId, createCompanyDto) {
@@ -184,6 +204,7 @@ let CompanyService = class CompanyService {
             where: { id: consultantId },
             select: {
                 maxCompanies: true,
+                plan: true,
                 consultantCompanies: {
                     select: {
                         companyId: true,
@@ -194,8 +215,9 @@ let CompanyService = class CompanyService {
         if (!consultant) {
             throw new common_1.BadRequestException('Consultor não encontrado');
         }
-        if (consultant.consultantCompanies.length >= consultant.maxCompanies) {
-            throw new common_1.BadRequestException('Limite de empresas atingido');
+        const maxAllowedCompanies = consultant.plan === 'FREE' ? 1 : consultant.maxCompanies;
+        if (consultant.consultantCompanies.length >= maxAllowedCompanies) {
+            throw new common_1.BadRequestException(`Limite de empresas atingido. Plano atual: ${consultant.plan}. Limite: ${maxAllowedCompanies}`);
         }
         const existingCompany = await this.prisma.company.findUnique({
             where: { cnpj: createCompanyDto.cnpj },
@@ -214,6 +236,45 @@ let CompanyService = class CompanyService {
             },
         });
         return company;
+    }
+    async findAllForSelect() {
+        return this.prisma.company.findMany({
+            where: {
+                deletedAt: null,
+            },
+            select: {
+                id: true,
+                name: true,
+                cnpj: true,
+            },
+            orderBy: {
+                name: 'asc',
+            },
+        });
+    }
+    async findConsultantCompaniesForSelect(consultantId) {
+        const consultant = await this.prisma.user.findUnique({
+            where: { id: consultantId },
+            select: {
+                consultantCompanies: {
+                    select: {
+                        company: {
+                            select: {
+                                id: true,
+                                name: true,
+                                cnpj: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        if (!consultant) {
+            throw new common_1.BadRequestException('Consultor não encontrado');
+        }
+        return consultant.consultantCompanies
+            .map((cc) => cc.company)
+            .sort((a, b) => a.name.localeCompare(b.name));
     }
 };
 exports.CompanyService = CompanyService;

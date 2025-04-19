@@ -13,13 +13,21 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserController = void 0;
+const consultant_company_guard_1 = require("../../../auth/infrastructure/guards/consultant-company.guard");
 const jwt_auth_guard_1 = require("../../../auth/infrastructure/guards/jwt-auth.guard");
 const common_1 = require("@nestjs/common");
 const update_user_dto_1 = require("../../application/dtos/update-user.dto");
 const user_service_1 = require("../../application/services/user.service");
+const create_user_dto_1 = require("../dtos/create-user.dto");
 let UserController = class UserController {
     constructor(userService) {
         this.userService = userService;
+    }
+    async create(createUserDto) {
+        return this.userService.create(createUserDto);
+    }
+    async findAllByCompany(companyId) {
+        return this.userService.findAllByCompany(companyId);
     }
     async updateUser(id, updateUserDto) {
         return this.userService.updateUser(id, updateUserDto, this.getCurrentUser());
@@ -38,6 +46,22 @@ let UserController = class UserController {
     }
 };
 exports.UserController = UserController;
+__decorate([
+    (0, common_1.Post)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, consultant_company_guard_1.ConsultantCompanyGuard),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_user_dto_1.CreateUserDto]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "create", null);
+__decorate([
+    (0, common_1.Get)('company/:companyId'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Param)('companyId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "findAllByCompany", null);
 __decorate([
     (0, common_1.Put)(':id'),
     __param(0, (0, common_1.Param)('id')),
@@ -62,7 +86,6 @@ __decorate([
 ], UserController.prototype, "activateUser", null);
 exports.UserController = UserController = __decorate([
     (0, common_1.Controller)('users'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __metadata("design:paramtypes", [user_service_1.UserService])
 ], UserController);
 //# sourceMappingURL=user.controller.js.map

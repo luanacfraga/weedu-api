@@ -1,4 +1,5 @@
 import { PrismaService } from '@infrastructure/database/prisma.service';
+import { CreateUserDto } from '../../presentation/dtos/create-user.dto';
 import { UpdateUserDto } from '../dtos/update-user.dto';
 export declare class UserService {
     private prisma;
@@ -46,4 +47,25 @@ export declare class UserService {
         deletedAt: Date | null;
     }>;
     private canUpdateUser;
+    create(createUserDto: CreateUserDto): Promise<{
+        email: string;
+        name: string;
+        role: import(".prisma/client").$Enums.UserRole;
+        managerId: string | null;
+        id: string;
+        plan: import(".prisma/client").$Enums.PlanType;
+        maxCompanies: number;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
+    }>;
+    findAllByCompany(companyId: string): Promise<{
+        email: string;
+        name: string;
+        role: import(".prisma/client").$Enums.UserRole;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+    }[]>;
 }

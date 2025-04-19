@@ -65,4 +65,16 @@ export class CompanyController {
       createCompanyDto,
     );
   }
+
+  @Get('select')
+  @UseGuards(JwtAuthGuard)
+  async findAllForSelect() {
+    return this.companyService.findAllForSelect();
+  }
+
+  @Get('consultant/select')
+  @UseGuards(JwtAuthGuard, ConsultantGuard)
+  async findMyCompaniesForSelect(@Request() req) {
+    return this.companyService.findConsultantCompaniesForSelect(req.user.id);
+  }
 }

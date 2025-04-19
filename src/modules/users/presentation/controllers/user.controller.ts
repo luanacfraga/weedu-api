@@ -1,12 +1,33 @@
+import { ConsultantCompanyGuard } from '@modules/auth/infrastructure/guards/consultant-company.guard';
 import { JwtAuthGuard } from '@modules/auth/infrastructure/guards/jwt-auth.guard';
-import { Body, Controller, Param, Put, UseGuards } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Get,
+    Param,
+    Post,
+    Put,
+    UseGuards,
+} from '@nestjs/common';
 import { UpdateUserDto } from '../../application/dtos/update-user.dto';
 import { UserService } from '../../application/services/user.service';
+import { CreateUserDto } from '../dtos/create-user.dto';
 
 @Controller('users')
-@UseGuards(JwtAuthGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @Post()
+  @UseGuards(JwtAuthGuard, ConsultantCompanyGuard)
+  async create(@Body() createUserDto: CreateUserDto) {
+    return this.userService.create(createUserDto);
+  }
+
+  @Get('company/:companyId')
+  @UseGuards(JwtAuthGuard)
+  async findAllByCompany(@Param('companyId') companyId: string) {
+    return this.userService.findAllByCompany(companyId);
+  }
 
   @Put(':id')
   async updateUser(

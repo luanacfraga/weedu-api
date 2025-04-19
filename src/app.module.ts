@@ -6,6 +6,7 @@ import appConfig from './config/app.config';
 import { ActionsModule } from './modules/actions/actions.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CompaniesModule } from './modules/companies/companies.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { CompaniesModule } from './modules/companies/companies.module';
     AuthModule,
     CompaniesModule,
     ActionsModule,
+    UsersModule,
   ],
   controllers: [],
   providers: [],

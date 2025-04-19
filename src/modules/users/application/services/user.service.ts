@@ -1,10 +1,13 @@
 import { PrismaService } from '@infrastructure/database/prisma.service';
 import {
-    BadRequestException,
-    Injectable,
-    UnauthorizedException,
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
+import { CreateUserDto } from '../../presentation/dtos/create-user.dto';
 import { UpdateUserDto } from '../dtos/update-user.dto';
 
 @Injectable()
@@ -153,5 +156,68 @@ export class UserService {
     }
 
     return false;
+  }
+
+  async create(createUserDto: CreateUserDto) {
+    // Verifica se o email já está em uso
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: createUserDto.email },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('Email já cadastrado');
+    }
+
+    // Verifica se a empresa existe
+    const company = await this.prisma.company.findUnique({
+      where: { id: createUserDto.companyId },
+    });
+
+    if (!company) {
+      throw new BadRequestException('Empresa não encontrada');
+    }
+
+    // Criptografa a senha
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+
+    // Cria o usuário
+    const user = await this.prisma.user.create({
+      data: {
+        name: createUserDto.name,
+        email: createUserDto.email,
+        password: hashedPassword,
+        role: createUserDto.role,
+        companies: {
+          connect: {
+            id: createUserDto.companyId,
+          },
+        },
+      },
+    });
+
+    // Remove a senha do objeto retornado
+    const { password, ...result } = user;
+    return result;
+  }
+
+  async findAllByCompany(companyId: string) {
+    return this.prisma.user.findMany({
+      where: {
+        companies: {
+          some: {
+            id: companyId,
+          },
+        },
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
   }
 }

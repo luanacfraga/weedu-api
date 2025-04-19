@@ -39,7 +39,7 @@ let JwtAuthGuard = class JwtAuthGuard {
                 role: payload.role,
             };
         }
-        catch {
+        catch (error) {
             throw new common_1.UnauthorizedException('Token inválido');
         }
         return true;

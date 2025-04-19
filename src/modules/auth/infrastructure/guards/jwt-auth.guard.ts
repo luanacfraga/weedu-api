@@ -17,19 +17,6 @@ interface JwtPayload {
   exp: number;
 }
 
-interface AuthenticatedUser {
-  id: string;
-  email: string;
-  role: UserRole;
-}
-
-interface RequestWithUser {
-  headers: {
-    authorization?: string;
-  };
-  user?: AuthenticatedUser;
-}
-
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(
@@ -60,14 +47,14 @@ export class JwtAuthGuard implements CanActivate {
         email: payload.email,
         role: payload.role,
       };
-    } catch {
+    } catch (error) {
       throw new UnauthorizedException('Token inválido');
     }
 
     return true;
   }
 
-  private extractTokenFromHeader(request: RequestWithUser): string | undefined {
+  private extractTokenFromHeader(request: any): string | undefined {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : undefined;
   }

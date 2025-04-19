@@ -13,6 +13,7 @@ exports.UserService = void 0;
 const prisma_service_1 = require("../../../../infrastructure/database/prisma.service");
 const common_1 = require("@nestjs/common");
 const client_1 = require("@prisma/client");
+const bcrypt = require("bcrypt");
 let UserService = class UserService {
     constructor(prisma) {
         this.prisma = prisma;
@@ -113,6 +114,56 @@ let UserService = class UserService {
             return targetUser.managerId === currentUser.id;
         }
         return false;
+    }
+    async create(createUserDto) {
+        const existingUser = await this.prisma.user.findUnique({
+            where: { email: createUserDto.email },
+        });
+        if (existingUser) {
+            throw new common_1.ConflictException('Email já cadastrado');
+        }
+        const company = await this.prisma.company.findUnique({
+            where: { id: createUserDto.companyId },
+        });
+        if (!company) {
+            throw new common_1.BadRequestException('Empresa não encontrada');
+        }
+        const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+        const user = await this.prisma.user.create({
+            data: {
+                name: createUserDto.name,
+                email: createUserDto.email,
+                password: hashedPassword,
+                role: createUserDto.role,
+                companies: {
+                    connect: {
+                        id: createUserDto.companyId,
+                    },
+                },
+            },
+        });
+        const { password, ...result } = user;
+        return result;
+    }
+    async findAllByCompany(companyId) {
+        return this.prisma.user.findMany({
+            where: {
+                companies: {
+                    some: {
+                        id: companyId,
+                    },
+                },
+                deletedAt: null,
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                createdAt: true,
+                updatedAt: true,
+            },
+        });
     }
 };
 exports.UserService = UserService;

@@ -15,6 +15,7 @@ const app_config_1 = require("./config/app.config");
 const actions_module_1 = require("./modules/actions/actions.module");
 const auth_module_1 = require("./modules/auth/auth.module");
 const companies_module_1 = require("./modules/companies/companies.module");
+const users_module_1 = require("./modules/users/users.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -33,6 +34,7 @@ exports.AppModule = AppModule = __decorate([
             auth_module_1.AuthModule,
             companies_module_1.CompaniesModule,
             actions_module_1.ActionsModule,
+            users_module_1.UsersModule,
         ],
         controllers: [],
         providers: [],

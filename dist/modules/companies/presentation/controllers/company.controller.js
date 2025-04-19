@@ -45,6 +45,12 @@ let CompanyController = class CompanyController {
     async addCompany(req, createCompanyDto) {
         return this.companyService.addCompanyToConsultant(req.user.id, createCompanyDto);
     }
+    async findAllForSelect() {
+        return this.companyService.findAllForSelect();
+    }
+    async findMyCompaniesForSelect(req) {
+        return this.companyService.findConsultantCompaniesForSelect(req.user.id);
+    }
 };
 exports.CompanyController = CompanyController;
 __decorate([
@@ -103,6 +109,21 @@ __decorate([
     __metadata("design:paramtypes", [Object, create_company_dto_1.CreateCompanyDto]),
     __metadata("design:returntype", Promise)
 ], CompanyController.prototype, "addCompany", null);
+__decorate([
+    (0, common_1.Get)('select'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], CompanyController.prototype, "findAllForSelect", null);
+__decorate([
+    (0, common_1.Get)('consultant/select'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, consultant_guard_1.ConsultantGuard),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], CompanyController.prototype, "findMyCompaniesForSelect", null);
 exports.CompanyController = CompanyController = __decorate([
     (0, common_1.Controller)('companies'),
     __metadata("design:paramtypes", [company_service_1.CompanyService])
