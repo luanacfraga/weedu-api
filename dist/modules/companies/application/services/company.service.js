@@ -125,7 +125,7 @@ let CompanyService = class CompanyService {
             },
         });
     }
-    async updatePlan(id, updatePlanDto) {
+    async updatePlan(id, plan) {
         const company = await this.prisma.company.findUnique({
             where: { id },
         });
@@ -134,9 +134,7 @@ let CompanyService = class CompanyService {
         }
         return this.prisma.company.update({
             where: { id },
-            data: {
-                plan: updatePlanDto.plan,
-            },
+            data: { plan },
         });
     }
     async findConsultantCompanies(consultantId) {

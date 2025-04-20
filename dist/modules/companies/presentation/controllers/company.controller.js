@@ -37,7 +37,7 @@ let CompanyController = class CompanyController {
         return this.companyService.findOne(id);
     }
     async updatePlan(id, updatePlanDto) {
-        return this.companyService.updatePlan(id, updatePlanDto);
+        return this.companyService.updatePlan(id, updatePlanDto.plan);
     }
     async findMyCompanies(req) {
         return this.companyService.findConsultantCompanies(req.user.id);

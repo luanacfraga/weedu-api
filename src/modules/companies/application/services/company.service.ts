@@ -5,7 +5,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { CreateCompanyDto } from '../../presentation/dtos/create-company.dto';
-import { UpdatePlanDto } from '../../presentation/dtos/update-plan.dto';
+import { PlanType } from '../dtos/plan-type';
 
 @Injectable()
 export class CompanyService {
@@ -135,7 +135,7 @@ export class CompanyService {
     });
   }
 
-  async updatePlan(id: string, updatePlanDto: UpdatePlanDto) {
+  async updatePlan(id: string, plan: PlanType) {
     const company = await this.prisma.company.findUnique({
       where: { id },
     });
@@ -146,9 +146,7 @@ export class CompanyService {
 
     return this.prisma.company.update({
       where: { id },
-      data: {
-        plan: updatePlanDto.plan,
-      },
+      data: { plan },
     });
   }
 

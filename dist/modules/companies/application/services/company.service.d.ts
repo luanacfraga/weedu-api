@@ -1,84 +1,84 @@
 import { PrismaService } from '@infrastructure/database/prisma.service';
 import { CreateCompanyDto } from '../../presentation/dtos/create-company.dto';
-import { UpdatePlanDto } from '../../presentation/dtos/update-plan.dto';
+import { PlanType } from '../dtos/plan-type';
 export declare class CompanyService {
     private prisma;
     constructor(prisma: PrismaService);
     private validateCNPJ;
     register(createCompanyDto: CreateCompanyDto): Promise<{
-        email: string | null;
+        id: string;
         name: string;
         cnpj: string;
         address: string | null;
         phone: string | null;
-        id: string;
+        email: string | null;
         plan: import(".prisma/client").$Enums.PlanType;
+        actionCount: number;
+        maxActions: number;
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
-        actionCount: number;
-        maxActions: number;
     }>;
     create(createCompanyDto: CreateCompanyDto): Promise<{
-        email: string | null;
+        id: string;
         name: string;
         cnpj: string;
         address: string | null;
         phone: string | null;
-        id: string;
+        email: string | null;
         plan: import(".prisma/client").$Enums.PlanType;
+        actionCount: number;
+        maxActions: number;
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
-        actionCount: number;
-        maxActions: number;
     }>;
     findAll(): Promise<{
-        email: string;
+        id: string;
         name: string;
         cnpj: string;
         address: string;
         phone: string;
-        id: string;
+        email: string;
         createdAt: Date;
         updatedAt: Date;
     }[]>;
     findOne(id: string): Promise<{
-        email: string;
+        id: string;
         name: string;
         cnpj: string;
         address: string;
         phone: string;
-        id: string;
+        email: string;
         createdAt: Date;
         updatedAt: Date;
         users: {
-            email: string;
-            name: string;
-            role: import(".prisma/client").$Enums.UserRole;
             id: string;
+            name: string;
+            email: string;
+            role: import(".prisma/client").$Enums.UserRole;
         }[];
         consultants: {
             consultant: {
-                email: string;
-                name: string;
                 id: string;
+                name: string;
+                email: string;
             };
         }[];
     }>;
-    updatePlan(id: string, updatePlanDto: UpdatePlanDto): Promise<{
-        email: string | null;
+    updatePlan(id: string, plan: PlanType): Promise<{
+        id: string;
         name: string;
         cnpj: string;
         address: string | null;
         phone: string | null;
-        id: string;
+        email: string | null;
         plan: import(".prisma/client").$Enums.PlanType;
+        actionCount: number;
+        maxActions: number;
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
-        actionCount: number;
-        maxActions: number;
     }>;
     findConsultantCompanies(consultantId: string): Promise<{
         id: string;
@@ -90,45 +90,45 @@ export declare class CompanyService {
         companies: {
             managers: number;
             collaborators: number;
-            email: string;
+            id: string;
             name: string;
             cnpj: string;
             address: string;
             phone: string;
-            id: string;
+            email: string;
             plan: import(".prisma/client").$Enums.PlanType;
-            createdAt: Date;
-            updatedAt: Date;
             actionCount: number;
             maxActions: number;
+            createdAt: Date;
+            updatedAt: Date;
             users: {
-                role: import(".prisma/client").$Enums.UserRole;
                 id: string;
+                role: import(".prisma/client").$Enums.UserRole;
             }[];
         }[];
     }>;
     addCompanyToConsultant(consultantId: string, createCompanyDto: CreateCompanyDto): Promise<{
-        email: string | null;
+        id: string;
         name: string;
         cnpj: string;
         address: string | null;
         phone: string | null;
-        id: string;
+        email: string | null;
         plan: import(".prisma/client").$Enums.PlanType;
+        actionCount: number;
+        maxActions: number;
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
-        actionCount: number;
-        maxActions: number;
     }>;
     findAllForSelect(): Promise<{
+        id: string;
         name: string;
         cnpj: string;
-        id: string;
     }[]>;
     findConsultantCompaniesForSelect(consultantId: string): Promise<{
+        id: string;
         name: string;
         cnpj: string;
-        id: string;
     }[]>;
 }

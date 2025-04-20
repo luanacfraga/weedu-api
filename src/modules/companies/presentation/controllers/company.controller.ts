@@ -48,7 +48,7 @@ export class CompanyController {
     @Param('id') id: string,
     @Body() updatePlanDto: UpdatePlanDto,
   ) {
-    return this.companyService.updatePlan(id, updatePlanDto);
+    return this.companyService.updatePlan(id, updatePlanDto.plan);
   }
 
   @Get('consultant/my-companies')
