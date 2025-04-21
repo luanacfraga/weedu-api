@@ -1,15 +1,17 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { AdminGuard } from '@modules/auth/infrastructure/guards/admin.guard';
 import { ConsultantGuard } from '@modules/auth/infrastructure/guards/consultant.guard';
 import { JwtAuthGuard } from '@modules/auth/infrastructure/guards/jwt-auth.guard';
 import {
-    Body,
-    Controller,
-    Get,
-    Param,
-    Post,
-    Put,
-    Request,
-    UseGuards,
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { CompanyService } from '../../application/services/company.service';
 import { CreateCompanyDto } from '../dtos/create-company.dto';
@@ -76,5 +78,11 @@ export class CompanyController {
   @UseGuards(JwtAuthGuard, ConsultantGuard)
   async findMyCompaniesForSelect(@Request() req) {
     return this.companyService.findConsultantCompaniesForSelect(req.user.id);
+  }
+
+  @Get(':id/managers')
+  @UseGuards(JwtAuthGuard)
+  async findManagers(@Param('id') id: string) {
+    return this.companyService.findManagers(id);
   }
 }

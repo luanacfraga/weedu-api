@@ -146,7 +146,7 @@ export class CompanyService {
 
     return this.prisma.company.update({
       where: { id },
-      data: { plan },
+      data: { plan: plan as any },
     });
   }
 
@@ -314,5 +314,25 @@ export class CompanyService {
     return consultant.consultantCompanies
       .map((cc) => cc.company)
       .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  async findManagers(companyId: string) {
+    const managers = await this.prisma.user.findMany({
+      where: {
+        role: 'MANAGER',
+        isActive: true,
+        companies: {
+          some: {
+            id: companyId,
+          },
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    return managers;
   }
 }

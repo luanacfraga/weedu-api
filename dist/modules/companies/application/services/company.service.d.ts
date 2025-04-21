@@ -6,79 +6,79 @@ export declare class CompanyService {
     constructor(prisma: PrismaService);
     private validateCNPJ;
     register(createCompanyDto: CreateCompanyDto): Promise<{
-        id: string;
+        email: string | null;
         name: string;
         cnpj: string;
         address: string | null;
         phone: string | null;
-        email: string | null;
+        id: string;
         plan: import(".prisma/client").$Enums.PlanType;
-        actionCount: number;
         maxActions: number;
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
+        actionCount: number;
     }>;
     create(createCompanyDto: CreateCompanyDto): Promise<{
-        id: string;
+        email: string | null;
         name: string;
         cnpj: string;
         address: string | null;
         phone: string | null;
-        email: string | null;
+        id: string;
         plan: import(".prisma/client").$Enums.PlanType;
-        actionCount: number;
         maxActions: number;
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
+        actionCount: number;
     }>;
     findAll(): Promise<{
-        id: string;
+        email: string;
         name: string;
         cnpj: string;
         address: string;
         phone: string;
-        email: string;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
     }[]>;
     findOne(id: string): Promise<{
-        id: string;
+        email: string;
         name: string;
         cnpj: string;
         address: string;
         phone: string;
-        email: string;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
         users: {
-            id: string;
-            name: string;
             email: string;
+            name: string;
             role: import(".prisma/client").$Enums.UserRole;
+            id: string;
         }[];
         consultants: {
             consultant: {
-                id: string;
-                name: string;
                 email: string;
+                name: string;
+                id: string;
             };
         }[];
     }>;
     updatePlan(id: string, plan: PlanType): Promise<{
-        id: string;
+        email: string | null;
         name: string;
         cnpj: string;
         address: string | null;
         phone: string | null;
-        email: string | null;
+        id: string;
         plan: import(".prisma/client").$Enums.PlanType;
-        actionCount: number;
         maxActions: number;
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
+        actionCount: number;
     }>;
     findConsultantCompanies(consultantId: string): Promise<{
         id: string;
@@ -90,45 +90,49 @@ export declare class CompanyService {
         companies: {
             managers: number;
             collaborators: number;
-            id: string;
+            email: string;
             name: string;
             cnpj: string;
             address: string;
             phone: string;
-            email: string;
+            id: string;
             plan: import(".prisma/client").$Enums.PlanType;
-            actionCount: number;
             maxActions: number;
             createdAt: Date;
             updatedAt: Date;
+            actionCount: number;
             users: {
-                id: string;
                 role: import(".prisma/client").$Enums.UserRole;
+                id: string;
             }[];
         }[];
     }>;
     addCompanyToConsultant(consultantId: string, createCompanyDto: CreateCompanyDto): Promise<{
-        id: string;
+        email: string | null;
         name: string;
         cnpj: string;
         address: string | null;
         phone: string | null;
-        email: string | null;
+        id: string;
         plan: import(".prisma/client").$Enums.PlanType;
-        actionCount: number;
         maxActions: number;
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
+        actionCount: number;
     }>;
     findAllForSelect(): Promise<{
-        id: string;
         name: string;
         cnpj: string;
+        id: string;
     }[]>;
     findConsultantCompaniesForSelect(consultantId: string): Promise<{
-        id: string;
         name: string;
         cnpj: string;
+        id: string;
+    }[]>;
+    findManagers(companyId: string): Promise<{
+        name: string;
+        id: string;
     }[]>;
 }

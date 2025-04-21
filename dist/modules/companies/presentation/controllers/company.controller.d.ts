@@ -5,79 +5,79 @@ export declare class CompanyController {
     private readonly companyService;
     constructor(companyService: CompanyService);
     register(createCompanyDto: CreateCompanyDto): Promise<{
-        id: string;
+        email: string | null;
         name: string;
         cnpj: string;
         address: string | null;
         phone: string | null;
-        email: string | null;
+        id: string;
         plan: import(".prisma/client").$Enums.PlanType;
-        actionCount: number;
         maxActions: number;
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
+        actionCount: number;
     }>;
     create(createCompanyDto: CreateCompanyDto): Promise<{
-        id: string;
+        email: string | null;
         name: string;
         cnpj: string;
         address: string | null;
         phone: string | null;
-        email: string | null;
+        id: string;
         plan: import(".prisma/client").$Enums.PlanType;
-        actionCount: number;
         maxActions: number;
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
+        actionCount: number;
     }>;
     findAll(): Promise<{
-        id: string;
+        email: string;
         name: string;
         cnpj: string;
         address: string;
         phone: string;
-        email: string;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
     }[]>;
     findOne(id: string): Promise<{
-        id: string;
+        email: string;
         name: string;
         cnpj: string;
         address: string;
         phone: string;
-        email: string;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
         users: {
-            id: string;
-            name: string;
             email: string;
+            name: string;
             role: import(".prisma/client").$Enums.UserRole;
+            id: string;
         }[];
         consultants: {
             consultant: {
-                id: string;
-                name: string;
                 email: string;
+                name: string;
+                id: string;
             };
         }[];
     }>;
     updatePlan(id: string, updatePlanDto: UpdatePlanDto): Promise<{
-        id: string;
+        email: string | null;
         name: string;
         cnpj: string;
         address: string | null;
         phone: string | null;
-        email: string | null;
+        id: string;
         plan: import(".prisma/client").$Enums.PlanType;
-        actionCount: number;
         maxActions: number;
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
+        actionCount: number;
     }>;
     findMyCompanies(req: any): Promise<{
         id: string;
@@ -89,45 +89,49 @@ export declare class CompanyController {
         companies: {
             managers: number;
             collaborators: number;
-            id: string;
+            email: string;
             name: string;
             cnpj: string;
             address: string;
             phone: string;
-            email: string;
+            id: string;
             plan: import(".prisma/client").$Enums.PlanType;
-            actionCount: number;
             maxActions: number;
             createdAt: Date;
             updatedAt: Date;
+            actionCount: number;
             users: {
-                id: string;
                 role: import(".prisma/client").$Enums.UserRole;
+                id: string;
             }[];
         }[];
     }>;
     addCompany(req: any, createCompanyDto: CreateCompanyDto): Promise<{
-        id: string;
+        email: string | null;
         name: string;
         cnpj: string;
         address: string | null;
         phone: string | null;
-        email: string | null;
+        id: string;
         plan: import(".prisma/client").$Enums.PlanType;
-        actionCount: number;
         maxActions: number;
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
+        actionCount: number;
     }>;
     findAllForSelect(): Promise<{
-        id: string;
         name: string;
         cnpj: string;
+        id: string;
     }[]>;
     findMyCompaniesForSelect(req: any): Promise<{
-        id: string;
         name: string;
         cnpj: string;
+        id: string;
+    }[]>;
+    findManagers(id: string): Promise<{
+        name: string;
+        id: string;
     }[]>;
 }

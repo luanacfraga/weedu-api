@@ -10,13 +10,13 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UpdatePlanDto = void 0;
-const client_1 = require("@prisma/client");
 const class_validator_1 = require("class-validator");
+const plan_type_1 = require("../../application/dtos/plan-type");
 class UpdatePlanDto {
 }
 exports.UpdatePlanDto = UpdatePlanDto;
 __decorate([
-    (0, class_validator_1.IsEnum)(client_1.PlanType),
+    (0, class_validator_1.IsEnum)(plan_type_1.PlanType),
     __metadata("design:type", String)
 ], UpdatePlanDto.prototype, "plan", void 0);
 //# sourceMappingURL=update-plan.dto.js.map

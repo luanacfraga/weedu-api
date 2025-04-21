@@ -1,5 +1,5 @@
-import { PlanType } from '@prisma/client';
 import { IsEnum } from 'class-validator';
+import { PlanType } from '../../application/dtos/plan-type';
 
 export class UpdatePlanDto {
   @IsEnum(PlanType)

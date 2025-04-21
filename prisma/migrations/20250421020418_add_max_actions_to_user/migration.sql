@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "maxActions" INTEGER NOT NULL DEFAULT 30;

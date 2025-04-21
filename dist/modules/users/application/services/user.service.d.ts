@@ -13,6 +13,7 @@ export declare class UserService {
         id: string;
         plan: import(".prisma/client").$Enums.PlanType;
         maxCompanies: number;
+        maxActions: number;
         isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
@@ -27,6 +28,7 @@ export declare class UserService {
         id: string;
         plan: import(".prisma/client").$Enums.PlanType;
         maxCompanies: number;
+        maxActions: number;
         isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
@@ -41,6 +43,7 @@ export declare class UserService {
         id: string;
         plan: import(".prisma/client").$Enums.PlanType;
         maxCompanies: number;
+        maxActions: number;
         isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
@@ -55,6 +58,7 @@ export declare class UserService {
         id: string;
         plan: import(".prisma/client").$Enums.PlanType;
         maxCompanies: number;
+        maxActions: number;
         isActive: boolean;
         createdAt: Date;
         updatedAt: Date;

@@ -57,6 +57,12 @@ export class AuthService {
         password: true,
         name: true,
         role: true,
+        companies: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
 
@@ -70,32 +76,51 @@ export class AuthService {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
-    const { password: _, ...userWithoutPassword } = user;
-    const tokens = await this.generateTokens(user.id, user.email, user.role);
+    const { password: _, companies, ...userWithoutPassword } = user;
+    const companyId = companies.length > 0 ? companies[0].id : undefined;
+    const tokens = await this.generateTokens(
+      user.id,
+      user.email,
+      user.role,
+      companyId,
+    );
     await this.saveRefreshToken(user.id, tokens.refreshToken);
 
     return {
-      user: userWithoutPassword,
+      user: {
+        ...userWithoutPassword,
+        company:
+          companies.length > 0
+            ? {
+                id: companies[0].id,
+                name: companies[0].name,
+              }
+            : undefined,
+      },
       ...tokens,
     };
   }
 
-  private async generateTokens(userId: string, email: string, role: string) {
+  private async generateTokens(
+    userId: string,
+    email: string,
+    role: string,
+    companyId?: string,
+  ) {
+    const payload = { sub: userId, email, role };
+    if (companyId) {
+      payload['companyId'] = companyId;
+    }
+
     const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(
-        { sub: userId, email, role },
-        {
-          secret: this.configService.get('JWT_SECRET'),
-          expiresIn: this.configService.get('JWT_EXPIRATION') || '15m',
-        },
-      ),
-      this.jwtService.signAsync(
-        { sub: userId, email, role },
-        {
-          secret: this.configService.get('JWT_SECRET'),
-          expiresIn: '7d',
-        },
-      ),
+      this.jwtService.signAsync(payload, {
+        secret: this.configService.get('JWT_SECRET'),
+        expiresIn: this.configService.get('JWT_EXPIRATION') || '15m',
+      }),
+      this.jwtService.signAsync(payload, {
+        secret: this.configService.get('JWT_SECRET'),
+        expiresIn: '7d',
+      }),
     ]);
 
     return {
@@ -252,17 +277,41 @@ export class AuthService {
           },
         }),
       },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        companies: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     });
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const companyId = user.companies[0].id;
+    const tokens = await this.generateTokens(
+      user.id,
+      user.email,
+      user.role,
+      companyId,
+    );
+    await this.saveRefreshToken(user.id, tokens.refreshToken);
+
     return {
-      access_token: await this.jwtService.signAsync(payload),
       user: {
         id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
+        company: {
+          id: user.companies[0].id,
+          name: user.companies[0].name,
+        },
       },
+      ...tokens,
     };
   }
 }
