@@ -12,8 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
 const prisma_service_1 = require("../../../../infrastructure/database/prisma.service");
 const common_1 = require("@nestjs/common");
-const client_1 = require("@prisma/client");
-const bcrypt = require("bcrypt");
 let UserService = class UserService {
     constructor(prisma) {
         this.prisma = prisma;
@@ -26,9 +24,13 @@ let UserService = class UserService {
             },
         });
         if (!user) {
-            throw new common_1.BadRequestException('Usuário não encontrado');
+            throw new common_1.NotFoundException('Usuário não encontrado');
         }
-        const canUpdate = await this.canUpdateUser(currentUser, user);
+        const canUpdate = await this.canUpdateUser(currentUser, {
+            id: user.id,
+            managerId: user.managerId,
+            companies: user.companies,
+        });
         if (!canUpdate) {
             throw new common_1.UnauthorizedException('Você não tem permissão para atualizar este usuário');
         }
@@ -40,7 +42,7 @@ let UserService = class UserService {
             if (!newManager) {
                 throw new common_1.BadRequestException('Gestor não encontrado');
             }
-            if (newManager.role !== client_1.UserRole.MANAGER) {
+            if (newManager.role !== 'MANAGER') {
                 throw new common_1.BadRequestException('O usuário indicado não é um gestor');
             }
             const sameCompany = newManager.companies.some((company) => user.companies.some((userCompany) => userCompany.id === company.id));
@@ -62,11 +64,18 @@ let UserService = class UserService {
     async deactivateUser(userId, currentUser) {
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
+            include: {
+                companies: true,
+            },
         });
         if (!user) {
-            throw new common_1.BadRequestException('Usuário não encontrado');
+            throw new common_1.NotFoundException('Usuário não encontrado');
         }
-        const canUpdate = await this.canUpdateUser(currentUser, user);
+        const canUpdate = await this.canUpdateUser(currentUser, {
+            id: user.id,
+            managerId: user.managerId,
+            companies: user.companies,
+        });
         if (!canUpdate) {
             throw new common_1.UnauthorizedException('Você não tem permissão para desativar este usuário');
         }
@@ -80,11 +89,18 @@ let UserService = class UserService {
     async activateUser(userId, currentUser) {
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
+            include: {
+                companies: true,
+            },
         });
         if (!user) {
-            throw new common_1.BadRequestException('Usuário não encontrado');
+            throw new common_1.NotFoundException('Usuário não encontrado');
         }
-        const canUpdate = await this.canUpdateUser(currentUser, user);
+        const canUpdate = await this.canUpdateUser(currentUser, {
+            id: user.id,
+            managerId: user.managerId,
+            companies: user.companies,
+        });
         if (!canUpdate) {
             throw new common_1.UnauthorizedException('Você não tem permissão para ativar este usuário');
         }
@@ -96,10 +112,10 @@ let UserService = class UserService {
         });
     }
     async canUpdateUser(currentUser, targetUser) {
-        if (currentUser.role === client_1.UserRole.ADMIN) {
+        if (currentUser.role === 'ADMIN') {
             return true;
         }
-        if (currentUser.role === client_1.UserRole.CONSULTANT) {
+        if (currentUser.role === 'CONSULTANT') {
             const currentUserCompanies = await this.prisma.user.findUnique({
                 where: { id: currentUser.id },
                 include: { companies: true },
@@ -110,7 +126,7 @@ let UserService = class UserService {
             });
             return currentUserCompanies.companies.some((company) => targetUserCompanies.companies.some((targetCompany) => targetCompany.id === company.id));
         }
-        if (currentUser.role === client_1.UserRole.MANAGER) {
+        if (currentUser.role === 'MANAGER') {
             return targetUser.managerId === currentUser.id;
         }
         return false;
@@ -122,37 +138,16 @@ let UserService = class UserService {
         if (existingUser) {
             throw new common_1.ConflictException('Email já cadastrado');
         }
-        const company = await this.prisma.company.findUnique({
-            where: { id: createUserDto.companyId },
-        });
-        if (!company) {
-            throw new common_1.BadRequestException('Empresa não encontrada');
-        }
-        const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-        const user = await this.prisma.user.create({
+        return this.prisma.user.create({
             data: {
-                name: createUserDto.name,
-                email: createUserDto.email,
-                password: hashedPassword,
-                role: createUserDto.role,
-                companies: {
-                    connect: {
-                        id: createUserDto.companyId,
-                    },
-                },
+                ...createUserDto,
+                password: createUserDto.password,
             },
         });
-        const { password, ...result } = user;
-        return result;
     }
-    async findAllByCompany(companyId) {
+    async findAll() {
         return this.prisma.user.findMany({
             where: {
-                companies: {
-                    some: {
-                        id: companyId,
-                    },
-                },
                 deletedAt: null,
             },
             select: {
@@ -160,10 +155,70 @@ let UserService = class UserService {
                 name: true,
                 email: true,
                 role: true,
+                isActive: true,
                 createdAt: true,
                 updatedAt: true,
+                companies: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
             },
         });
+    }
+    async findAllByCompany(companyId, { page = 1, limit = 10 }) {
+        const where = {
+            companies: {
+                some: {
+                    id: companyId,
+                },
+            },
+            deletedAt: null,
+        };
+        const skip = (page - 1) * limit;
+        const company = await this.prisma.company.findUnique({
+            where: { id: companyId },
+        });
+        if (!company) {
+            throw new common_1.NotFoundException('Empresa não encontrada');
+        }
+        const [users, total] = await Promise.all([
+            this.prisma.user.findMany({
+                where,
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    role: true,
+                    isActive: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    manager: {
+                        select: {
+                            id: true,
+                            name: true,
+                        },
+                    },
+                },
+                skip,
+                take: limit,
+                orderBy: {
+                    name: 'asc',
+                },
+            }),
+            this.prisma.user.count({ where }),
+        ]);
+        const totalPages = Math.ceil(total / limit);
+        return {
+            data: users,
+            meta: {
+                total,
+                page,
+                limit,
+                totalPages,
+            },
+        };
     }
 };
 exports.UserService = UserService;

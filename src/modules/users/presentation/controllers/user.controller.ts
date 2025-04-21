@@ -1,17 +1,20 @@
 import { ConsultantCompanyGuard } from '@modules/auth/infrastructure/guards/consultant-company.guard';
 import { JwtAuthGuard } from '@modules/auth/infrastructure/guards/jwt-auth.guard';
 import {
-    Body,
-    Controller,
-    Get,
-    Param,
-    Post,
-    Put,
-    UseGuards,
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedUser } from '@shared/types/user.types';
 import { UpdateUserDto } from '../../application/dtos/update-user.dto';
 import { UserService } from '../../application/services/user.service';
 import { CreateUserDto } from '../dtos/create-user.dto';
+import { FindUsersDto } from '../dtos/find-users.dto';
 
 @Controller('users')
 export class UserController {
@@ -23,10 +26,19 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  async findAll() {
+    return this.userService.findAll();
+  }
+
   @Get('company/:companyId')
   @UseGuards(JwtAuthGuard)
-  async findAllByCompany(@Param('companyId') companyId: string) {
-    return this.userService.findAllByCompany(companyId);
+  async findAllByCompany(
+    @Param('companyId') companyId: string,
+    @Query() findUsersDto: FindUsersDto,
+  ) {
+    return this.userService.findAllByCompany(companyId, findUsersDto);
   }
 
   @Put(':id')
@@ -51,7 +63,7 @@ export class UserController {
     return this.userService.activateUser(id, this.getCurrentUser());
   }
 
-  private getCurrentUser() {
+  private getCurrentUser(): AuthenticatedUser {
     // Este método será implementado para obter o usuário atual do token JWT
     return {
       id: 'current-user-id',

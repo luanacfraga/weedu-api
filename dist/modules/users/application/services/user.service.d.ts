@@ -1,16 +1,17 @@
 import { PrismaService } from '@infrastructure/database/prisma.service';
+import { AuthenticatedUser } from '@shared/types/user.types';
 import { CreateUserDto } from '../../presentation/dtos/create-user.dto';
+import { FindUsersDto } from '../../presentation/dtos/find-users.dto';
 import { UpdateUserDto } from '../dtos/update-user.dto';
 export declare class UserService {
     private prisma;
     constructor(prisma: PrismaService);
-    updateUser(userId: string, updateUserDto: UpdateUserDto, currentUser: any): Promise<{
+    updateUser(userId: string, updateUserDto: UpdateUserDto, currentUser: AuthenticatedUser): Promise<{
+        id: string;
         email: string;
         password: string;
         name: string;
         role: import(".prisma/client").$Enums.UserRole;
-        managerId: string | null;
-        id: string;
         plan: import(".prisma/client").$Enums.PlanType;
         maxCompanies: number;
         maxActions: number;
@@ -18,14 +19,14 @@ export declare class UserService {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
+        managerId: string | null;
     }>;
-    deactivateUser(userId: string, currentUser: any): Promise<{
+    deactivateUser(userId: string, currentUser: AuthenticatedUser): Promise<{
+        id: string;
         email: string;
         password: string;
         name: string;
         role: import(".prisma/client").$Enums.UserRole;
-        managerId: string | null;
-        id: string;
         plan: import(".prisma/client").$Enums.PlanType;
         maxCompanies: number;
         maxActions: number;
@@ -33,14 +34,14 @@ export declare class UserService {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
+        managerId: string | null;
     }>;
-    activateUser(userId: string, currentUser: any): Promise<{
+    activateUser(userId: string, currentUser: AuthenticatedUser): Promise<{
+        id: string;
         email: string;
         password: string;
         name: string;
         role: import(".prisma/client").$Enums.UserRole;
-        managerId: string | null;
-        id: string;
         plan: import(".prisma/client").$Enums.PlanType;
         maxCompanies: number;
         maxActions: number;
@@ -48,14 +49,15 @@ export declare class UserService {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
+        managerId: string | null;
     }>;
     private canUpdateUser;
     create(createUserDto: CreateUserDto): Promise<{
+        id: string;
         email: string;
+        password: string;
         name: string;
         role: import(".prisma/client").$Enums.UserRole;
-        managerId: string | null;
-        id: string;
         plan: import(".prisma/client").$Enums.PlanType;
         maxCompanies: number;
         maxActions: number;
@@ -63,13 +65,28 @@ export declare class UserService {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
+        managerId: string | null;
     }>;
-    findAllByCompany(companyId: string): Promise<{
+    findAll(): Promise<{
+        id: string;
         email: string;
         name: string;
         role: import(".prisma/client").$Enums.UserRole;
-        id: string;
+        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        companies: {
+            id: string;
+            name: string;
+        }[];
     }[]>;
+    findAllByCompany(companyId: string, { page, limit }: FindUsersDto): Promise<{
+        data: Record<string, any>[];
+        meta: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+        };
+    }>;
 }
