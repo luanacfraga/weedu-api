@@ -13,8 +13,8 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserController = void 0;
-const consultant_company_guard_1 = require("../../../auth/infrastructure/guards/consultant-company.guard");
 const jwt_auth_guard_1 = require("../../../auth/infrastructure/guards/jwt-auth.guard");
+const manager_company_guard_1 = require("../../../auth/infrastructure/guards/manager-company.guard");
 const common_1 = require("@nestjs/common");
 const update_user_dto_1 = require("../../application/dtos/update-user.dto");
 const user_service_1 = require("../../application/services/user.service");
@@ -56,7 +56,7 @@ let UserController = class UserController {
 exports.UserController = UserController;
 __decorate([
     (0, common_1.Post)(),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, consultant_company_guard_1.ConsultantCompanyGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, manager_company_guard_1.ManagerCompanyGuard),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_user_dto_1.CreateUserDto]),

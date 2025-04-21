@@ -13,8 +13,10 @@ const config_1 = require("@nestjs/config");
 const jwt_1 = require("@nestjs/jwt");
 const passport_1 = require("@nestjs/passport");
 const auth_service_1 = require("./application/services/auth.service");
+const consultant_company_guard_1 = require("./infrastructure/guards/consultant-company.guard");
 const consultant_guard_1 = require("./infrastructure/guards/consultant.guard");
 const jwt_auth_guard_1 = require("./infrastructure/guards/jwt-auth.guard");
+const manager_company_guard_1 = require("./infrastructure/guards/manager-company.guard");
 const jwt_strategy_1 = require("./infrastructure/strategies/jwt.strategy");
 const auth_controller_1 = require("./presentation/controllers/auth.controller");
 let AuthModule = class AuthModule {
@@ -42,8 +44,17 @@ exports.AuthModule = AuthModule = __decorate([
             prisma_service_1.PrismaService,
             jwt_auth_guard_1.JwtAuthGuard,
             consultant_guard_1.ConsultantGuard,
+            consultant_company_guard_1.ConsultantCompanyGuard,
+            manager_company_guard_1.ManagerCompanyGuard,
         ],
-        exports: [auth_service_1.AuthService, jwt_auth_guard_1.JwtAuthGuard, consultant_guard_1.ConsultantGuard, jwt_1.JwtModule],
+        exports: [
+            auth_service_1.AuthService,
+            jwt_auth_guard_1.JwtAuthGuard,
+            consultant_guard_1.ConsultantGuard,
+            jwt_1.JwtModule,
+            consultant_company_guard_1.ConsultantCompanyGuard,
+            manager_company_guard_1.ManagerCompanyGuard,
+        ],
     })
 ], AuthModule);
 //# sourceMappingURL=auth.module.js.map

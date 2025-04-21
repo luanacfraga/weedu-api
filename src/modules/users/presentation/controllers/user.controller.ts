@@ -1,5 +1,5 @@
-import { ConsultantCompanyGuard } from '@modules/auth/infrastructure/guards/consultant-company.guard';
 import { JwtAuthGuard } from '@modules/auth/infrastructure/guards/jwt-auth.guard';
+import { ManagerCompanyGuard } from '@modules/auth/infrastructure/guards/manager-company.guard';
 import {
   Body,
   Controller,
@@ -22,7 +22,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard, ConsultantCompanyGuard)
+  @UseGuards(JwtAuthGuard, ManagerCompanyGuard)
   async create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }

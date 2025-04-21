@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { hash } from 'bcrypt';
+import { compare, hash } from 'bcrypt';
 import { LoginDto } from '../../presentation/dtos/login.dto';
 import { RegisterBusinessDto } from '../../presentation/dtos/register-business.dto';
 import { RegisterUserDto } from '../../presentation/dtos/register-user.dto';
@@ -70,7 +70,7 @@ export class AuthService {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
-    const isPasswordValid = loginDto.password === user.password;
+    const isPasswordValid = await compare(loginDto.password, user.password);
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Credenciais inválidas');
