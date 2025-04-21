@@ -1,6 +1,7 @@
 import { PrismaService } from '@infrastructure/database/prisma.service';
 import { AuthenticatedUser } from '@shared/types/user.types';
 import { CreateUserDto } from '../../presentation/dtos/create-user.dto';
+import { FindManagerUsersDto } from '../../presentation/dtos/find-manager-users.dto';
 import { FindUsersDto } from '../../presentation/dtos/find-users.dto';
 import { UpdateUserDto } from '../dtos/update-user.dto';
 export declare class UserService {
@@ -81,6 +82,15 @@ export declare class UserService {
         }[];
     }[]>;
     findAllByCompany(companyId: string, { page, limit }: FindUsersDto): Promise<{
+        data: Record<string, any>[];
+        meta: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+        };
+    }>;
+    findAllByManager(managerId: string, { page, limit }: FindManagerUsersDto): Promise<{
         data: Record<string, any>[];
         meta: {
             total: number;

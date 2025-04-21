@@ -19,6 +19,7 @@ const common_1 = require("@nestjs/common");
 const update_user_dto_1 = require("../../application/dtos/update-user.dto");
 const user_service_1 = require("../../application/services/user.service");
 const create_user_dto_1 = require("../dtos/create-user.dto");
+const find_manager_users_dto_1 = require("../dtos/find-manager-users.dto");
 const find_users_dto_1 = require("../dtos/find-users.dto");
 let UserController = class UserController {
     constructor(userService) {
@@ -32,6 +33,9 @@ let UserController = class UserController {
     }
     async findAllByCompany(companyId, findUsersDto) {
         return this.userService.findAllByCompany(companyId, findUsersDto);
+    }
+    async findAllByManager(managerId, findManagerUsersDto) {
+        return this.userService.findAllByManager(managerId, findManagerUsersDto);
     }
     async updateUser(id, updateUserDto) {
         return this.userService.updateUser(id, updateUserDto, this.getCurrentUser());
@@ -74,6 +78,15 @@ __decorate([
     __metadata("design:paramtypes", [String, find_users_dto_1.FindUsersDto]),
     __metadata("design:returntype", Promise)
 ], UserController.prototype, "findAllByCompany", null);
+__decorate([
+    (0, common_1.Get)('manager/:managerId'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Param)('managerId')),
+    __param(1, (0, common_1.Query)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, find_manager_users_dto_1.FindManagerUsersDto]),
+    __metadata("design:returntype", Promise)
+], UserController.prototype, "findAllByManager", null);
 __decorate([
     (0, common_1.Put)(':id'),
     __param(0, (0, common_1.Param)('id')),

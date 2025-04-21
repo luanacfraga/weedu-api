@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { AuthenticatedUser } from '@shared/types/user.types';
 import { CreateUserDto } from '../../presentation/dtos/create-user.dto';
+import { FindManagerUsersDto } from '../../presentation/dtos/find-manager-users.dto';
 import { FindUsersDto } from '../../presentation/dtos/find-users.dto';
 import { UpdateUserDto } from '../dtos/update-user.dto';
 
@@ -264,6 +265,93 @@ export class UserService {
           createdAt: true,
           updatedAt: true,
           manager: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        skip,
+        take: limit,
+        orderBy: {
+          name: 'asc',
+        },
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data: users,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages,
+      },
+    };
+  }
+
+  async findAllByManager(
+    managerId: string,
+    { page = 1, limit = 10 }: FindManagerUsersDto,
+  ): Promise<{
+    data: Record<string, any>[];
+    meta: {
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    };
+  }> {
+    const manager = await this.prisma.user.findUnique({
+      where: { id: managerId },
+      include: {
+        companies: true,
+      },
+    });
+
+    if (!manager) {
+      throw new NotFoundException('Gestor não encontrado');
+    }
+
+    if (manager.role !== 'MANAGER') {
+      throw new BadRequestException('O usuário não é um gestor');
+    }
+
+    if (!manager.companies || manager.companies.length === 0) {
+      throw new BadRequestException(
+        'O gestor não está associado a nenhuma empresa',
+      );
+    }
+
+    const companyId = manager.companies[0].id;
+
+    const where = {
+      managerId,
+      companies: {
+        some: {
+          id: companyId,
+        },
+      },
+      deletedAt: null,
+    };
+
+    const skip = (page - 1) * limit;
+
+    const [users, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+          companies: {
             select: {
               id: true,
               name: true,

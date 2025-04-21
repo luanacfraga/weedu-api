@@ -14,6 +14,7 @@ import { AuthenticatedUser } from '@shared/types/user.types';
 import { UpdateUserDto } from '../../application/dtos/update-user.dto';
 import { UserService } from '../../application/services/user.service';
 import { CreateUserDto } from '../dtos/create-user.dto';
+import { FindManagerUsersDto } from '../dtos/find-manager-users.dto';
 import { FindUsersDto } from '../dtos/find-users.dto';
 
 @Controller('users')
@@ -39,6 +40,15 @@ export class UserController {
     @Query() findUsersDto: FindUsersDto,
   ) {
     return this.userService.findAllByCompany(companyId, findUsersDto);
+  }
+
+  @Get('manager/:managerId')
+  @UseGuards(JwtAuthGuard)
+  async findAllByManager(
+    @Param('managerId') managerId: string,
+    @Query() findManagerUsersDto: FindManagerUsersDto,
+  ) {
+    return this.userService.findAllByManager(managerId, findManagerUsersDto);
   }
 
   @Put(':id')

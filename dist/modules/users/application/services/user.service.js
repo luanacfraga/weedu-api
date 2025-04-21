@@ -220,6 +220,70 @@ let UserService = class UserService {
             },
         };
     }
+    async findAllByManager(managerId, { page = 1, limit = 10 }) {
+        const manager = await this.prisma.user.findUnique({
+            where: { id: managerId },
+            include: {
+                companies: true,
+            },
+        });
+        if (!manager) {
+            throw new common_1.NotFoundException('Gestor não encontrado');
+        }
+        if (manager.role !== 'MANAGER') {
+            throw new common_1.BadRequestException('O usuário não é um gestor');
+        }
+        if (!manager.companies || manager.companies.length === 0) {
+            throw new common_1.BadRequestException('O gestor não está associado a nenhuma empresa');
+        }
+        const companyId = manager.companies[0].id;
+        const where = {
+            managerId,
+            companies: {
+                some: {
+                    id: companyId,
+                },
+            },
+            deletedAt: null,
+        };
+        const skip = (page - 1) * limit;
+        const [users, total] = await Promise.all([
+            this.prisma.user.findMany({
+                where,
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    role: true,
+                    isActive: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    companies: {
+                        select: {
+                            id: true,
+                            name: true,
+                        },
+                    },
+                },
+                skip,
+                take: limit,
+                orderBy: {
+                    name: 'asc',
+                },
+            }),
+            this.prisma.user.count({ where }),
+        ]);
+        const totalPages = Math.ceil(total / limit);
+        return {
+            data: users,
+            meta: {
+                total,
+                page,
+                limit,
+                totalPages,
+            },
+        };
+    }
 };
 exports.UserService = UserService;
 exports.UserService = UserService = __decorate([

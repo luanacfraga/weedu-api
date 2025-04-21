@@ -1,6 +1,7 @@
 import { UpdateUserDto } from '../../application/dtos/update-user.dto';
 import { UserService } from '../../application/services/user.service';
 import { CreateUserDto } from '../dtos/create-user.dto';
+import { FindManagerUsersDto } from '../dtos/find-manager-users.dto';
 import { FindUsersDto } from '../dtos/find-users.dto';
 export declare class UserController {
     private readonly userService;
@@ -34,6 +35,15 @@ export declare class UserController {
         }[];
     }[]>;
     findAllByCompany(companyId: string, findUsersDto: FindUsersDto): Promise<{
+        data: Record<string, any>[];
+        meta: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+        };
+    }>;
+    findAllByManager(managerId: string, findManagerUsersDto: FindManagerUsersDto): Promise<{
         data: Record<string, any>[];
         meta: {
             total: number;
