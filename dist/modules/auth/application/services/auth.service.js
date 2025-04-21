@@ -62,7 +62,7 @@ let AuthService = class AuthService {
         if (!user) {
             throw new common_1.UnauthorizedException('Credenciais inválidas');
         }
-        const isPasswordValid = await (0, bcrypt_1.compare)(loginDto.password, user.password);
+        const isPasswordValid = loginDto.password === user.password;
         if (!isPasswordValid) {
             throw new common_1.UnauthorizedException('Credenciais inválidas');
         }

@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
 const prisma_service_1 = require("../../../../infrastructure/database/prisma.service");
 const common_1 = require("@nestjs/common");
+const bcrypt_1 = require("bcrypt");
 let UserService = class UserService {
     constructor(prisma) {
         this.prisma = prisma;
@@ -138,10 +139,34 @@ let UserService = class UserService {
         if (existingUser) {
             throw new common_1.ConflictException('Email já cadastrado');
         }
+        const { companyId, managerId, password, ...userData } = createUserDto;
+        const hashedPassword = await (0, bcrypt_1.hash)(password, 10);
+        if (managerId) {
+            const manager = await this.prisma.user.findUnique({
+                where: { id: managerId },
+                include: { companies: true },
+            });
+            if (!manager) {
+                throw new common_1.BadRequestException('Gestor não encontrado');
+            }
+            if (manager.role !== 'MANAGER') {
+                throw new common_1.BadRequestException('O usuário indicado não é um gestor');
+            }
+            const managerBelongsToCompany = manager.companies.some((company) => company.id === companyId);
+            if (!managerBelongsToCompany) {
+                throw new common_1.BadRequestException('O gestor não pertence à mesma empresa');
+            }
+        }
         return this.prisma.user.create({
             data: {
-                ...createUserDto,
-                password: createUserDto.password,
+                ...userData,
+                password: hashedPassword,
+                managerId,
+                companies: {
+                    connect: {
+                        id: companyId,
+                    },
+                },
             },
         });
     }

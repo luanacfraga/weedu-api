@@ -3,6 +3,7 @@ import {
     IsEmail,
     IsEnum,
     IsNotEmpty,
+    IsOptional,
     IsString,
     MinLength,
 } from 'class-validator';
@@ -27,4 +28,8 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   companyId: string;
+
+  @IsString()
+  @IsOptional()
+  managerId?: string;
 }

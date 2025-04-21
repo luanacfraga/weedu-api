@@ -7,6 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthenticatedUser } from '@shared/types/user.types';
+import { hash } from 'bcrypt';
 import { CreateUserDto } from '../../presentation/dtos/create-user.dto';
 import { FindManagerUsersDto } from '../../presentation/dtos/find-manager-users.dto';
 import { FindUsersDto } from '../../presentation/dtos/find-users.dto';
@@ -191,10 +192,42 @@ export class UserService {
       throw new ConflictException('Email já cadastrado');
     }
 
+    const { companyId, managerId, password, ...userData } = createUserDto;
+    const hashedPassword = await hash(password, 10);
+
+    if (managerId) {
+      const manager = await this.prisma.user.findUnique({
+        where: { id: managerId },
+        include: { companies: true },
+      });
+
+      if (!manager) {
+        throw new BadRequestException('Gestor não encontrado');
+      }
+
+      if (manager.role !== 'MANAGER') {
+        throw new BadRequestException('O usuário indicado não é um gestor');
+      }
+
+      const managerBelongsToCompany = manager.companies.some(
+        (company) => company.id === companyId,
+      );
+
+      if (!managerBelongsToCompany) {
+        throw new BadRequestException('O gestor não pertence à mesma empresa');
+      }
+    }
+
     return this.prisma.user.create({
       data: {
-        ...createUserDto,
-        password: createUserDto.password,
+        ...userData,
+        password: hashedPassword,
+        managerId,
+        companies: {
+          connect: {
+            id: companyId,
+          },
+        },
       },
     });
   }
