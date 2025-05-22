@@ -37,6 +37,72 @@ let UsersService = class UsersService {
             },
         });
     }
+    async createMaster(createMasterUserDto) {
+        const existingUser = await this.prisma.user.findUnique({
+            where: { email: createMasterUserDto.email },
+        });
+        if (existingUser) {
+            throw new common_1.ConflictException('Já existe um usuário com este email');
+        }
+        const existingCompany = await this.prisma.company.findUnique({
+            where: { cnpj: createMasterUserDto.company.cnpj },
+        });
+        if (existingCompany) {
+            throw new common_1.ConflictException('Já existe uma empresa com este CNPJ');
+        }
+        const plan = await this.prisma.plan.findUnique({
+            where: { id: createMasterUserDto.planId },
+            select: {
+                id: true,
+                type: true
+            }
+        });
+        if (!plan) {
+            throw new common_1.NotFoundException('Plano não encontrado');
+        }
+        const hashedPassword = await bcrypt.hash(createMasterUserDto.password, 10);
+        return this.prisma.$transaction(async (prisma) => {
+            const masterUser = await prisma.user.create({
+                data: {
+                    name: createMasterUserDto.name,
+                    email: createMasterUserDto.email,
+                    password: hashedPassword,
+                    role: 'ADMIN',
+                    plan: plan.type,
+                    maxCompanies: 999999,
+                    maxActions: 999999,
+                    currentPlanId: plan.id
+                }
+            });
+            const company = await prisma.company.create({
+                data: {
+                    name: createMasterUserDto.company.name,
+                    cnpj: createMasterUserDto.company.cnpj,
+                    address: createMasterUserDto.company.address,
+                    phone: createMasterUserDto.company.phone,
+                    email: createMasterUserDto.company.email,
+                    planId: plan.id,
+                    ownerId: masterUser.id,
+                    users: {
+                        connect: { id: masterUser.id }
+                    }
+                }
+            });
+            await prisma.user.update({
+                where: { id: masterUser.id },
+                data: {
+                    companies: {
+                        connect: { id: company.id }
+                    }
+                }
+            });
+            return {
+                user: masterUser,
+                company,
+                plan
+            };
+        });
+    }
 };
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([
