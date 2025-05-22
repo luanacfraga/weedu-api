@@ -1,7 +1,7 @@
 import { Roles } from '@/core/auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '@/core/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@/core/auth/guards/roles.guard';
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Request, UseGuards } from '@nestjs/common';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { CreateCollaboratorDto } from './dto/create-collaborator.dto';
 import { CreateManagerDto } from './dto/create-manager.dto';
@@ -34,5 +34,12 @@ export class UsersController {
   @Roles('MASTER', 'MANAGER')
   createCollaborator(@Body() createCollaboratorDto: CreateCollaboratorDto, @Request() req) {
     return this.usersService.createCollaborator(createCollaboratorDto, req.user);
+  }
+
+  @Get('manager/:id/team')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('MASTER', 'MANAGER')
+  getManagerTeam(@Param('id') id: string, @Request() req) {
+    return this.usersService.getManagerTeam(id, req.user);
   }
 } 

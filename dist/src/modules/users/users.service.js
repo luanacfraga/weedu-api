@@ -248,6 +248,41 @@ let UsersService = class UsersService {
             }
         });
     }
+    async getManagerTeam(managerId, currentUser) {
+        const manager = await this.prisma.user.findFirst({
+            where: {
+                id: managerId,
+                role: 'MANAGER',
+                OR: [
+                    { companies: { some: { owner: { id: currentUser.id, role: 'MASTER' } } } },
+                    { id: currentUser.id }
+                ]
+            }
+        });
+        if (!manager) {
+            throw new common_1.ForbiddenException('Você não tem permissão para ver esta equipe');
+        }
+        return this.prisma.user.findMany({
+            where: {
+                managerId: managerId,
+                role: 'COLLABORATOR',
+                isActive: true
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                createdAt: true,
+                companies: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                }
+            }
+        });
+    }
 };
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([

@@ -38,6 +38,9 @@ let UsersController = class UsersController {
     createCollaborator(createCollaboratorDto, req) {
         return this.usersService.createCollaborator(createCollaboratorDto, req.user);
     }
+    getManagerTeam(id, req) {
+        return this.usersService.getManagerTeam(id, req.user);
+    }
 };
 exports.UsersController = UsersController;
 __decorate([
@@ -74,6 +77,16 @@ __decorate([
     __metadata("design:paramtypes", [create_collaborator_dto_1.CreateCollaboratorDto, Object]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "createCollaborator", null);
+__decorate([
+    (0, common_1.Get)('manager/:id/team'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('MASTER', 'MANAGER'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "getManagerTeam", null);
 exports.UsersController = UsersController = __decorate([
     (0, common_1.Controller)('users'),
     __metadata("design:paramtypes", [users_service_1.UsersService])

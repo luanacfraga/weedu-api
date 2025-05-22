@@ -295,4 +295,46 @@ export class UsersService {
       }
     });
   }
+
+  async getManagerTeam(managerId: string, currentUser: any) {
+    // Verificar se o usuário atual tem permissão para ver a equipe
+    const manager = await this.prisma.user.findFirst({
+      where: {
+        id: managerId,
+        role: 'MANAGER',
+        OR: [
+          // Se o usuário atual é MASTER, pode ver qualquer equipe
+          { companies: { some: { owner: { id: currentUser.id, role: 'MASTER' } } } },
+          // Se o usuário atual é o próprio MANAGER
+          { id: currentUser.id }
+        ]
+      }
+    });
+
+    if (!manager) {
+      throw new ForbiddenException('Você não tem permissão para ver esta equipe');
+    }
+
+    // Buscar todos os colaboradores do manager
+    return this.prisma.user.findMany({
+      where: {
+        managerId: managerId,
+        role: 'COLLABORATOR',
+        isActive: true
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        companies: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
+      }
+    });
+  }
 } 

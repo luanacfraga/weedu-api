@@ -104,4 +104,15 @@ export declare class UsersService {
         maxActions: number;
         currentPlanId: string | null;
     }>;
+    getManagerTeam(managerId: string, currentUser: any): Promise<{
+        id: string;
+        email: string;
+        name: string;
+        role: import(".prisma/client").$Enums.UserRole;
+        createdAt: Date;
+        companies: {
+            id: string;
+            name: string;
+        }[];
+    }[]>;
 }
