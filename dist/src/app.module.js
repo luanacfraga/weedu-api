@@ -13,6 +13,9 @@ const config_1 = require("@nestjs/config");
 const jwt_1 = require("@nestjs/jwt");
 const passport_1 = require("@nestjs/passport");
 const app_config_1 = require("./config/app.config");
+const auth_module_1 = require("./modules/auth/auth.module");
+const plans_module_1 = require("./modules/plans/plans.module");
+const users_module_1 = require("./modules/users/users.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -28,6 +31,9 @@ exports.AppModule = AppModule = __decorate([
                 secret: process.env.JWT_SECRET,
                 signOptions: { expiresIn: process.env.JWT_EXPIRATION },
             }),
+            users_module_1.UsersModule,
+            auth_module_1.AuthModule,
+            plans_module_1.PlansModule,
         ],
         controllers: [],
         providers: [prisma_service_1.PrismaService],
