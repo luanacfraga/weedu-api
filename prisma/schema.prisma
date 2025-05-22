@@ -8,20 +8,22 @@ datasource db {
 }
 
 enum UserRole {
+  MASTER
   ADMIN
-  CONSULTANT
   MANAGER
   COLLABORATOR
 }
 
+enum ActionPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
 enum ActionStatus {
-  TO_START
-  TO_START_DELAYED
+  PENDING
   IN_PROGRESS
-  IN_PROGRESS_DELAYED
-  COMPLETED_ON_TIME
-  COMPLETED_DELAYED
-  PAUSED
+  COMPLETED
 }
 
 enum SubscriptionStatus {
@@ -34,6 +36,19 @@ enum SubscriptionStatus {
 enum PlanType {
   FREE
   PAID
+}
+
+enum PlanFeature {
+  ACTIONS
+  COLLABORATORS
+  MANAGERS
+  AI_SUGGESTIONS
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
 }
 
 model User {
@@ -51,13 +66,66 @@ model User {
   deletedAt       DateTime?
   refreshTokens   RefreshToken[]
   companies       Company[]         @relation("CompanyUsers")
-  managedActions  Action[]          @relation("ActionManager")
+  ownedCompanies  Company[]         @relation("CompanyOwner")
+  responsibleActions Action[]       @relation("ActionResponsible")
   createdActions  Action[]          @relation("ActionCreator")
   subscriptions   Subscription[]
-  consultantCompanies ConsultantCompany[] @relation("Consultant")
   managedUsers    User[]            @relation("ManagerUsers")
   manager         User?             @relation("ManagerUsers", fields: [managerId], references: [id])
   managerId       String?
+  currentPlan     Plan?             @relation("UserPlan", fields: [currentPlanId], references: [id])
+  currentPlanId   String?
+}
+
+model Plan {
+  id              String            @id @default(uuid())
+  type            PlanType
+  name            String
+  description     String
+  price           Float
+  features        PlanFeature[]
+  limits          PlanLimit[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  subscriptions   Subscription[]
+  companies       Company[]         @relation("CompanyPlan")
+  users           User[]            @relation("UserPlan")
+}
+
+model PlanLimit {
+  id              String            @id @default(uuid())
+  plan            Plan              @relation(fields: [planId], references: [id])
+  planId          String
+  feature         PlanFeature
+  limit           Int
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@unique([planId, feature])
+}
+
+model CompanyUsage {
+  id              String            @id @default(uuid())
+  company         Company           @relation(fields: [companyId], references: [id])
+  companyId       String
+  feature         PlanFeature
+  currentUsage    Int               @default(0)
+  lastResetAt     DateTime          @default(now())
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@unique([companyId, feature])
+}
+
+model AISuggestion {
+  id              String            @id @default(uuid())
+  action          Action            @relation(fields: [actionId], references: [id])
+  actionId        String
+  prompt          String
+  response        String
+  tokensUsed      Int
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 }
 
 model Company {
@@ -67,42 +135,58 @@ model Company {
   address         String?
   phone           String?
   email           String?
-  plan            PlanType          @default(FREE)
-  actionCount     Int               @default(0)
-  maxActions      Int               @default(30)
+  plan            Plan              @relation("CompanyPlan", fields: [planId], references: [id])
+  planId          String
+  owner           User              @relation("CompanyOwner", fields: [ownerId], references: [id])
+  ownerId         String
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   deletedAt       DateTime?
   users           User[]            @relation("CompanyUsers")
   actions         Action[]
   subscriptions   Subscription[]
-  consultants     ConsultantCompany[]
+  usage           CompanyUsage[]
 }
 
 model Action {
-  id              String            @id @default(uuid())
-  title           String
-  description     String
-  problem         String
-  actionPlan      String
-  observation     String?
-  why             String?
-  startDate       DateTime
-  endDate         DateTime
-  actualStartDate DateTime?
-  actualEndDate   DateTime?
-  status          ActionStatus      @default(TO_START)
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  deletedAt       DateTime?
-  companyId       String
-  managerId       String
-  creatorId       String
-  checklist       String?           @db.Text
-  company         Company           @relation(fields: [companyId], references: [id])
-  manager         User              @relation("ActionManager", fields: [managerId], references: [id])
-  creator         User              @relation("ActionCreator", fields: [creatorId], references: [id])
-  metrics         ActionMetric[]
+  id                String          @id @default(uuid())
+  title             String
+  description       String
+  priority          ActionPriority  @default(MEDIUM)
+  status            ActionStatus    @default(PENDING)
+  isBlocked         Boolean         @default(false)
+  isLate            Boolean         @default(false)
+  blockedReason     String?
+  estimatedStartDate DateTime
+  estimatedEndDate   DateTime
+  actualStartDate   DateTime?
+  actualEndDate     DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  deletedAt         DateTime?
+  companyId         String
+  responsibleId     String
+  creatorId         String
+  tasks             Task[]
+  metrics           ActionMetric[]
+  aiSuggestions     AISuggestion[]
+  company           Company         @relation(fields: [companyId], references: [id])
+  responsible       User            @relation("ActionResponsible", fields: [responsibleId], references: [id])
+  creator           User            @relation("ActionCreator", fields: [creatorId], references: [id])
+}
+
+model Task {
+  id          String      @id @default(uuid())
+  description String
+  status      TaskStatus  @default(PENDING)
+  completedAt DateTime?
+  order       Int         @default(0)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  actionId    String
+  action      Action      @relation(fields: [actionId], references: [id])
+
+  @@index([actionId, status, order])
 }
 
 model ActionMetric {
@@ -114,24 +198,14 @@ model ActionMetric {
   updatedAt       DateTime          @updatedAt
 }
 
-model ConsultantCompany {
-  id              String            @id @default(uuid())
-  consultant      User              @relation("Consultant", fields: [consultantId], references: [id])
-  consultantId    String
-  company         Company           @relation(fields: [companyId], references: [id])
-  companyId       String
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-
-  @@unique([consultantId, companyId])
-}
-
 model Subscription {
   id              String            @id @default(uuid())
   user            User              @relation(fields: [userId], references: [id])
   userId          String
   company         Company           @relation(fields: [companyId], references: [id])
   companyId       String
+  plan            Plan              @relation(fields: [planId], references: [id])
+  planId          String
   status          SubscriptionStatus @default(ACTIVE)
   startDate       DateTime
   endDate         DateTime
