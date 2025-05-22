@@ -13,19 +13,30 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersController = void 0;
+const roles_decorator_1 = require("../../core/auth/decorators/roles.decorator");
+const jwt_auth_guard_1 = require("../../core/auth/guards/jwt-auth.guard");
+const roles_guard_1 = require("../../core/auth/guards/roles.guard");
 const common_1 = require("@nestjs/common");
-const create_admin_user_dto_1 = require("./dto/create-admin-user.dto");
+const create_admin_dto_1 = require("./dto/create-admin.dto");
+const create_collaborator_dto_1 = require("./dto/create-collaborator.dto");
+const create_manager_dto_1 = require("./dto/create-manager.dto");
 const create_master_user_dto_1 = require("./dto/create-master-user.dto");
 const users_service_1 = require("./users.service");
 let UsersController = class UsersController {
     constructor(usersService) {
         this.usersService = usersService;
     }
-    createAdmin(createAdminUserDto) {
-        return this.usersService.createAdmin(createAdminUserDto);
+    createAdmin(createAdminDto) {
+        return this.usersService.createAdmin(createAdminDto);
     }
     createMaster(createMasterUserDto) {
         return this.usersService.createMaster(createMasterUserDto);
+    }
+    createManager(createManagerDto, req) {
+        return this.usersService.createManager(createManagerDto, req.user);
+    }
+    createCollaborator(createCollaboratorDto, req) {
+        return this.usersService.createCollaborator(createCollaboratorDto, req.user);
     }
 };
 exports.UsersController = UsersController;
@@ -33,7 +44,7 @@ __decorate([
     (0, common_1.Post)('admin'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_admin_user_dto_1.CreateAdminUserDto]),
+    __metadata("design:paramtypes", [create_admin_dto_1.CreateAdminDto]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "createAdmin", null);
 __decorate([
@@ -43,6 +54,26 @@ __decorate([
     __metadata("design:paramtypes", [create_master_user_dto_1.CreateMasterUserDto]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "createMaster", null);
+__decorate([
+    (0, common_1.Post)('manager'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('MASTER'),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_manager_dto_1.CreateManagerDto, Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "createManager", null);
+__decorate([
+    (0, common_1.Post)('collaborator'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('MASTER', 'MANAGER'),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_collaborator_dto_1.CreateCollaboratorDto, Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "createCollaborator", null);
 exports.UsersController = UsersController = __decorate([
     (0, common_1.Controller)('users'),
     __metadata("design:paramtypes", [users_service_1.UsersService])

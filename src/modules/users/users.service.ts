@@ -1,17 +1,19 @@
 import { PrismaService } from '@/infrastructure/database/prisma.service';
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { CreateAdminUserDto } from './dto/create-admin-user.dto';
+import { CreateAdminDto } from './dto/create-admin.dto';
+import { CreateCollaboratorDto } from './dto/create-collaborator.dto';
+import { CreateManagerDto } from './dto/create-manager.dto';
 import { CreateMasterUserDto } from './dto/create-master-user.dto';
 
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  async createAdmin(createAdminUserDto: CreateAdminUserDto) {
+  async createAdmin(createAdminDto: CreateAdminDto) {
     // Verificar se já existe um usuário com este email
     const existingUser = await this.prisma.user.findUnique({
-      where: { email: createAdminUserDto.email },
+      where: { email: createAdminDto.email },
     });
 
     if (existingUser) {
@@ -19,19 +21,19 @@ export class UsersService {
     }
 
     // Hash da senha
-    const hashedPassword = await bcrypt.hash(createAdminUserDto.password, 10);
+    const hashedPassword = await bcrypt.hash(createAdminDto.password, 10);
 
     // Criar o usuário admin
     return this.prisma.user.create({
       data: {
-        name: createAdminUserDto.name,
-        email: createAdminUserDto.email,
+        name: createAdminDto.name,
+        email: createAdminDto.email,
         password: hashedPassword,
         role: 'ADMIN',
         plan: 'FREE',
-        maxCompanies: 1,
-        maxActions: 30,
-      },
+        maxCompanies: 999999, // Pode ter múltiplas empresas
+        maxActions: 999999, // Não tem limite de ações
+      }
     });
   }
 
@@ -57,9 +59,8 @@ export class UsersService {
     // Verificar se o plano existe
     const plan = await this.prisma.plan.findUnique({
       where: { id: createMasterUserDto.planId },
-      select: {
-        id: true,
-        type: true
+      include: {
+        limits: true
       }
     });
 
@@ -78,11 +79,13 @@ export class UsersService {
           name: createMasterUserDto.name,
           email: createMasterUserDto.email,
           password: hashedPassword,
-          role: 'ADMIN', // Usando ADMIN por enquanto, já que MASTER não está no enum
+          role: 'MASTER',
           plan: plan.type,
-          maxCompanies: 999999,
-          maxActions: 999999,
-          currentPlanId: plan.id
+          maxCompanies: 999999, // Pode ter múltiplas empresas
+          maxActions: 999999, // Não tem limite de ações (o limite é por empresa)
+          currentPlan: {
+            connect: { id: plan.id }
+          }
         }
       });
 
@@ -94,8 +97,12 @@ export class UsersService {
           address: createMasterUserDto.company.address,
           phone: createMasterUserDto.company.phone,
           email: createMasterUserDto.company.email,
-          planId: plan.id,
-          ownerId: masterUser.id,
+          plan: {
+            connect: { id: plan.id } // Usa o mesmo plano do MASTER
+          },
+          owner: {
+            connect: { id: masterUser.id }
+          },
           users: {
             connect: { id: masterUser.id }
           }
@@ -117,6 +124,175 @@ export class UsersService {
         company,
         plan
       };
+    });
+  }
+
+  async createManager(createManagerDto: CreateManagerDto, currentUser: any) {
+    // Verificar se o usuário atual é master e tem acesso à empresa
+    const userCompany = await this.prisma.company.findFirst({
+      where: {
+        id: createManagerDto.companyId,
+        owner: { id: currentUser.id, role: 'MASTER' }
+      },
+      include: {
+        owner: {
+          include: {
+            currentPlan: {
+              include: {
+                limits: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!userCompany) {
+      throw new ForbiddenException('Você não tem permissão para criar gestores nesta empresa');
+    }
+
+    // Verificar limite de gestores no plano do MASTER
+    const managerLimit = userCompany.owner.currentPlan.limits.find(limit => limit.feature === 'MANAGERS');
+    if (managerLimit) {
+      const currentManagers = await this.prisma.user.count({
+        where: {
+          companies: {
+            some: {
+              id: createManagerDto.companyId
+            }
+          },
+          role: 'MANAGER'
+        }
+      });
+
+      if (currentManagers >= managerLimit.limit) {
+        throw new ForbiddenException('Limite de gestores atingido para este plano');
+      }
+    }
+
+    // Verificar se já existe um usuário com este email
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: createManagerDto.email },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('Já existe um usuário com este email');
+    }
+
+    // Hash da senha
+    const hashedPassword = await bcrypt.hash(createManagerDto.password, 10);
+
+    // Criar o gestor
+    return this.prisma.user.create({
+      data: {
+        name: createManagerDto.name,
+        email: createManagerDto.email,
+        password: hashedPassword,
+        role: 'MANAGER',
+        plan: userCompany.owner.currentPlan.type,
+        maxCompanies: 1, // Só pode pertencer a uma empresa
+        maxActions: 30, // Limite de ações por gestor
+        currentPlan: {
+          connect: { id: userCompany.owner.currentPlan.id }
+        },
+        companies: {
+          connect: { id: createManagerDto.companyId }
+        }
+      }
+    });
+  }
+
+  async createCollaborator(createCollaboratorDto: CreateCollaboratorDto, currentUser: any) {
+    // Verificar se o usuário atual é master/manager e tem acesso à empresa
+    const userCompany = await this.prisma.company.findFirst({
+      where: {
+        id: createCollaboratorDto.companyId,
+        OR: [
+          { owner: { id: currentUser.id, role: 'MASTER' } },
+          { users: { some: { id: currentUser.id, role: 'MANAGER' } } }
+        ]
+      },
+      include: {
+        owner: {
+          include: {
+            currentPlan: {
+              include: {
+                limits: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!userCompany) {
+      throw new ForbiddenException('Você não tem permissão para criar colaboradores nesta empresa');
+    }
+
+    // Verificar limite de colaboradores no plano do MASTER
+    const collaboratorLimit = userCompany.owner.currentPlan.limits.find(limit => limit.feature === 'COLLABORATORS');
+    if (collaboratorLimit) {
+      const currentCollaborators = await this.prisma.user.count({
+        where: {
+          companies: {
+            some: {
+              id: createCollaboratorDto.companyId
+            }
+          },
+          role: 'COLLABORATOR'
+        }
+      });
+
+      if (currentCollaborators >= collaboratorLimit.limit) {
+        throw new ForbiddenException('Limite de colaboradores atingido para este plano');
+      }
+    }
+
+    // Verificar se o gestor existe e pertence à mesma empresa
+    const manager = await this.prisma.user.findFirst({
+      where: {
+        id: createCollaboratorDto.managerId,
+        role: 'MANAGER',
+        companies: { some: { id: createCollaboratorDto.companyId } }
+      }
+    });
+
+    if (!manager) {
+      throw new NotFoundException('Gestor não encontrado ou não pertence à empresa');
+    }
+
+    // Verificar se já existe um usuário com este email
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: createCollaboratorDto.email },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('Já existe um usuário com este email');
+    }
+
+    // Hash da senha
+    const hashedPassword = await bcrypt.hash(createCollaboratorDto.password, 10);
+
+    // Criar o colaborador
+    return this.prisma.user.create({
+      data: {
+        name: createCollaboratorDto.name,
+        email: createCollaboratorDto.email,
+        password: hashedPassword,
+        role: 'COLLABORATOR',
+        plan: userCompany.owner.currentPlan.type,
+        maxCompanies: 1, // Só pode pertencer a uma empresa
+        maxActions: 30, // Limite de ações por colaborador
+        currentPlan: {
+          connect: { id: userCompany.owner.currentPlan.id }
+        },
+        manager: {
+          connect: { id: createCollaboratorDto.managerId }
+        },
+        companies: {
+          connect: { id: createCollaboratorDto.companyId }
+        }
+      }
     });
   }
 } 

@@ -17,24 +17,24 @@ let UsersService = class UsersService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async createAdmin(createAdminUserDto) {
+    async createAdmin(createAdminDto) {
         const existingUser = await this.prisma.user.findUnique({
-            where: { email: createAdminUserDto.email },
+            where: { email: createAdminDto.email },
         });
         if (existingUser) {
             throw new common_1.ConflictException('Já existe um usuário com este email');
         }
-        const hashedPassword = await bcrypt.hash(createAdminUserDto.password, 10);
+        const hashedPassword = await bcrypt.hash(createAdminDto.password, 10);
         return this.prisma.user.create({
             data: {
-                name: createAdminUserDto.name,
-                email: createAdminUserDto.email,
+                name: createAdminDto.name,
+                email: createAdminDto.email,
                 password: hashedPassword,
                 role: 'ADMIN',
                 plan: 'FREE',
-                maxCompanies: 1,
-                maxActions: 30,
-            },
+                maxCompanies: 999999,
+                maxActions: 999999,
+            }
         });
     }
     async createMaster(createMasterUserDto) {
@@ -52,9 +52,8 @@ let UsersService = class UsersService {
         }
         const plan = await this.prisma.plan.findUnique({
             where: { id: createMasterUserDto.planId },
-            select: {
-                id: true,
-                type: true
+            include: {
+                limits: true
             }
         });
         if (!plan) {
@@ -67,11 +66,13 @@ let UsersService = class UsersService {
                     name: createMasterUserDto.name,
                     email: createMasterUserDto.email,
                     password: hashedPassword,
-                    role: 'ADMIN',
+                    role: 'MASTER',
                     plan: plan.type,
                     maxCompanies: 999999,
                     maxActions: 999999,
-                    currentPlanId: plan.id
+                    currentPlan: {
+                        connect: { id: plan.id }
+                    }
                 }
             });
             const company = await prisma.company.create({
@@ -81,8 +82,12 @@ let UsersService = class UsersService {
                     address: createMasterUserDto.company.address,
                     phone: createMasterUserDto.company.phone,
                     email: createMasterUserDto.company.email,
-                    planId: plan.id,
-                    ownerId: masterUser.id,
+                    plan: {
+                        connect: { id: plan.id }
+                    },
+                    owner: {
+                        connect: { id: masterUser.id }
+                    },
                     users: {
                         connect: { id: masterUser.id }
                     }
@@ -101,6 +106,146 @@ let UsersService = class UsersService {
                 company,
                 plan
             };
+        });
+    }
+    async createManager(createManagerDto, currentUser) {
+        const userCompany = await this.prisma.company.findFirst({
+            where: {
+                id: createManagerDto.companyId,
+                owner: { id: currentUser.id, role: 'MASTER' }
+            },
+            include: {
+                owner: {
+                    include: {
+                        currentPlan: {
+                            include: {
+                                limits: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        if (!userCompany) {
+            throw new common_1.ForbiddenException('Você não tem permissão para criar gestores nesta empresa');
+        }
+        const managerLimit = userCompany.owner.currentPlan.limits.find(limit => limit.feature === 'MANAGERS');
+        if (managerLimit) {
+            const currentManagers = await this.prisma.user.count({
+                where: {
+                    companies: {
+                        some: {
+                            id: createManagerDto.companyId
+                        }
+                    },
+                    role: 'MANAGER'
+                }
+            });
+            if (currentManagers >= managerLimit.limit) {
+                throw new common_1.ForbiddenException('Limite de gestores atingido para este plano');
+            }
+        }
+        const existingUser = await this.prisma.user.findUnique({
+            where: { email: createManagerDto.email },
+        });
+        if (existingUser) {
+            throw new common_1.ConflictException('Já existe um usuário com este email');
+        }
+        const hashedPassword = await bcrypt.hash(createManagerDto.password, 10);
+        return this.prisma.user.create({
+            data: {
+                name: createManagerDto.name,
+                email: createManagerDto.email,
+                password: hashedPassword,
+                role: 'MANAGER',
+                plan: userCompany.owner.currentPlan.type,
+                maxCompanies: 1,
+                maxActions: 30,
+                currentPlan: {
+                    connect: { id: userCompany.owner.currentPlan.id }
+                },
+                companies: {
+                    connect: { id: createManagerDto.companyId }
+                }
+            }
+        });
+    }
+    async createCollaborator(createCollaboratorDto, currentUser) {
+        const userCompany = await this.prisma.company.findFirst({
+            where: {
+                id: createCollaboratorDto.companyId,
+                OR: [
+                    { owner: { id: currentUser.id, role: 'MASTER' } },
+                    { users: { some: { id: currentUser.id, role: 'MANAGER' } } }
+                ]
+            },
+            include: {
+                owner: {
+                    include: {
+                        currentPlan: {
+                            include: {
+                                limits: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        if (!userCompany) {
+            throw new common_1.ForbiddenException('Você não tem permissão para criar colaboradores nesta empresa');
+        }
+        const collaboratorLimit = userCompany.owner.currentPlan.limits.find(limit => limit.feature === 'COLLABORATORS');
+        if (collaboratorLimit) {
+            const currentCollaborators = await this.prisma.user.count({
+                where: {
+                    companies: {
+                        some: {
+                            id: createCollaboratorDto.companyId
+                        }
+                    },
+                    role: 'COLLABORATOR'
+                }
+            });
+            if (currentCollaborators >= collaboratorLimit.limit) {
+                throw new common_1.ForbiddenException('Limite de colaboradores atingido para este plano');
+            }
+        }
+        const manager = await this.prisma.user.findFirst({
+            where: {
+                id: createCollaboratorDto.managerId,
+                role: 'MANAGER',
+                companies: { some: { id: createCollaboratorDto.companyId } }
+            }
+        });
+        if (!manager) {
+            throw new common_1.NotFoundException('Gestor não encontrado ou não pertence à empresa');
+        }
+        const existingUser = await this.prisma.user.findUnique({
+            where: { email: createCollaboratorDto.email },
+        });
+        if (existingUser) {
+            throw new common_1.ConflictException('Já existe um usuário com este email');
+        }
+        const hashedPassword = await bcrypt.hash(createCollaboratorDto.password, 10);
+        return this.prisma.user.create({
+            data: {
+                name: createCollaboratorDto.name,
+                email: createCollaboratorDto.email,
+                password: hashedPassword,
+                role: 'COLLABORATOR',
+                plan: userCompany.owner.currentPlan.type,
+                maxCompanies: 1,
+                maxActions: 30,
+                currentPlan: {
+                    connect: { id: userCompany.owner.currentPlan.id }
+                },
+                manager: {
+                    connect: { id: createCollaboratorDto.managerId }
+                },
+                companies: {
+                    connect: { id: createCollaboratorDto.companyId }
+                }
+            }
         });
     }
 };

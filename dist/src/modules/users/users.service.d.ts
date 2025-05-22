@@ -1,10 +1,12 @@
 import { PrismaService } from '@/infrastructure/database/prisma.service';
-import { CreateAdminUserDto } from './dto/create-admin-user.dto';
+import { CreateAdminDto } from './dto/create-admin.dto';
+import { CreateCollaboratorDto } from './dto/create-collaborator.dto';
+import { CreateManagerDto } from './dto/create-manager.dto';
 import { CreateMasterUserDto } from './dto/create-master-user.dto';
 export declare class UsersService {
     private prisma;
     constructor(prisma: PrismaService);
-    createAdmin(createAdminUserDto: CreateAdminUserDto): Promise<{
+    createAdmin(createAdminDto: CreateAdminDto): Promise<{
         id: string;
         email: string;
         password: string;
@@ -51,8 +53,55 @@ export declare class UsersService {
             ownerId: string;
         };
         plan: {
+            limits: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                planId: string;
+                feature: import(".prisma/client").$Enums.PlanFeature;
+                limit: number;
+            }[];
+        } & {
             id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
             type: import(".prisma/client").$Enums.PlanType;
+            description: string;
+            price: number;
+            features: import(".prisma/client").$Enums.PlanFeature[];
         };
+    }>;
+    createManager(createManagerDto: CreateManagerDto, currentUser: any): Promise<{
+        id: string;
+        email: string;
+        password: string;
+        name: string;
+        role: import(".prisma/client").$Enums.UserRole;
+        plan: import(".prisma/client").$Enums.PlanType;
+        maxCompanies: number;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
+        managerId: string | null;
+        maxActions: number;
+        currentPlanId: string | null;
+    }>;
+    createCollaborator(createCollaboratorDto: CreateCollaboratorDto, currentUser: any): Promise<{
+        id: string;
+        email: string;
+        password: string;
+        name: string;
+        role: import(".prisma/client").$Enums.UserRole;
+        plan: import(".prisma/client").$Enums.PlanType;
+        maxCompanies: number;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
+        managerId: string | null;
+        maxActions: number;
+        currentPlanId: string | null;
     }>;
 }
