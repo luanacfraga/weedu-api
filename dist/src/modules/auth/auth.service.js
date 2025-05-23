@@ -22,6 +22,17 @@ let AuthService = class AuthService {
     async login(loginDto) {
         const user = await this.prisma.user.findUnique({
             where: { email: loginDto.email },
+            include: {
+                companies: {
+                    where: {
+                        deletedAt: null,
+                    },
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+            },
         });
         if (!user) {
             throw new common_1.UnauthorizedException('Credenciais inválidas');
@@ -42,6 +53,7 @@ let AuthService = class AuthService {
                 name: user.name,
                 email: user.email,
                 role: user.role,
+                companies: user.companies,
             },
         };
     }
