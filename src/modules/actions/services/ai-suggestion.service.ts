@@ -22,15 +22,15 @@ export class AISuggestionService {
       this.logger.debug('Modelo carregado com sucesso');
 
       const prompt = `
-        Com base na seguinte descrição, crie uma sugestão de ação com título, descrição detalhada e checklist de tarefas.
+        Com base na seguinte descrição, crie uma sugestão de ação com título, descrição detalhada, uma prioridade geral e checklist de tarefas.
         A resposta deve ser em formato JSON com a seguinte estrutura:
         {
           "title": "título da ação",
           "description": "descrição detalhada",
+          "priority": "HIGH|MEDIUM|LOW",
           "checklistItems": [
             {
-              "description": "descrição da tarefa",
-              "priority": "HIGH|MEDIUM|LOW"
+              "description": "descrição da tarefa"
             }
           ]
         }
@@ -40,8 +40,11 @@ export class AISuggestionService {
         Considere:
         - O título deve ser conciso e direto
         - A descrição deve explicar o objetivo e contexto
-        - O checklist deve ter 4-6 itens com prioridades apropriadas
-        - Use prioridades HIGH para tarefas críticas, MEDIUM para importantes e LOW para complementares
+        - O checklist deve ter 4-6 itens
+        - A prioridade geral deve ser:
+          * HIGH: para ações críticas e urgentes
+          * MEDIUM: para ações importantes mas não urgentes
+          * LOW: para ações complementares ou de melhoria
       `;
 
       this.logger.debug('Enviando prompt para a API...');
@@ -73,11 +76,8 @@ export class AISuggestionService {
       const suggestion = JSON.parse(jsonMatch[0]) as AISuggestionDto;
       this.logger.debug('JSON parseado com sucesso');
 
-      // Valida e ajusta as prioridades
-      suggestion.checklistItems = suggestion.checklistItems.map(item => ({
-        ...item,
-        priority: this.validatePriority(item.priority),
-      }));
+      // Valida a prioridade geral
+      suggestion.priority = this.validatePriority(suggestion.priority);
 
       return suggestion;
     } catch (error) {

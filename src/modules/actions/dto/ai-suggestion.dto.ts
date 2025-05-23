@@ -6,10 +6,6 @@ export class ChecklistItemSuggestionDto {
   @IsString()
   @IsNotEmpty()
   description: string;
-
-  @IsEnum(ActionPriority)
-  @IsNotEmpty()
-  priority: ActionPriority;
 }
 
 export class AISuggestionDto {
@@ -20,6 +16,10 @@ export class AISuggestionDto {
   @IsString()
   @IsNotEmpty()
   description: string;
+
+  @IsEnum(ActionPriority)
+  @IsNotEmpty()
+  priority: ActionPriority;
 
   @IsArray()
   @ValidateNested({ each: true })

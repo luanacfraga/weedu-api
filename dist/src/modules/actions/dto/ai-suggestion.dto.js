@@ -21,11 +21,6 @@ __decorate([
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], ChecklistItemSuggestionDto.prototype, "description", void 0);
-__decorate([
-    (0, class_validator_1.IsEnum)(client_1.ActionPriority),
-    (0, class_validator_1.IsNotEmpty)(),
-    __metadata("design:type", String)
-], ChecklistItemSuggestionDto.prototype, "priority", void 0);
 class AISuggestionDto {
 }
 exports.AISuggestionDto = AISuggestionDto;
@@ -39,6 +34,11 @@ __decorate([
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], AISuggestionDto.prototype, "description", void 0);
+__decorate([
+    (0, class_validator_1.IsEnum)(client_1.ActionPriority),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], AISuggestionDto.prototype, "priority", void 0);
 __decorate([
     (0, class_validator_1.IsArray)(),
     (0, class_validator_1.ValidateNested)({ each: true }),
