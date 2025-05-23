@@ -1,13 +1,13 @@
-import { PrismaService } from '@infrastructure/database/prisma.service';
-import { AuthModule } from '@modules/auth/auth.module';
+import { PrismaService } from '@/infrastructure/database/prisma.service';
 import { Module } from '@nestjs/common';
-import { ActionService } from './application/services/action.service';
-import { ActionController } from './presentation/controllers/action.controller';
+import { ActionsController } from './actions.controller';
+import { ActionsService } from './actions.service';
+import { AISuggestionService } from './services/ai-suggestion.service';
 
 @Module({
-  imports: [AuthModule],
-  controllers: [ActionController],
-  providers: [ActionService, PrismaService],
-  exports: [ActionService],
+  imports: [],
+  controllers: [ActionsController],
+  providers: [ActionsService, PrismaService, AISuggestionService],
+  exports: [ActionsService],
 })
-export class ActionsModule {}
+export class ActionsModule {} 

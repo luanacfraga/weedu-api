@@ -1,13 +1,11 @@
-import { PrismaService } from '@infrastructure/database/prisma.service';
-import { AuthModule } from '@modules/auth/auth.module';
+import { PrismaService } from '@/infrastructure/database/prisma.service';
 import { Module } from '@nestjs/common';
-import { CompanyService } from './application/services/company.service';
-import { CompanyController } from './presentation/controllers/company.controller';
+import { CompaniesController } from './companies.controller';
+import { CompaniesService } from './companies.service';
 
 @Module({
-  imports: [AuthModule],
-  controllers: [CompanyController],
-  providers: [CompanyService, PrismaService],
-  exports: [CompanyService],
+  controllers: [CompaniesController],
+  providers: [CompaniesService, PrismaService],
+  exports: [CompaniesService],
 })
-export class CompaniesModule {}
+export class CompaniesModule {} 

@@ -1,3 +1,4 @@
+import { PrismaService } from '@infrastructure/database/prisma.service';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
@@ -6,6 +7,7 @@ import appConfig from './config/app.config';
 import { ActionsModule } from './modules/actions/actions.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CompaniesModule } from './modules/companies/companies.module';
+import { PlansModule } from './modules/plans/plans.module';
 import { UsersModule } from './modules/users/users.module';
 
 @Module({
@@ -19,12 +21,13 @@ import { UsersModule } from './modules/users/users.module';
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: process.env.JWT_EXPIRATION },
     }),
-    AuthModule,
-    CompaniesModule,
-    ActionsModule,
     UsersModule,
+    AuthModule,
+    PlansModule,
+    ActionsModule,
+    CompaniesModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [PrismaService],
 })
 export class AppModule {}
