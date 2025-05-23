@@ -25,12 +25,12 @@ model User {
   currentPlanId       String?
   createdActions      Action[]                  @relation("ActionCreator")
   responsibleActions  Action[]                  @relation("ActionResponsible")
+  actionMovements     ActionMovement[]          @relation("ActionMovedBy")
   collaboratorMetrics CollaboratorPerformance[] @relation("CollaboratorMetrics")
   managerMetrics      CollaboratorPerformance[] @relation("ManagerMetrics")
   ownedCompanies      Company[]                 @relation("CompanyOwner")
   refreshTokens       RefreshToken[]
   subscriptions       Subscription[]
-  taskMovements       TaskMovement[]            @relation("TaskMovedBy")
   currentPlan         Plan?                     @relation("UserPlan", fields: [currentPlanId], references: [id])
   manager             User?                     @relation("ManagerUsers", fields: [managerId], references: [id])
   managedUsers        User[]                    @relation("ManagerUsers")
@@ -129,31 +129,40 @@ model Company {
 }
 
 model Action {
-  id                 String          @id @default(uuid())
+  id                 String           @id @default(uuid())
   title              String
   description        String
   actualStartDate    DateTime?
   actualEndDate      DateTime?
-  status             ActionStatus    @default(PENDING)
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
+  status             ActionStatus     @default(TODO)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
   deletedAt          DateTime?
   companyId          String
   creatorId          String
   blockedReason      String?
   estimatedEndDate   DateTime
   estimatedStartDate DateTime
-  isBlocked          Boolean         @default(false)
-  isLate             Boolean         @default(false)
-  priority           ActionPriority  @default(MEDIUM)
+  isBlocked          Boolean          @default(false)
+  isLate             Boolean          @default(false)
+  priority           ActionPriority   @default(MEDIUM)
   responsibleId      String
   aiSuggestions      AISuggestion[]
-  company            Company         @relation(fields: [companyId], references: [id])
-  creator            User            @relation("ActionCreator", fields: [creatorId], references: [id])
-  responsible        User            @relation("ActionResponsible", fields: [responsibleId], references: [id])
+  company            Company          @relation(fields: [companyId], references: [id])
+  creator            User             @relation("ActionCreator", fields: [creatorId], references: [id])
+  responsible        User             @relation("ActionResponsible", fields: [responsibleId], references: [id])
   metrics            ActionMetric[]
+  movements          ActionMovement[]
   checklistItems     ChecklistItem[]
-  tasks              Task[]
+  kanbanOrder        KanbanOrder?
+
+  @@index([companyId, status])
+  @@index([responsibleId])
+  @@index([createdAt])
+  @@index([actualStartDate])
+  @@index([actualEndDate])
+  @@index([estimatedStartDate])
+  @@index([estimatedEndDate])
 }
 
 model ChecklistItem {
@@ -170,43 +179,36 @@ model ChecklistItem {
   @@index([actionId, order])
 }
 
-model Task {
-  id          String         @id @default(uuid())
-  description String
-  status      TaskStatus     @default(PENDING)
-  completedAt DateTime?
-  order       Int            @default(0)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  actionId    String
-  deadline    DateTime?
-  priority    ActionPriority @default(MEDIUM)
-  startedAt   DateTime?
-  kanbanOrder KanbanOrder?
-  action      Action         @relation(fields: [actionId], references: [id])
-  movements   TaskMovement[]
-
-  @@index([actionId, status, order])
-  @@index([createdAt])
-  @@index([completedAt])
-  @@index([startedAt])
-  @@index([deadline])
-}
-
 model KanbanOrder {
   id          String       @id @default(uuid())
-  taskId      String       @unique
   column      KanbanColumn
   position    Int
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   lastMovedAt DateTime     @default(now())
   sortOrder   Int          @default(0)
-  task        Task         @relation(fields: [taskId], references: [id])
+  actionId    String       @unique
+  action      Action       @relation(fields: [actionId], references: [id])
 
   @@index([column, position])
   @@index([column, sortOrder])
   @@index([column, lastMovedAt])
+}
+
+model ActionMovement {
+  id         String       @id @default(uuid())
+  actionId   String
+  fromColumn KanbanColumn
+  toColumn   KanbanColumn
+  movedById  String
+  movedAt    DateTime     @default(now())
+  timeSpent  Int?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  action     Action       @relation(fields: [actionId], references: [id])
+  movedBy    User         @relation("ActionMovedBy", fields: [movedById], references: [id])
+
+  @@index([actionId, movedAt])
 }
 
 model ActionMetric {
@@ -245,22 +247,6 @@ model RefreshToken {
   @@index([userId])
 }
 
-model TaskMovement {
-  id         String       @id @default(uuid())
-  taskId     String
-  fromColumn KanbanColumn
-  toColumn   KanbanColumn
-  movedById  String
-  movedAt    DateTime     @default(now())
-  timeSpent  Int?
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-  movedBy    User         @relation("TaskMovedBy", fields: [movedById], references: [id])
-  task       Task         @relation(fields: [taskId], references: [id])
-
-  @@index([taskId, movedAt])
-}
-
 model CollaboratorPerformance {
   id               String   @id @default(uuid())
   collaboratorId   String
@@ -289,12 +275,13 @@ enum ActionPriority {
   LOW
   MEDIUM
   HIGH
+  URGENT
 }
 
 enum ActionStatus {
-  PENDING
+  TODO
   IN_PROGRESS
-  COMPLETED
+  DONE
 }
 
 enum SubscriptionStatus {
@@ -314,12 +301,6 @@ enum PlanFeature {
   COLLABORATORS
   MANAGERS
   AI_SUGGESTIONS
-}
-
-enum TaskStatus {
-  PENDING
-  IN_PROGRESS
-  COMPLETED
 }
 
 enum KanbanColumn {

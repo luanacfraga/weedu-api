@@ -17,6 +17,7 @@ const roles_decorator_1 = require("../../core/auth/decorators/roles.decorator");
 const jwt_auth_guard_1 = require("../../core/auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../core/auth/guards/roles.guard");
 const common_1 = require("@nestjs/common");
+const client_1 = require("@prisma/client");
 const companies_service_1 = require("./companies.service");
 const create_company_dto_1 = require("./dto/create-company.dto");
 let CompaniesController = class CompaniesController {
@@ -25,6 +26,9 @@ let CompaniesController = class CompaniesController {
     }
     create(createCompanyDto, req) {
         return this.companiesService.createCompany(createCompanyDto, req.user.id);
+    }
+    async findManagers(id) {
+        return this.companiesService.findManagers(id);
     }
 };
 exports.CompaniesController = CompaniesController;
@@ -37,6 +41,14 @@ __decorate([
     __metadata("design:paramtypes", [create_company_dto_1.CreateCompanyDto, Object]),
     __metadata("design:returntype", void 0)
 ], CompaniesController.prototype, "create", null);
+__decorate([
+    (0, common_1.Get)(':id/managers'),
+    (0, roles_decorator_1.Roles)(client_1.UserRole.MASTER, client_1.UserRole.ADMIN),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], CompaniesController.prototype, "findManagers", null);
 exports.CompaniesController = CompaniesController = __decorate([
     (0, common_1.Controller)('companies'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

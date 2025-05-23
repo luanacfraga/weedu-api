@@ -1,5 +1,6 @@
 import { PrismaService } from '@/infrastructure/database/prisma.service';
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { UserRole } from '@prisma/client';
 import { CreateCompanyDto } from './dto/create-company.dto';
 
 @Injectable()
@@ -68,5 +69,40 @@ export class CompaniesService {
     });
 
     return company;
+  }
+
+  async findManagers(companyId: string) {
+    const company = await this.prisma.company.findUnique({
+      where: { id: companyId },
+      include: {
+        users: {
+          where: {
+            role: UserRole.MANAGER,
+            isActive: true,
+            deletedAt: null,
+          },
+          include: {
+            managedUsers: {
+              where: {
+                isActive: true,
+                deletedAt: null,
+              },
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!company) {
+      throw new NotFoundException('Empresa não encontrada');
+    }
+
+    return company.users;
   }
 } 

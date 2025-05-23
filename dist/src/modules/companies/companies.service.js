@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CompaniesService = void 0;
 const prisma_service_1 = require("../../infrastructure/database/prisma.service");
 const common_1 = require("@nestjs/common");
+const client_1 = require("@prisma/client");
 let CompaniesService = class CompaniesService {
     constructor(prisma) {
         this.prisma = prisma;
@@ -67,6 +68,38 @@ let CompaniesService = class CompaniesService {
             }
         });
         return company;
+    }
+    async findManagers(companyId) {
+        const company = await this.prisma.company.findUnique({
+            where: { id: companyId },
+            include: {
+                users: {
+                    where: {
+                        role: client_1.UserRole.MANAGER,
+                        isActive: true,
+                        deletedAt: null,
+                    },
+                    include: {
+                        managedUsers: {
+                            where: {
+                                isActive: true,
+                                deletedAt: null,
+                            },
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true,
+                                role: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        if (!company) {
+            throw new common_1.NotFoundException('Empresa não encontrada');
+        }
+        return company.users;
     }
 };
 exports.CompaniesService = CompaniesService;

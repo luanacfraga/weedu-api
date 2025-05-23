@@ -1,7 +1,8 @@
 import { Roles } from '@/core/auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '@/core/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@/core/auth/guards/roles.guard';
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Request, UseGuards } from '@nestjs/common';
+import { UserRole } from '@prisma/client';
 import { CompaniesService } from './companies.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
 
@@ -14,5 +15,11 @@ export class CompaniesController {
   @Roles('MASTER')
   create(@Body() createCompanyDto: CreateCompanyDto, @Request() req) {
     return this.companiesService.createCompany(createCompanyDto, req.user.id);
+  }
+
+  @Get(':id/managers')
+  @Roles(UserRole.MASTER, UserRole.ADMIN)
+  async findManagers(@Param('id') id: string) {
+    return this.companiesService.findManagers(id);
   }
 } 

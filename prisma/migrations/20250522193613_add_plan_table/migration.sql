@@ -27,17 +27,17 @@ CREATE TYPE "ActionPriority" AS ENUM ('LOW', 'MEDIUM', 'HIGH');
 CREATE TYPE "PlanFeature" AS ENUM ('ACTIONS', 'COLLABORATORS', 'MANAGERS', 'AI_SUGGESTIONS');
 
 -- CreateEnum
-CREATE TYPE "TaskStatus" AS ENUM ('PENDING', 'IN_PROGRESS', 'COMPLETED');
+CREATE TYPE "TaskStatus" AS ENUM ('TODO', 'IN_PROGRESS', 'DONE');
 
 -- AlterEnum
 BEGIN;
-CREATE TYPE "ActionStatus_new" AS ENUM ('PENDING', 'IN_PROGRESS', 'COMPLETED');
+CREATE TYPE "ActionStatus_new" AS ENUM ('TODO', 'IN_PROGRESS', 'DONE');
 ALTER TABLE "Action" ALTER COLUMN "status" DROP DEFAULT;
 ALTER TABLE "Action" ALTER COLUMN "status" TYPE "ActionStatus_new" USING ("status"::text::"ActionStatus_new");
 ALTER TYPE "ActionStatus" RENAME TO "ActionStatus_old";
 ALTER TYPE "ActionStatus_new" RENAME TO "ActionStatus";
 DROP TYPE "ActionStatus_old";
-ALTER TABLE "Action" ALTER COLUMN "status" SET DEFAULT 'PENDING';
+ALTER TABLE "Action" ALTER COLUMN "status" SET DEFAULT 'TODO';
 COMMIT;
 
 -- DropForeignKey
@@ -59,7 +59,7 @@ ADD COLUMN     "isBlocked" BOOLEAN NOT NULL DEFAULT false,
 ADD COLUMN     "isLate" BOOLEAN NOT NULL DEFAULT false,
 ADD COLUMN     "priority" "ActionPriority" NOT NULL DEFAULT 'MEDIUM',
 ADD COLUMN     "responsibleId" TEXT NOT NULL,
-ALTER COLUMN "status" SET DEFAULT 'PENDING';
+ALTER COLUMN "status" SET DEFAULT 'TODO';
 
 -- AlterTable
 ALTER TABLE "Company" DROP COLUMN "actionCount",
@@ -126,7 +126,7 @@ CREATE TABLE "AISuggestion" (
 CREATE TABLE "Task" (
     "id" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "status" "TaskStatus" NOT NULL DEFAULT 'PENDING',
+    "status" "TaskStatus" NOT NULL DEFAULT 'TODO',
     "completedAt" TIMESTAMP(3),
     "order" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

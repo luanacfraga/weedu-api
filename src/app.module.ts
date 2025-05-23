@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import appConfig from './config/app.config';
+import { ActionsModule } from './modules/actions/actions.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { PlansModule } from './modules/plans/plans.module';
 import { UsersModule } from './modules/users/users.module';
@@ -22,6 +23,7 @@ import { UsersModule } from './modules/users/users.module';
     UsersModule,
     AuthModule,
     PlansModule,
+    ActionsModule,
   ],
   controllers: [],
   providers: [PrismaService],
