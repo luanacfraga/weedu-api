@@ -6,6 +6,7 @@ import { PassportModule } from '@nestjs/passport';
 import appConfig from './config/app.config';
 import { ActionsModule } from './modules/actions/actions.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CompaniesModule } from './modules/companies/companies.module';
 import { PlansModule } from './modules/plans/plans.module';
 import { UsersModule } from './modules/users/users.module';
 
@@ -24,6 +25,7 @@ import { UsersModule } from './modules/users/users.module';
     AuthModule,
     PlansModule,
     ActionsModule,
+    CompaniesModule,
   ],
   controllers: [],
   providers: [PrismaService],

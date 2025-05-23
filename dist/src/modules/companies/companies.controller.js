@@ -27,6 +27,9 @@ let CompaniesController = class CompaniesController {
     create(createCompanyDto, req) {
         return this.companiesService.createCompany(createCompanyDto, req.user.id);
     }
+    async findMasterCompanies(req) {
+        return this.companiesService.findMasterCompanies(req.user.id);
+    }
     async findManagers(id) {
         return this.companiesService.findManagers(id);
     }
@@ -41,6 +44,14 @@ __decorate([
     __metadata("design:paramtypes", [create_company_dto_1.CreateCompanyDto, Object]),
     __metadata("design:returntype", void 0)
 ], CompaniesController.prototype, "create", null);
+__decorate([
+    (0, common_1.Get)('master'),
+    (0, roles_decorator_1.Roles)(client_1.UserRole.MASTER),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], CompaniesController.prototype, "findMasterCompanies", null);
 __decorate([
     (0, common_1.Get)(':id/managers'),
     (0, roles_decorator_1.Roles)(client_1.UserRole.MASTER, client_1.UserRole.ADMIN),

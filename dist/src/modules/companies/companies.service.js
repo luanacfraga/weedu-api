@@ -79,19 +79,9 @@ let CompaniesService = class CompaniesService {
                         isActive: true,
                         deletedAt: null,
                     },
-                    include: {
-                        managedUsers: {
-                            where: {
-                                isActive: true,
-                                deletedAt: null,
-                            },
-                            select: {
-                                id: true,
-                                name: true,
-                                email: true,
-                                role: true,
-                            },
-                        },
+                    select: {
+                        id: true,
+                        name: true,
                     },
                 },
             },
@@ -100,6 +90,19 @@ let CompaniesService = class CompaniesService {
             throw new common_1.NotFoundException('Empresa não encontrada');
         }
         return company.users;
+    }
+    async findMasterCompanies(masterId) {
+        const companies = await this.prisma.company.findMany({
+            where: {
+                ownerId: masterId,
+                deletedAt: null,
+            },
+            select: {
+                id: true,
+                name: true,
+            },
+        });
+        return companies;
     }
 };
 exports.CompaniesService = CompaniesService;

@@ -36,27 +36,12 @@ export declare class CompaniesController {
         planId: string;
         ownerId: string;
     }>;
-    findManagers(id: string): Promise<({
-        managedUsers: {
-            id: string;
-            name: string;
-            email: string;
-            role: import(".prisma/client").$Enums.UserRole;
-        }[];
-    } & {
+    findMasterCompanies(req: any): Promise<{
         id: string;
         name: string;
-        email: string;
-        createdAt: Date;
-        updatedAt: Date;
-        deletedAt: Date | null;
-        plan: import(".prisma/client").$Enums.PlanType;
-        password: string;
-        role: import(".prisma/client").$Enums.UserRole;
-        maxCompanies: number;
-        isActive: boolean;
-        managerId: string | null;
-        maxActions: number;
-        currentPlanId: string | null;
-    })[]>;
+    }[]>;
+    findManagers(id: string): Promise<{
+        id: string;
+        name: string;
+    }[]>;
 }

@@ -17,6 +17,12 @@ export class CompaniesController {
     return this.companiesService.createCompany(createCompanyDto, req.user.id);
   }
 
+  @Get('master')
+  @Roles(UserRole.MASTER)
+  async findMasterCompanies(@Request() req) {
+    return this.companiesService.findMasterCompanies(req.user.id);
+  }
+
   @Get(':id/managers')
   @Roles(UserRole.MASTER, UserRole.ADMIN)
   async findManagers(@Param('id') id: string) {

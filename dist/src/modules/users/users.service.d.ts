@@ -10,14 +10,14 @@ export declare class UsersService {
         plan: import(".prisma/client").$Enums.PlanType;
         id: string;
         name: string;
-        email: string;
         createdAt: Date;
         updatedAt: Date;
-        deletedAt: Date | null;
+        email: string;
         password: string;
         role: import(".prisma/client").$Enums.UserRole;
         maxCompanies: number;
         isActive: boolean;
+        deletedAt: Date | null;
         managerId: string | null;
         maxActions: number;
         currentPlanId: string | null;
@@ -27,14 +27,14 @@ export declare class UsersService {
             plan: import(".prisma/client").$Enums.PlanType;
             id: string;
             name: string;
-            email: string;
             createdAt: Date;
             updatedAt: Date;
-            deletedAt: Date | null;
+            email: string;
             password: string;
             role: import(".prisma/client").$Enums.UserRole;
             maxCompanies: number;
             isActive: boolean;
+            deletedAt: Date | null;
             managerId: string | null;
             maxActions: number;
             currentPlanId: string | null;
@@ -42,14 +42,14 @@ export declare class UsersService {
         company: {
             id: string;
             name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            planId: string;
+            email: string | null;
+            deletedAt: Date | null;
             cnpj: string;
             address: string | null;
             phone: string | null;
-            email: string | null;
-            createdAt: Date;
-            updatedAt: Date;
-            deletedAt: Date | null;
-            planId: string;
             ownerId: string;
         };
         plan: {
@@ -57,33 +57,33 @@ export declare class UsersService {
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
-                planId: string;
-                limit: number;
                 feature: import(".prisma/client").$Enums.PlanFeature;
+                limit: number;
+                planId: string;
             }[];
         } & {
-            description: string;
             id: string;
-            name: string;
-            createdAt: Date;
-            updatedAt: Date;
             type: import(".prisma/client").$Enums.PlanType;
+            name: string;
+            description: string;
             price: number;
             features: import(".prisma/client").$Enums.PlanFeature[];
+            createdAt: Date;
+            updatedAt: Date;
         };
     }>;
     createManager(createManagerDto: CreateManagerDto, currentUser: any): Promise<{
         plan: import(".prisma/client").$Enums.PlanType;
         id: string;
         name: string;
-        email: string;
         createdAt: Date;
         updatedAt: Date;
-        deletedAt: Date | null;
+        email: string;
         password: string;
         role: import(".prisma/client").$Enums.UserRole;
         maxCompanies: number;
         isActive: boolean;
+        deletedAt: Date | null;
         managerId: string | null;
         maxActions: number;
         currentPlanId: string | null;
@@ -92,14 +92,14 @@ export declare class UsersService {
         plan: import(".prisma/client").$Enums.PlanType;
         id: string;
         name: string;
-        email: string;
         createdAt: Date;
         updatedAt: Date;
-        deletedAt: Date | null;
+        email: string;
         password: string;
         role: import(".prisma/client").$Enums.UserRole;
         maxCompanies: number;
         isActive: boolean;
+        deletedAt: Date | null;
         managerId: string | null;
         maxActions: number;
         currentPlanId: string | null;
@@ -107,12 +107,12 @@ export declare class UsersService {
     getManagerTeam(managerId: string, currentUser: any): Promise<{
         id: string;
         name: string;
-        email: string;
         createdAt: Date;
-        role: import(".prisma/client").$Enums.UserRole;
         companies: {
             id: string;
             name: string;
         }[];
+        email: string;
+        role: import(".prisma/client").$Enums.UserRole;
     }[]>;
 }

@@ -81,19 +81,9 @@ export class CompaniesService {
             isActive: true,
             deletedAt: null,
           },
-          include: {
-            managedUsers: {
-              where: {
-                isActive: true,
-                deletedAt: null,
-              },
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                role: true,
-              },
-            },
+          select: {
+            id: true,
+            name: true,
           },
         },
       },
@@ -104,5 +94,20 @@ export class CompaniesService {
     }
 
     return company.users;
+  }
+
+  async findMasterCompanies(masterId: string) {
+    const companies = await this.prisma.company.findMany({
+      where: {
+        ownerId: masterId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    return companies;
   }
 } 

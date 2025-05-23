@@ -36,27 +36,12 @@ export declare class CompaniesService {
         planId: string;
         ownerId: string;
     }>;
-    findManagers(companyId: string): Promise<({
-        managedUsers: {
-            id: string;
-            name: string;
-            email: string;
-            role: import(".prisma/client").$Enums.UserRole;
-        }[];
-    } & {
+    findManagers(companyId: string): Promise<{
         id: string;
         name: string;
-        email: string;
-        createdAt: Date;
-        updatedAt: Date;
-        deletedAt: Date | null;
-        plan: import(".prisma/client").$Enums.PlanType;
-        password: string;
-        role: import(".prisma/client").$Enums.UserRole;
-        maxCompanies: number;
-        isActive: boolean;
-        managerId: string | null;
-        maxActions: number;
-        currentPlanId: string | null;
-    })[]>;
+    }[]>;
+    findMasterCompanies(masterId: string): Promise<{
+        id: string;
+        name: string;
+    }[]>;
 }

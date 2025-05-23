@@ -15,6 +15,7 @@ const passport_1 = require("@nestjs/passport");
 const app_config_1 = require("./config/app.config");
 const actions_module_1 = require("./modules/actions/actions.module");
 const auth_module_1 = require("./modules/auth/auth.module");
+const companies_module_1 = require("./modules/companies/companies.module");
 const plans_module_1 = require("./modules/plans/plans.module");
 const users_module_1 = require("./modules/users/users.module");
 let AppModule = class AppModule {
@@ -36,6 +37,7 @@ exports.AppModule = AppModule = __decorate([
             auth_module_1.AuthModule,
             plans_module_1.PlansModule,
             actions_module_1.ActionsModule,
+            companies_module_1.CompaniesModule,
         ],
         controllers: [],
         providers: [prisma_service_1.PrismaService],
