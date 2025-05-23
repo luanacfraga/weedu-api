@@ -34,8 +34,8 @@ let ActionsController = class ActionsController {
     createAction(userId, userRole, createActionDto) {
         return this.actionsService.createAction(userId, userRole, createActionDto);
     }
-    findAll(userId, userRole, companyId, responsibleId, status) {
-        return this.actionsService.findAll(userId, userRole, companyId, responsibleId, status);
+    findAll(userId, userRole, companyId, responsibleId, status, isBlocked, isLate, priority, startDate, endDate, dateType, dateRange) {
+        return this.actionsService.findAll(userId, userRole, companyId, responsibleId, status, isBlocked, isLate, priority, startDate ? new Date(startDate) : undefined, endDate ? new Date(endDate) : undefined, dateType, dateRange);
     }
     findOne(userId, userRole, id) {
         return this.actionsService.findOne(userId, userRole, id);
@@ -77,8 +77,15 @@ __decorate([
     __param(2, (0, common_1.Query)('companyId')),
     __param(3, (0, common_1.Query)('responsibleId')),
     __param(4, (0, common_1.Query)('status')),
+    __param(5, (0, common_1.Query)('isBlocked')),
+    __param(6, (0, common_1.Query)('isLate')),
+    __param(7, (0, common_1.Query)('priority')),
+    __param(8, (0, common_1.Query)('startDate')),
+    __param(9, (0, common_1.Query)('endDate')),
+    __param(10, (0, common_1.Query)('dateType')),
+    __param(11, (0, common_1.Query)('dateRange')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, String, String]),
+    __metadata("design:paramtypes", [String, String, String, String, String, Boolean, Boolean, String, String, String, String, String]),
     __metadata("design:returntype", void 0)
 ], ActionsController.prototype, "findAll", null);
 __decorate([

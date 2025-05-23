@@ -44,8 +44,28 @@ export class ActionsController {
     @Query('companyId') companyId: string,
     @Query('responsibleId') responsibleId?: string,
     @Query('status') status?: string,
+    @Query('isBlocked') isBlocked?: boolean,
+    @Query('isLate') isLate?: boolean,
+    @Query('priority') priority?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('dateType') dateType?: 'estimated' | 'actual' | 'created',
+    @Query('dateRange') dateRange?: 'week' | 'month' | 'custom',
   ) {
-    return this.actionsService.findAll(userId, userRole, companyId, responsibleId, status);
+    return this.actionsService.findAll(
+      userId,
+      userRole,
+      companyId,
+      responsibleId,
+      status,
+      isBlocked,
+      isLate,
+      priority,
+      startDate ? new Date(startDate) : undefined,
+      endDate ? new Date(endDate) : undefined,
+      dateType,
+      dateRange,
+    );
   }
 
   @Get(':id')

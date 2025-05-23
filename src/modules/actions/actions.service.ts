@@ -225,33 +225,140 @@ export class ActionsService {
     });
   }
 
-  async findAll(userId: string, userRole: UserRole, companyId: string, responsibleId?: string, status?: string) {
+  async findAll(
+    userId: string,
+    userRole: UserRole,
+    companyId: string,
+    responsibleId?: string,
+    status?: string,
+    isBlocked?: boolean,
+    isLate?: boolean,
+    priority?: string,
+    startDate?: Date,
+    endDate?: Date,
+    dateType?: 'estimated' | 'actual' | 'created',
+    dateRange?: 'week' | 'month' | 'custom',
+  ) {
+    const company = await this.prisma.company.findUnique({
+      where: { id: companyId },
+      include: {
+        users: true,
+      },
+    });
+
+    if (!company) {
+      throw new NotFoundException('Empresa não encontrada');
+    }
+
+    const hasPermission = company.users.some(
+      (user) => user.id === userId,
+    );
+
+    if (!hasPermission) {
+      throw new ForbiddenException(
+        'Você não tem permissão para visualizar ações desta empresa',
+      );
+    }
+
+    // Filtros base
     const where: any = {
       companyId,
       deletedAt: null,
     };
 
-    // Se for colaborador, só pode ver suas próprias ações
-    if (userRole === UserRole.COLLABORATOR) {
-      where.responsibleId = userId;
-    }
-    // Se for manager, só pode ver ações da sua equipe
-    else if (userRole === UserRole.MANAGER) {
-      const teamMembers = await this.prisma.user.findMany({
-        where: { managerId: userId },
-        select: { id: true },
-      });
-      where.responsibleId = {
-        in: [userId, ...teamMembers.map(member => member.id)],
-      };
-    }
-
+    // Filtro por responsável
     if (responsibleId) {
       where.responsibleId = responsibleId;
     }
 
+    // Filtro por status
     if (status) {
       where.status = status;
+    }
+
+    // Filtro por bloqueio
+    if (isBlocked !== undefined) {
+      where.isBlocked = isBlocked;
+    }
+
+    // Filtro por atraso
+    if (isLate !== undefined) {
+      where.isLate = isLate;
+    }
+
+    // Filtro por prioridade
+    if (priority) {
+      where.priority = priority;
+    }
+
+    // Filtro por data
+    if (dateType) {
+      const today = new Date();
+      let dateStart: Date;
+      let dateEnd: Date;
+
+      // Define o período baseado no dateRange
+      if (dateRange === 'week') {
+        // Início da semana (domingo)
+        dateStart = new Date(today);
+        dateStart.setDate(today.getDate() - today.getDay());
+        dateStart.setHours(0, 0, 0, 0);
+
+        // Fim da semana (sábado)
+        dateEnd = new Date(dateStart);
+        dateEnd.setDate(dateStart.getDate() + 6);
+        dateEnd.setHours(23, 59, 59, 999);
+      } else if (dateRange === 'month') {
+        // Início do mês
+        dateStart = new Date(today.getFullYear(), today.getMonth(), 1);
+        // Fim do mês
+        dateEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
+      } else if (dateRange === 'custom' && startDate && endDate) {
+        dateStart = startDate;
+        dateEnd = endDate;
+      }
+
+      // Aplica o filtro baseado no tipo de data
+      if (dateStart && dateEnd) {
+        switch (dateType) {
+          case 'estimated':
+            where.estimatedEndDate = {
+              gte: dateStart,
+              lte: dateEnd,
+            };
+            break;
+          case 'actual':
+            where.actualEndDate = {
+              gte: dateStart,
+              lte: dateEnd,
+            };
+            break;
+          case 'created':
+            where.createdAt = {
+              gte: dateStart,
+              lte: dateEnd,
+            };
+            break;
+        }
+      }
+    }
+
+    // Restrições baseadas no papel
+    if (userRole === UserRole.COLLABORATOR) {
+      where.responsibleId = userId;
+    } else if (userRole === UserRole.MANAGER) {
+      const teamMembers = await this.prisma.user.findMany({
+        where: {
+          managerId: userId,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      where.responsibleId = {
+        in: [userId, ...teamMembers.map((member) => member.id)],
+      };
     }
 
     return this.prisma.action.findMany({
@@ -268,7 +375,9 @@ export class ActionsService {
         },
       },
       orderBy: {
-        createdAt: 'desc',
+        kanbanOrder: {
+          sortOrder: 'asc',
+        },
       },
     });
   }

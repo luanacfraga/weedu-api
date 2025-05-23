@@ -193,28 +193,97 @@ let ActionsService = class ActionsService {
             },
         });
     }
-    async findAll(userId, userRole, companyId, responsibleId, status) {
+    async findAll(userId, userRole, companyId, responsibleId, status, isBlocked, isLate, priority, startDate, endDate, dateType, dateRange) {
+        const company = await this.prisma.company.findUnique({
+            where: { id: companyId },
+            include: {
+                users: true,
+            },
+        });
+        if (!company) {
+            throw new common_1.NotFoundException('Empresa não encontrada');
+        }
+        const hasPermission = company.users.some((user) => user.id === userId);
+        if (!hasPermission) {
+            throw new common_1.ForbiddenException('Você não tem permissão para visualizar ações desta empresa');
+        }
         const where = {
             companyId,
             deletedAt: null,
         };
-        if (userRole === client_1.UserRole.COLLABORATOR) {
-            where.responsibleId = userId;
-        }
-        else if (userRole === client_1.UserRole.MANAGER) {
-            const teamMembers = await this.prisma.user.findMany({
-                where: { managerId: userId },
-                select: { id: true },
-            });
-            where.responsibleId = {
-                in: [userId, ...teamMembers.map(member => member.id)],
-            };
-        }
         if (responsibleId) {
             where.responsibleId = responsibleId;
         }
         if (status) {
             where.status = status;
+        }
+        if (isBlocked !== undefined) {
+            where.isBlocked = isBlocked;
+        }
+        if (isLate !== undefined) {
+            where.isLate = isLate;
+        }
+        if (priority) {
+            where.priority = priority;
+        }
+        if (dateType) {
+            const today = new Date();
+            let dateStart;
+            let dateEnd;
+            if (dateRange === 'week') {
+                dateStart = new Date(today);
+                dateStart.setDate(today.getDate() - today.getDay());
+                dateStart.setHours(0, 0, 0, 0);
+                dateEnd = new Date(dateStart);
+                dateEnd.setDate(dateStart.getDate() + 6);
+                dateEnd.setHours(23, 59, 59, 999);
+            }
+            else if (dateRange === 'month') {
+                dateStart = new Date(today.getFullYear(), today.getMonth(), 1);
+                dateEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
+            }
+            else if (dateRange === 'custom' && startDate && endDate) {
+                dateStart = startDate;
+                dateEnd = endDate;
+            }
+            if (dateStart && dateEnd) {
+                switch (dateType) {
+                    case 'estimated':
+                        where.estimatedEndDate = {
+                            gte: dateStart,
+                            lte: dateEnd,
+                        };
+                        break;
+                    case 'actual':
+                        where.actualEndDate = {
+                            gte: dateStart,
+                            lte: dateEnd,
+                        };
+                        break;
+                    case 'created':
+                        where.createdAt = {
+                            gte: dateStart,
+                            lte: dateEnd,
+                        };
+                        break;
+                }
+            }
+        }
+        if (userRole === client_1.UserRole.COLLABORATOR) {
+            where.responsibleId = userId;
+        }
+        else if (userRole === client_1.UserRole.MANAGER) {
+            const teamMembers = await this.prisma.user.findMany({
+                where: {
+                    managerId: userId,
+                },
+                select: {
+                    id: true,
+                },
+            });
+            where.responsibleId = {
+                in: [userId, ...teamMembers.map((member) => member.id)],
+            };
         }
         return this.prisma.action.findMany({
             where,
@@ -230,7 +299,9 @@ let ActionsService = class ActionsService {
                 },
             },
             orderBy: {
-                createdAt: 'desc',
+                kanbanOrder: {
+                    sortOrder: 'asc',
+                },
             },
         });
     }
