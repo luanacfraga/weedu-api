@@ -1,11 +1,15 @@
 import { ActionPriority, ActionStatus } from '@prisma/client';
 import { Type } from 'class-transformer';
-import { IsArray, IsDate, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsDate, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
 
 export class ChecklistItemDto {
   @IsString()
   @IsNotEmpty()
   description: string;
+
+  @IsOptional()
+  @IsBoolean()
+  checked?: boolean;
 }
 
 export class CreateActionDto {

@@ -8,48 +8,19 @@ export declare class ActionsService {
     createAction(userId: string, userRole: UserRole, createActionDto: CreateActionDto): Promise<{
         company: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            deletedAt: Date | null;
             name: string;
-            cnpj: string;
-            address: string | null;
-            phone: string | null;
-            email: string | null;
-            planId: string;
-            ownerId: string;
         };
         creator: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            deletedAt: Date | null;
             name: string;
             email: string;
-            plan: import(".prisma/client").$Enums.PlanType;
-            password: string;
             role: import(".prisma/client").$Enums.UserRole;
-            maxCompanies: number;
-            isActive: boolean;
-            managerId: string | null;
-            maxActions: number;
-            currentPlanId: string | null;
         };
         responsible: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            deletedAt: Date | null;
             name: string;
             email: string;
-            plan: import(".prisma/client").$Enums.PlanType;
-            password: string;
             role: import(".prisma/client").$Enums.UserRole;
-            maxCompanies: number;
-            isActive: boolean;
-            managerId: string | null;
-            maxActions: number;
-            currentPlanId: string | null;
         };
         checklistItems: {
             id: string;
@@ -94,48 +65,19 @@ export declare class ActionsService {
     moveAction(userId: string, userRole: UserRole, actionId: string, toColumn: KanbanColumn, newPosition: number): Promise<{
         company: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            deletedAt: Date | null;
             name: string;
-            cnpj: string;
-            address: string | null;
-            phone: string | null;
-            email: string | null;
-            planId: string;
-            ownerId: string;
         };
         creator: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            deletedAt: Date | null;
             name: string;
             email: string;
-            plan: import(".prisma/client").$Enums.PlanType;
-            password: string;
             role: import(".prisma/client").$Enums.UserRole;
-            maxCompanies: number;
-            isActive: boolean;
-            managerId: string | null;
-            maxActions: number;
-            currentPlanId: string | null;
         };
         responsible: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            deletedAt: Date | null;
             name: string;
             email: string;
-            plan: import(".prisma/client").$Enums.PlanType;
-            password: string;
             role: import(".prisma/client").$Enums.UserRole;
-            maxCompanies: number;
-            isActive: boolean;
-            managerId: string | null;
-            maxActions: number;
-            currentPlanId: string | null;
         };
         checklistItems: {
             id: string;
@@ -180,68 +122,29 @@ export declare class ActionsService {
     findAll(userId: string, userRole: UserRole, companyId: string, responsibleId?: string, status?: string, isBlocked?: boolean, isLate?: boolean, priority?: string, startDate?: Date, endDate?: Date, dateType?: 'estimated' | 'actual' | 'created', dateRange?: 'week' | 'month' | 'custom'): Promise<({
         company: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            deletedAt: Date | null;
             name: string;
-            cnpj: string;
-            address: string | null;
-            phone: string | null;
-            email: string | null;
-            planId: string;
-            ownerId: string;
         };
         creator: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            deletedAt: Date | null;
             name: string;
-            email: string;
-            plan: import(".prisma/client").$Enums.PlanType;
-            password: string;
-            role: import(".prisma/client").$Enums.UserRole;
-            maxCompanies: number;
-            isActive: boolean;
-            managerId: string | null;
-            maxActions: number;
-            currentPlanId: string | null;
         };
         responsible: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            deletedAt: Date | null;
             name: string;
-            email: string;
-            plan: import(".prisma/client").$Enums.PlanType;
-            password: string;
-            role: import(".prisma/client").$Enums.UserRole;
-            maxCompanies: number;
-            isActive: boolean;
-            managerId: string | null;
-            maxActions: number;
-            currentPlanId: string | null;
         };
         checklistItems: {
             id: string;
             description: string;
-            createdAt: Date;
-            updatedAt: Date;
-            actionId: string;
             isCompleted: boolean;
-            completedAt: Date | null;
+            completedAt: Date;
             order: number;
         }[];
         kanbanOrder: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
             column: import(".prisma/client").$Enums.KanbanColumn;
             position: number;
             lastMovedAt: Date;
             sortOrder: number;
-            actionId: string;
         };
     } & {
         id: string;
@@ -265,86 +168,30 @@ export declare class ActionsService {
     })[]>;
     findOne(userId: string, userRole: UserRole, id: string): Promise<{
         company: {
-            users: {
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                deletedAt: Date | null;
-                name: string;
-                email: string;
-                plan: import(".prisma/client").$Enums.PlanType;
-                password: string;
-                role: import(".prisma/client").$Enums.UserRole;
-                maxCompanies: number;
-                isActive: boolean;
-                managerId: string | null;
-                maxActions: number;
-                currentPlanId: string | null;
-            }[];
-        } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            deletedAt: Date | null;
             name: string;
-            cnpj: string;
-            address: string | null;
-            phone: string | null;
-            email: string | null;
-            planId: string;
-            ownerId: string;
         };
         creator: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            deletedAt: Date | null;
             name: string;
-            email: string;
-            plan: import(".prisma/client").$Enums.PlanType;
-            password: string;
-            role: import(".prisma/client").$Enums.UserRole;
-            maxCompanies: number;
-            isActive: boolean;
-            managerId: string | null;
-            maxActions: number;
-            currentPlanId: string | null;
         };
         responsible: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            deletedAt: Date | null;
             name: string;
-            email: string;
-            plan: import(".prisma/client").$Enums.PlanType;
-            password: string;
-            role: import(".prisma/client").$Enums.UserRole;
-            maxCompanies: number;
-            isActive: boolean;
-            managerId: string | null;
-            maxActions: number;
-            currentPlanId: string | null;
         };
         checklistItems: {
             id: string;
             description: string;
-            createdAt: Date;
-            updatedAt: Date;
-            actionId: string;
             isCompleted: boolean;
-            completedAt: Date | null;
+            completedAt: Date;
             order: number;
         }[];
         kanbanOrder: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
             column: import(".prisma/client").$Enums.KanbanColumn;
             position: number;
             lastMovedAt: Date;
             sortOrder: number;
-            actionId: string;
         };
     } & {
         id: string;
@@ -369,48 +216,19 @@ export declare class ActionsService {
     update(userId: string, userRole: UserRole, id: string, updateActionDto: UpdateActionDto): Promise<{
         company: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            deletedAt: Date | null;
             name: string;
-            cnpj: string;
-            address: string | null;
-            phone: string | null;
-            email: string | null;
-            planId: string;
-            ownerId: string;
         };
         creator: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            deletedAt: Date | null;
             name: string;
             email: string;
-            plan: import(".prisma/client").$Enums.PlanType;
-            password: string;
             role: import(".prisma/client").$Enums.UserRole;
-            maxCompanies: number;
-            isActive: boolean;
-            managerId: string | null;
-            maxActions: number;
-            currentPlanId: string | null;
         };
         responsible: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            deletedAt: Date | null;
             name: string;
             email: string;
-            plan: import(".prisma/client").$Enums.PlanType;
-            password: string;
             role: import(".prisma/client").$Enums.UserRole;
-            maxCompanies: number;
-            isActive: boolean;
-            managerId: string | null;
-            maxActions: number;
-            currentPlanId: string | null;
         };
         checklistItems: {
             id: string;

@@ -1,6 +1,7 @@
 import { ActionPriority, ActionStatus } from '@prisma/client';
 export declare class ChecklistItemDto {
     description: string;
+    checked?: boolean;
 }
 export declare class CreateActionDto {
     title: string;

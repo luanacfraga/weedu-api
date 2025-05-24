@@ -17,15 +17,25 @@ class UpdateChecklistItemDto {
 }
 exports.UpdateChecklistItemDto = UpdateChecklistItemDto;
 __decorate([
+    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", String)
+], UpdateChecklistItemDto.prototype, "id", void 0);
+__decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], UpdateChecklistItemDto.prototype, "description", void 0);
 __decorate([
-    (0, class_validator_1.IsEnum)(client_1.ActionPriority),
-    (0, class_validator_1.IsOptional)(),
-    __metadata("design:type", String)
-], UpdateChecklistItemDto.prototype, "priority", void 0);
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", Boolean)
+], UpdateChecklistItemDto.prototype, "isCompleted", void 0);
+__decorate([
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    __metadata("design:type", Number)
+], UpdateChecklistItemDto.prototype, "order", void 0);
 class UpdateActionDto {
 }
 exports.UpdateActionDto = UpdateActionDto;
@@ -62,10 +72,27 @@ __decorate([
     __metadata("design:type", Date)
 ], UpdateActionDto.prototype, "estimatedEndDate", void 0);
 __decorate([
+    (0, class_validator_1.IsDate)(),
+    (0, class_transformer_1.Type)(() => Date),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Date)
+], UpdateActionDto.prototype, "actualStartDate", void 0);
+__decorate([
+    (0, class_validator_1.IsDate)(),
+    (0, class_transformer_1.Type)(() => Date),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Date)
+], UpdateActionDto.prototype, "actualEndDate", void 0);
+__decorate([
     (0, class_validator_1.IsEnum)(client_1.ActionPriority),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], UpdateActionDto.prototype, "priority", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsBoolean)(),
+    __metadata("design:type", Boolean)
+], UpdateActionDto.prototype, "isBlocked", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsArray)(),

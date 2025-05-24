@@ -106,13 +106,33 @@ export class ActionsService {
           create: createActionDto.checklistItems?.map((item, index) => ({
             description: item.description,
             order: index,
+            isCompleted: item.checked || false,
           })) || [],
         },
       },
       include: {
-        company: true,
-        creator: true,
-        responsible: true,
+        company: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+        responsible: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
         kanbanOrder: true,
         checklistItems: {
           orderBy: {
@@ -212,9 +232,28 @@ export class ActionsService {
         },
       },
       include: {
-        company: true,
-        creator: true,
-        responsible: true,
+        company: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+        responsible: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
         kanbanOrder: true,
         checklistItems: {
           orderBy: {
@@ -364,11 +403,41 @@ export class ActionsService {
     return this.prisma.action.findMany({
       where,
       include: {
-        company: true,
-        creator: true,
-        responsible: true,
-        kanbanOrder: true,
+        company: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        creator: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        responsible: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        kanbanOrder: {
+          select: {
+            id: true,
+            column: true,
+            position: true,
+            sortOrder: true,
+            lastMovedAt: true,
+          },
+        },
         checklistItems: {
+          select: {
+            id: true,
+            description: true,
+            isCompleted: true,
+            completedAt: true,
+            order: true,
+          },
           orderBy: {
             order: 'asc',
           },
@@ -387,14 +456,40 @@ export class ActionsService {
       where: { id },
       include: {
         company: {
-          include: {
-            users: true,
+          select: {
+            id: true,
+            name: true,
           },
         },
-        creator: true,
-        responsible: true,
-        kanbanOrder: true,
+        creator: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        responsible: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        kanbanOrder: {
+          select: {
+            id: true,
+            column: true,
+            position: true,
+            sortOrder: true,
+            lastMovedAt: true,
+          },
+        },
         checklistItems: {
+          select: {
+            id: true,
+            description: true,
+            isCompleted: true,
+            completedAt: true,
+            order: true,
+          },
           orderBy: {
             order: 'asc',
           },
@@ -480,26 +575,84 @@ export class ActionsService {
           throw new ForbiddenException('Managers só podem transferir ações para membros da sua equipe');
         }
       }
+
+      // Verifica se o novo responsável pertence à empresa
+      const newResponsible = await this.prisma.user.findFirst({
+        where: {
+          id: updateActionDto.responsibleId,
+          companies: {
+            some: {
+              id: action.companyId,
+            },
+          },
+        },
+      });
+
+      if (!newResponsible) {
+        throw new NotFoundException('Novo responsável não encontrado ou não pertence à empresa');
+      }
     }
 
+    // Atualiza a ação
     return this.prisma.action.update({
       where: { id },
       data: {
-        ...updateActionDto,
+        title: updateActionDto.title,
+        description: updateActionDto.description,
+        responsibleId: updateActionDto.responsibleId,
+        status: updateActionDto.status,
+        estimatedStartDate: updateActionDto.estimatedStartDate,
+        estimatedEndDate: updateActionDto.estimatedEndDate,
+        actualStartDate: updateActionDto.actualStartDate,
+        actualEndDate: updateActionDto.actualEndDate,
+        priority: updateActionDto.priority,
+        isBlocked: updateActionDto.isBlocked,
         checklistItems: updateActionDto.checklistItems
           ? {
-              deleteMany: {},
-              create: updateActionDto.checklistItems.map((item, index) => ({
-                description: item.description,
-                order: index,
+              updateMany: updateActionDto.checklistItems.map((item) => ({
+                where: { id: item.id },
+                data: {
+                  description: item.description,
+                  isCompleted: item.isCompleted,
+                  order: item.order,
+                },
               })),
             }
           : undefined,
+        // Mantém o kanbanOrder exatamente como está
+        kanbanOrder: {
+          update: {
+            // Não atualiza nenhum campo do kanbanOrder
+            column: undefined,
+            position: undefined,
+            sortOrder: undefined,
+            lastMovedAt: undefined,
+          },
+        },
       },
       include: {
-        company: true,
-        creator: true,
-        responsible: true,
+        company: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+        responsible: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
         kanbanOrder: true,
         checklistItems: {
           orderBy: {

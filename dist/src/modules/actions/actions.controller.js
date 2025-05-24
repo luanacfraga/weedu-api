@@ -37,13 +37,71 @@ let ActionsController = class ActionsController {
     createAction(userId, userRole, createActionDto) {
         return this.actionsService.createAction(userId, userRole, createActionDto);
     }
-    findAll(userId, userRole, companyId, responsibleId, status, isBlocked, isLate, priority, startDate, endDate, dateType, dateRange) {
-        return this.actionsService.findAll(userId, userRole, companyId, responsibleId, status, isBlocked, isLate, priority, startDate ? new Date(startDate) : undefined, endDate ? new Date(endDate) : undefined, dateType, dateRange);
+    async findAll(userId, userRole, companyId, responsibleId, status, isBlocked, isLate, priority, startDate, endDate, dateType, dateRange) {
+        const actions = await this.actionsService.findAll(userId, userRole, companyId, responsibleId, status, isBlocked, isLate, priority, startDate ? new Date(startDate) : undefined, endDate ? new Date(endDate) : undefined, dateType, dateRange);
+        return actions.map(action => ({
+            ...action,
+            company: {
+                id: action.company.id,
+                name: action.company.name,
+            },
+            creator: {
+                id: action.creator.id,
+                name: action.creator.name,
+            },
+            responsible: {
+                id: action.responsible.id,
+                name: action.responsible.name,
+            },
+            kanbanOrder: {
+                id: action.kanbanOrder.id,
+                column: action.kanbanOrder.column,
+                position: action.kanbanOrder.position,
+                sortOrder: action.kanbanOrder.sortOrder,
+                lastMovedAt: action.kanbanOrder.lastMovedAt,
+            },
+            checklistItems: action.checklistItems.map(item => ({
+                id: item.id,
+                description: item.description,
+                isCompleted: item.isCompleted,
+                completedAt: item.completedAt,
+                order: item.order,
+            })),
+        }));
     }
-    findOne(userId, userRole, id) {
-        return this.actionsService.findOne(userId, userRole, id);
+    async findOne(userId, userRole, id) {
+        const action = await this.actionsService.findOne(userId, userRole, id);
+        return {
+            ...action,
+            company: {
+                id: action.company.id,
+                name: action.company.name,
+            },
+            creator: {
+                id: action.creator.id,
+                name: action.creator.name,
+            },
+            responsible: {
+                id: action.responsible.id,
+                name: action.responsible.name,
+            },
+            kanbanOrder: {
+                id: action.kanbanOrder.id,
+                column: action.kanbanOrder.column,
+                position: action.kanbanOrder.position,
+                sortOrder: action.kanbanOrder.sortOrder,
+                lastMovedAt: action.kanbanOrder.lastMovedAt,
+            },
+            checklistItems: action.checklistItems.map(item => ({
+                id: item.id,
+                description: item.description,
+                isCompleted: item.isCompleted,
+                completedAt: item.completedAt,
+                order: item.order,
+            })),
+        };
     }
-    update(userId, userRole, id, updateActionDto) {
+    updateAction(userId, userRole, id, updateActionDto) {
         return this.actionsService.update(userId, userRole, id, updateActionDto);
     }
     moveAction(userId, userRole, id, column, position) {
@@ -99,7 +157,7 @@ __decorate([
     __param(11, (0, common_1.Query)('dateRange')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String, String, String, String, Boolean, Boolean, String, String, String, String, String]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], ActionsController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
@@ -109,7 +167,7 @@ __decorate([
     __param(2, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String, String]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], ActionsController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(':id'),
@@ -121,7 +179,7 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String, String, update_action_dto_1.UpdateActionDto]),
     __metadata("design:returntype", void 0)
-], ActionsController.prototype, "update", null);
+], ActionsController.prototype, "updateAction", null);
 __decorate([
     (0, common_1.Patch)(':id/move'),
     (0, roles_decorator_1.Roles)(client_1.UserRole.MASTER, client_1.UserRole.ADMIN, client_1.UserRole.MANAGER, client_1.UserRole.COLLABORATOR),

@@ -48,7 +48,7 @@ export class ActionsController {
 
   @Get()
   @Roles(UserRole.MASTER, UserRole.ADMIN, UserRole.MANAGER, UserRole.COLLABORATOR)
-  findAll(
+  async findAll(
     @GetUser('id') userId: string,
     @GetUser('role') userRole: UserRole,
     @Query('companyId') companyId: string,
@@ -62,7 +62,7 @@ export class ActionsController {
     @Query('dateType') dateType?: 'estimated' | 'actual' | 'created',
     @Query('dateRange') dateRange?: 'week' | 'month' | 'custom',
   ) {
-    return this.actionsService.findAll(
+    const actions = await this.actionsService.findAll(
       userId,
       userRole,
       companyId,
@@ -76,21 +76,81 @@ export class ActionsController {
       dateType,
       dateRange,
     );
+
+    return actions.map(action => ({
+      ...action,
+      company: {
+        id: action.company.id,
+        name: action.company.name,
+      },
+      creator: {
+        id: action.creator.id,
+        name: action.creator.name,
+      },
+      responsible: {
+        id: action.responsible.id,
+        name: action.responsible.name,
+      },
+      kanbanOrder: {
+        id: action.kanbanOrder.id,
+        column: action.kanbanOrder.column,
+        position: action.kanbanOrder.position,
+        sortOrder: action.kanbanOrder.sortOrder,
+        lastMovedAt: action.kanbanOrder.lastMovedAt,
+      },
+      checklistItems: action.checklistItems.map(item => ({
+        id: item.id,
+        description: item.description,
+        isCompleted: item.isCompleted,
+        completedAt: item.completedAt,
+        order: item.order,
+      })),
+    }));
   }
 
   @Get(':id')
   @Roles(UserRole.MASTER, UserRole.ADMIN, UserRole.MANAGER, UserRole.COLLABORATOR)
-  findOne(
+  async findOne(
     @GetUser('id') userId: string,
     @GetUser('role') userRole: UserRole,
     @Param('id') id: string,
   ) {
-    return this.actionsService.findOne(userId, userRole, id);
+    const action = await this.actionsService.findOne(userId, userRole, id);
+    
+    return {
+      ...action,
+      company: {
+        id: action.company.id,
+        name: action.company.name,
+      },
+      creator: {
+        id: action.creator.id,
+        name: action.creator.name,
+      },
+      responsible: {
+        id: action.responsible.id,
+        name: action.responsible.name,
+      },
+      kanbanOrder: {
+        id: action.kanbanOrder.id,
+        column: action.kanbanOrder.column,
+        position: action.kanbanOrder.position,
+        sortOrder: action.kanbanOrder.sortOrder,
+        lastMovedAt: action.kanbanOrder.lastMovedAt,
+      },
+      checklistItems: action.checklistItems.map(item => ({
+        id: item.id,
+        description: item.description,
+        isCompleted: item.isCompleted,
+        completedAt: item.completedAt,
+        order: item.order,
+      })),
+    };
   }
 
   @Patch(':id')
   @Roles(UserRole.MASTER, UserRole.ADMIN, UserRole.MANAGER, UserRole.COLLABORATOR)
-  update(
+  updateAction(
     @GetUser('id') userId: string,
     @GetUser('role') userRole: UserRole,
     @Param('id') id: string,
