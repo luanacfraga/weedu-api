@@ -455,4 +455,11 @@ export declare class ActionsService {
     remove(userId: string, id: string): Promise<{
         message: string;
     }>;
+    findAvailableResponsibles(userId: string, userRole: UserRole, companyId: string): Promise<{
+        id: string;
+        name: string;
+        email: string;
+        role: import(".prisma/client").$Enums.UserRole;
+        managerId: string;
+    }[]>;
 }

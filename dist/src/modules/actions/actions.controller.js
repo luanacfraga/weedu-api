@@ -31,6 +31,9 @@ let ActionsController = class ActionsController {
     async suggestAction(description) {
         return this.aiSuggestionService.generateActionSuggestion(description);
     }
+    findAvailableResponsibles(userId, userRole, companyId) {
+        return this.actionsService.findAvailableResponsibles(userId, userRole, companyId);
+    }
     createAction(userId, userRole, createActionDto) {
         return this.actionsService.createAction(userId, userRole, createActionDto);
     }
@@ -59,6 +62,16 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], ActionsController.prototype, "suggestAction", null);
+__decorate([
+    (0, common_1.Get)('responsibles'),
+    (0, roles_decorator_1.Roles)(client_1.UserRole.MASTER, client_1.UserRole.ADMIN, client_1.UserRole.MANAGER, client_1.UserRole.COLLABORATOR),
+    __param(0, (0, get_user_decorator_1.GetUser)('id')),
+    __param(1, (0, get_user_decorator_1.GetUser)('role')),
+    __param(2, (0, common_1.Query)('companyId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:returntype", void 0)
+], ActionsController.prototype, "findAvailableResponsibles", null);
 __decorate([
     (0, common_1.Post)(),
     (0, roles_decorator_1.Roles)(client_1.UserRole.MASTER, client_1.UserRole.ADMIN, client_1.UserRole.MANAGER, client_1.UserRole.COLLABORATOR),

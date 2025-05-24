@@ -543,4 +543,66 @@ export class ActionsService {
 
     return { message: 'Ação removida com sucesso' };
   }
+
+  async findAvailableResponsibles(userId: string, userRole: UserRole, companyId: string) {
+    const company = await this.prisma.company.findUnique({
+      where: { id: companyId },
+      include: {
+        users: {
+          where: {
+            isActive: true,
+            deletedAt: null,
+          },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            managerId: true,
+          },
+        },
+      },
+    });
+
+    if (!company) {
+      throw new NotFoundException('Empresa não encontrada');
+    }
+
+    const hasPermission = company.users.some(
+      (user) => user.id === userId,
+    );
+
+    if (!hasPermission) {
+      throw new ForbiddenException(
+        'Você não tem permissão para visualizar usuários desta empresa',
+      );
+    }
+
+    // Se for colaborador, retorna apenas ele mesmo
+    if (userRole === UserRole.COLLABORATOR) {
+      const user = company.users.find(u => u.id === userId);
+      return [user];
+    }
+
+    // Se for manager, retorna ele e seus colaboradores
+    if (userRole === UserRole.MANAGER) {
+      const manager = company.users.find(u => u.id === userId);
+      const collaborators = company.users.filter(u => 
+        u.role === UserRole.COLLABORATOR && 
+        u.managerId === userId
+      );
+      return [manager, ...collaborators];
+    }
+
+    // Se for master, retorna todos os colaboradores da empresa
+    if (userRole === UserRole.MASTER) {
+      return company.users.filter(u => 
+        u.role === UserRole.COLLABORATOR || 
+        u.role === UserRole.MANAGER
+      );
+    }
+
+    // Se for admin, retorna todos os usuários da empresa
+    return company.users;
+  }
 } 

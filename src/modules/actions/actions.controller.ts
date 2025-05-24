@@ -26,6 +26,16 @@ export class ActionsController {
     return this.aiSuggestionService.generateActionSuggestion(description);
   }
 
+  @Get('responsibles')
+  @Roles(UserRole.MASTER, UserRole.ADMIN, UserRole.MANAGER, UserRole.COLLABORATOR)
+  findAvailableResponsibles(
+    @GetUser('id') userId: string,
+    @GetUser('role') userRole: UserRole,
+    @Query('companyId') companyId: string,
+  ) {
+    return this.actionsService.findAvailableResponsibles(userId, userRole, companyId);
+  }
+
   @Post()
   @Roles(UserRole.MASTER, UserRole.ADMIN, UserRole.MANAGER, UserRole.COLLABORATOR)
   createAction(

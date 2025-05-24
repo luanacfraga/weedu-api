@@ -438,6 +438,48 @@ let ActionsService = class ActionsService {
         });
         return { message: 'Ação removida com sucesso' };
     }
+    async findAvailableResponsibles(userId, userRole, companyId) {
+        const company = await this.prisma.company.findUnique({
+            where: { id: companyId },
+            include: {
+                users: {
+                    where: {
+                        isActive: true,
+                        deletedAt: null,
+                    },
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        role: true,
+                        managerId: true,
+                    },
+                },
+            },
+        });
+        if (!company) {
+            throw new common_1.NotFoundException('Empresa não encontrada');
+        }
+        const hasPermission = company.users.some((user) => user.id === userId);
+        if (!hasPermission) {
+            throw new common_1.ForbiddenException('Você não tem permissão para visualizar usuários desta empresa');
+        }
+        if (userRole === client_1.UserRole.COLLABORATOR) {
+            const user = company.users.find(u => u.id === userId);
+            return [user];
+        }
+        if (userRole === client_1.UserRole.MANAGER) {
+            const manager = company.users.find(u => u.id === userId);
+            const collaborators = company.users.filter(u => u.role === client_1.UserRole.COLLABORATOR &&
+                u.managerId === userId);
+            return [manager, ...collaborators];
+        }
+        if (userRole === client_1.UserRole.MASTER) {
+            return company.users.filter(u => u.role === client_1.UserRole.COLLABORATOR ||
+                u.role === client_1.UserRole.MANAGER);
+        }
+        return company.users;
+    }
 };
 exports.ActionsService = ActionsService;
 exports.ActionsService = ActionsService = __decorate([
