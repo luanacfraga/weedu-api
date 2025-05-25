@@ -310,15 +310,11 @@ let ActionsService = class ActionsService {
         }
         else if (userRole === client_1.UserRole.MANAGER) {
             const teamMembers = await this.prisma.user.findMany({
-                where: {
-                    managerId: userId,
-                },
-                select: {
-                    id: true,
-                },
+                where: { managerId: userId },
+                select: { id: true },
             });
             where.responsibleId = {
-                in: [userId, ...teamMembers.map((member) => member.id)],
+                in: [userId, ...teamMembers.map(member => member.id)],
             };
         }
         const actions = await this.prisma.action.findMany({
