@@ -263,4 +263,138 @@ export class ProductivityMetricsService {
     const pastDaysOfYear = (date.getTime() - firstDayOfYear.getTime()) / 86400000;
     return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
   }
+
+  private isActionLate(action: any): boolean {
+    return action.status !== ActionStatus.DONE && new Date() >= new Date(action.estimatedEndDate);
+  }
+
+  async getTeamMetrics(managerId: string, companyId: string, dto: ProductivityMetricsDto) {
+    const { periodType, startDate, endDate } = dto;
+    
+    // Busca todos os colaboradores do gestor
+    const teamMembers = await this.prisma.user.findMany({
+      where: { managerId },
+      select: { id: true, name: true },
+    });
+    const responsibleIds = teamMembers.map(u => u.id);
+    if (responsibleIds.length === 0) {
+      return { team: [], teamTotal: null };
+    }
+
+    // Busca todas as ações do time no período
+    const actions = await this.prisma.action.findMany({
+      where: {
+        companyId,
+        responsibleId: { in: responsibleIds },
+        OR: [
+          // Ações concluídas no período
+          {
+            status: ActionStatus.DONE,
+            actualEndDate: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+          // Ações em andamento que começaram antes ou durante o período
+          {
+            status: ActionStatus.IN_PROGRESS,
+            actualStartDate: {
+              lte: endDate,
+            },
+            actualEndDate: null,
+          },
+          // Ações pendentes (TODO) que foram criadas antes ou durante o período
+          {
+            status: ActionStatus.TODO,
+            actualStartDate: {
+              lte: endDate,
+            },
+            actualEndDate: null,
+          },
+        ],
+      },
+      select: {
+        id: true,
+        actualStartDate: true,
+        actualEndDate: true,
+        estimatedEndDate: true,
+        status: true,
+        responsibleId: true,
+      },
+      orderBy: {
+        actualStartDate: 'desc',
+      },
+    });
+
+    // Agrupa ações por responsável
+    const actionsByResponsible: Record<string, any[]> = {};
+    actions.forEach(action => {
+      if (!actionsByResponsible[action.responsibleId]) {
+        actionsByResponsible[action.responsibleId] = [];
+      }
+      actionsByResponsible[action.responsibleId].push(action);
+    });
+
+    // Calcula métricas individuais
+    const team = teamMembers.map(member => {
+      const memberActions = actionsByResponsible[member.id] || [];
+      
+      // Filtra ações por status
+      const inProgress = memberActions.filter(a => 
+        a.status === ActionStatus.IN_PROGRESS && 
+        a.actualStartDate <= new Date(endDate) && 
+        !a.actualEndDate
+      ).length;
+
+      const completed = memberActions.filter(a => 
+        a.status === ActionStatus.DONE && 
+        a.actualEndDate >= new Date(startDate) && 
+        a.actualEndDate <= new Date(endDate)
+      ).length;
+
+      const pending = memberActions.filter(a => 
+        a.status === ActionStatus.TODO && 
+        a.actualStartDate <= new Date(endDate) && 
+        !a.actualEndDate
+      ).length;
+
+      const late = memberActions.filter(a => this.isActionLate(a)).length;
+      const totalActions = memberActions.length;
+
+      return {
+        id: member.id,
+        name: member.name,
+        metrics: {
+          total: totalActions,
+          inProgress,
+          completed,
+          pending,
+          late
+        }
+      };
+    });
+
+    // Calcula totais do time
+    const teamTotal = {
+      total: actions.length,
+      inProgress: actions.filter(a => 
+        a.status === ActionStatus.IN_PROGRESS && 
+        a.actualStartDate <= new Date(endDate) && 
+        !a.actualEndDate
+      ).length,
+      completed: actions.filter(a => 
+        a.status === ActionStatus.DONE && 
+        a.actualEndDate >= new Date(startDate) && 
+        a.actualEndDate <= new Date(endDate)
+      ).length,
+      pending: actions.filter(a => 
+        a.status === ActionStatus.TODO && 
+        a.actualStartDate <= new Date(endDate) && 
+        !a.actualEndDate
+      ).length,
+      late: actions.filter(a => this.isActionLate(a)).length
+    };
+
+    return { team, teamTotal };
+  }
 } 

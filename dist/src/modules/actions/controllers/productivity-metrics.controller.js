@@ -28,6 +28,11 @@ let ProductivityMetricsController = class ProductivityMetricsController {
     async getProductivityMetrics(userId, userRole, companyId, dto) {
         return this.productivityMetricsService.getProductivityMetrics(userId, companyId, dto);
     }
+    async getTeamMetrics(req, dto) {
+        const managerId = req.user.id;
+        const companyId = req.user.companyId;
+        return this.productivityMetricsService.getTeamMetrics(managerId, companyId, dto);
+    }
 };
 exports.ProductivityMetricsController = ProductivityMetricsController;
 __decorate([
@@ -41,6 +46,15 @@ __decorate([
     __metadata("design:paramtypes", [String, String, String, productivity_metrics_dto_1.ProductivityMetricsDto]),
     __metadata("design:returntype", Promise)
 ], ProductivityMetricsController.prototype, "getProductivityMetrics", null);
+__decorate([
+    (0, common_1.Get)('team'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Query)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, productivity_metrics_dto_1.ProductivityMetricsDto]),
+    __metadata("design:returntype", Promise)
+], ProductivityMetricsController.prototype, "getTeamMetrics", null);
 exports.ProductivityMetricsController = ProductivityMetricsController = __decorate([
     (0, common_1.Controller)('actions/metrics'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

@@ -35,4 +35,25 @@ export declare class ProductivityMetricsService {
     private calculateOnTimeCompletionRate;
     private calculateOnTimeVsLate;
     private getWeekNumber;
+    private isActionLate;
+    getTeamMetrics(managerId: string, companyId: string, dto: ProductivityMetricsDto): Promise<{
+        team: {
+            id: string;
+            name: string;
+            metrics: {
+                total: number;
+                inProgress: number;
+                completed: number;
+                pending: number;
+                late: number;
+            };
+        }[];
+        teamTotal: {
+            total: number;
+            inProgress: number;
+            completed: number;
+            pending: number;
+            late: number;
+        };
+    }>;
 }

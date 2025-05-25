@@ -31,4 +31,24 @@ export declare class ProductivityMetricsController {
         statusSummary: Record<string, number>;
         lateCount: number;
     }>;
+    getTeamMetrics(req: any, dto: ProductivityMetricsDto): Promise<{
+        team: {
+            id: string;
+            name: string;
+            metrics: {
+                total: number;
+                inProgress: number;
+                completed: number;
+                pending: number;
+                late: number;
+            };
+        }[];
+        teamTotal: {
+            total: number;
+            inProgress: number;
+            completed: number;
+            pending: number;
+            late: number;
+        };
+    }>;
 }
