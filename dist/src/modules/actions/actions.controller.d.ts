@@ -99,6 +99,7 @@ export declare class ActionsController {
             completedAt: Date;
             order: number;
         }[];
+        isLate: boolean;
         id: string;
         title: string;
         description: string;
@@ -114,7 +115,6 @@ export declare class ActionsController {
         estimatedEndDate: Date;
         estimatedStartDate: Date;
         isBlocked: boolean;
-        isLate: boolean;
         priority: import(".prisma/client").$Enums.ActionPriority;
         responsibleId: string;
     }[]>;
@@ -145,6 +145,7 @@ export declare class ActionsController {
             completedAt: Date;
             order: number;
         }[];
+        isLate: boolean;
         id: string;
         title: string;
         description: string;
@@ -160,7 +161,6 @@ export declare class ActionsController {
         estimatedEndDate: Date;
         estimatedStartDate: Date;
         isBlocked: boolean;
-        isLate: boolean;
         priority: import(".prisma/client").$Enums.ActionPriority;
         responsibleId: string;
     }>;

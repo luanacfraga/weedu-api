@@ -320,16 +320,6 @@ export class ActionsService {
       where.isBlocked = isBlocked;
     }
 
-    // Filtro por atraso
-    if (isLate !== undefined) {
-      where.isLate = isLate;
-    }
-
-    // Filtro por prioridade
-    if (priority) {
-      where.priority = priority;
-    }
-
     // Filtro por data
     if (dateType) {
       const today = new Date();
@@ -400,7 +390,7 @@ export class ActionsService {
       };
     }
 
-    return this.prisma.action.findMany({
+    const actions = await this.prisma.action.findMany({
       where,
       include: {
         company: {
@@ -449,6 +439,19 @@ export class ActionsService {
         },
       },
     });
+
+    // Atualiza isLate dinamicamente
+    let actionsWithLate = actions.map(action => ({
+      ...action,
+      isLate: action.status !== 'DONE' && new Date() >= new Date(action.estimatedEndDate)
+    }));
+
+    // Filtra por isLate após o cálculo dinâmico
+    if (isLate !== undefined) {
+      actionsWithLate = actionsWithLate.filter(action => action.isLate === isLate);
+    }
+
+    return actionsWithLate;
   }
 
   async findOne(userId: string, userRole: UserRole, id: string) {
@@ -519,7 +522,11 @@ export class ActionsService {
       }
     }
 
-    return action;
+    // Atualiza isLate dinamicamente
+    return {
+      ...action,
+      isLate: action.status !== 'DONE' && new Date() >= new Date(action.estimatedEndDate)
+    };
   }
 
   async update(userId: string, userRole: UserRole, id: string, updateActionDto: UpdateActionDto) {

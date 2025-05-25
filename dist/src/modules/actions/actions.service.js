@@ -259,12 +259,6 @@ let ActionsService = class ActionsService {
         if (isBlocked !== undefined) {
             where.isBlocked = isBlocked;
         }
-        if (isLate !== undefined) {
-            where.isLate = isLate;
-        }
-        if (priority) {
-            where.priority = priority;
-        }
         if (dateType) {
             const today = new Date();
             let dateStart;
@@ -324,7 +318,7 @@ let ActionsService = class ActionsService {
                 in: [userId, ...teamMembers.map((member) => member.id)],
             };
         }
-        return this.prisma.action.findMany({
+        const actions = await this.prisma.action.findMany({
             where,
             include: {
                 company: {
@@ -373,6 +367,14 @@ let ActionsService = class ActionsService {
                 },
             },
         });
+        let actionsWithLate = actions.map(action => ({
+            ...action,
+            isLate: action.status !== 'DONE' && new Date() >= new Date(action.estimatedEndDate)
+        }));
+        if (isLate !== undefined) {
+            actionsWithLate = actionsWithLate.filter(action => action.isLate === isLate);
+        }
+        return actionsWithLate;
     }
     async findOne(userId, userRole, id) {
         const action = await this.prisma.action.findUnique({
@@ -436,7 +438,10 @@ let ActionsService = class ActionsService {
                 throw new common_1.ForbiddenException('Você só pode visualizar ações da sua equipe');
             }
         }
-        return action;
+        return {
+            ...action,
+            isLate: action.status !== 'DONE' && new Date() >= new Date(action.estimatedEndDate)
+        };
     }
     async update(userId, userRole, id, updateActionDto) {
         const action = await this.prisma.action.findUnique({

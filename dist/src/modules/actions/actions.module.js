@@ -11,15 +11,25 @@ const prisma_service_1 = require("../../infrastructure/database/prisma.service")
 const common_1 = require("@nestjs/common");
 const actions_controller_1 = require("./actions.controller");
 const actions_service_1 = require("./actions.service");
+const productivity_metrics_controller_1 = require("./controllers/productivity-metrics.controller");
 const ai_suggestion_service_1 = require("./services/ai-suggestion.service");
+const productivity_metrics_service_1 = require("./services/productivity-metrics.service");
 let ActionsModule = class ActionsModule {
 };
 exports.ActionsModule = ActionsModule;
 exports.ActionsModule = ActionsModule = __decorate([
     (0, common_1.Module)({
         imports: [],
-        controllers: [actions_controller_1.ActionsController],
-        providers: [actions_service_1.ActionsService, prisma_service_1.PrismaService, ai_suggestion_service_1.AISuggestionService],
+        controllers: [
+            actions_controller_1.ActionsController,
+            productivity_metrics_controller_1.ProductivityMetricsController,
+        ],
+        providers: [
+            actions_service_1.ActionsService,
+            prisma_service_1.PrismaService,
+            ai_suggestion_service_1.AISuggestionService,
+            productivity_metrics_service_1.ProductivityMetricsService,
+        ],
         exports: [actions_service_1.ActionsService],
     })
 ], ActionsModule);

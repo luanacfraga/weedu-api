@@ -119,7 +119,8 @@ export declare class ActionsService {
         priority: import(".prisma/client").$Enums.ActionPriority;
         responsibleId: string;
     }>;
-    findAll(userId: string, userRole: UserRole, companyId: string, responsibleId?: string, status?: string, isBlocked?: boolean, isLate?: boolean, priority?: string, startDate?: Date, endDate?: Date, dateType?: 'estimated' | 'actual' | 'created', dateRange?: 'week' | 'month' | 'custom'): Promise<({
+    findAll(userId: string, userRole: UserRole, companyId: string, responsibleId?: string, status?: string, isBlocked?: boolean, isLate?: boolean, priority?: string, startDate?: Date, endDate?: Date, dateType?: 'estimated' | 'actual' | 'created', dateRange?: 'week' | 'month' | 'custom'): Promise<{
+        isLate: boolean;
         company: {
             id: string;
             name: string;
@@ -146,7 +147,6 @@ export declare class ActionsService {
             lastMovedAt: Date;
             sortOrder: number;
         };
-    } & {
         id: string;
         title: string;
         description: string;
@@ -162,11 +162,11 @@ export declare class ActionsService {
         estimatedEndDate: Date;
         estimatedStartDate: Date;
         isBlocked: boolean;
-        isLate: boolean;
         priority: import(".prisma/client").$Enums.ActionPriority;
         responsibleId: string;
-    })[]>;
+    }[]>;
     findOne(userId: string, userRole: UserRole, id: string): Promise<{
+        isLate: boolean;
         company: {
             id: string;
             name: string;
@@ -193,7 +193,6 @@ export declare class ActionsService {
             lastMovedAt: Date;
             sortOrder: number;
         };
-    } & {
         id: string;
         title: string;
         description: string;
@@ -209,7 +208,6 @@ export declare class ActionsService {
         estimatedEndDate: Date;
         estimatedStartDate: Date;
         isBlocked: boolean;
-        isLate: boolean;
         priority: import(".prisma/client").$Enums.ActionPriority;
         responsibleId: string;
     }>;
