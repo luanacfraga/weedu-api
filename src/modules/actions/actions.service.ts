@@ -37,19 +37,19 @@ export class ActionsService {
       );
     }
 
-    // Se for manager, verifica se o responsável é da sua equipe
+    // Se for manager, verifica se o responsável é da sua equipe OU ele mesmo
     if (userRole === UserRole.MANAGER) {
       const responsible = await this.prisma.user.findFirst({
         where: {
           id: createActionDto.responsibleId,
-          managerId: userId,
+          OR: [
+            { managerId: userId },
+            { id: userId },
+          ],
         },
       });
-
       if (!responsible) {
-        throw new ForbiddenException(
-          'Managers só podem criar ações para membros da sua equipe',
-        );
+        throw new ForbiddenException('Managers só podem criar ações para membros da sua equipe ou para si mesmos');
       }
     }
 

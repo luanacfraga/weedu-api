@@ -38,11 +38,14 @@ let ActionsService = class ActionsService {
             const responsible = await this.prisma.user.findFirst({
                 where: {
                     id: createActionDto.responsibleId,
-                    managerId: userId,
+                    OR: [
+                        { managerId: userId },
+                        { id: userId },
+                    ],
                 },
             });
             if (!responsible) {
-                throw new common_1.ForbiddenException('Managers só podem criar ações para membros da sua equipe');
+                throw new common_1.ForbiddenException('Managers só podem criar ações para membros da sua equipe ou para si mesmos');
             }
         }
         const responsible = await this.prisma.user.findFirst({
