@@ -1,5 +1,6 @@
 import { PrismaService } from '@/infrastructure/database/prisma.service';
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { CreateCollaboratorDto } from './dto/create-collaborator.dto';
@@ -336,5 +337,120 @@ export class UsersService {
         }
       }
     });
+  }
+
+  async findCompanyEmployees(
+    userId: string, 
+    userRole: UserRole, 
+    companyId: string,
+    pagination: { page: number; limit: number; name?: string; email?: string; isActive?: boolean; managerId?: string; onlyManagers?: boolean }
+  ) {
+    const { page, limit, name, email, isActive, managerId, onlyManagers } = pagination;
+    const skip = (page - 1) * limit;
+
+    // Monta o filtro base
+    const userWhere: any = {
+      isActive: true,
+      deletedAt: null,
+    };
+    if (typeof isActive === 'boolean') userWhere.isActive = isActive;
+    if (name) userWhere.name = { contains: name, mode: 'insensitive' };
+    if (email) userWhere.email = { contains: email, mode: 'insensitive' };
+    if (managerId) userWhere.managerId = managerId;
+    if (onlyManagers) userWhere.role = UserRole.MANAGER;
+
+    const company = await this.prisma.company.findUnique({
+      where: { id: companyId },
+      include: {
+        users: {
+          where: userWhere,
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            managerId: true,
+            isActive: true,
+            manager: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          },
+          skip,
+          take: limit,
+        },
+        _count: {
+          select: {
+            users: {
+              where: userWhere
+            }
+          }
+        }
+      },
+    });
+
+    if (!company) {
+      throw new NotFoundException('Empresa não encontrada');
+    }
+
+    // Checagem de permissão
+    let hasPermission = false;
+    if (userRole === UserRole.MASTER) {
+      // Verifica se o usuário autenticado é o owner da empresa
+      const empresa = await this.prisma.company.findUnique({
+        where: { id: companyId },
+        select: { ownerId: true }
+      });
+      hasPermission = empresa && empresa.ownerId === userId;
+    } else {
+      hasPermission = company.users.some((user) => user.id === userId);
+    }
+
+    if (!hasPermission) {
+      throw new ForbiddenException(
+        'Você não tem permissão para visualizar usuários desta empresa',
+      );
+    }
+
+    let filteredUsers = company.users;
+
+    // Se for colaborador, retorna apenas ele mesmo
+    if (userRole === UserRole.COLLABORATOR) {
+      const user = company.users.find(u => u.id === userId);
+      filteredUsers = user ? [user] : [];
+    }
+    // Se for manager, retorna ele e seus colaboradores
+    else if (userRole === UserRole.MANAGER) {
+      const manager = company.users.find(u => u.id === userId);
+      const collaborators = company.users.filter(u => 
+        u.role === UserRole.COLLABORATOR && 
+        u.managerId === userId
+      );
+      filteredUsers = manager ? [manager, ...collaborators] : collaborators;
+    }
+    // Se for master, retorna todos os colaboradores e managers da empresa
+    else if (userRole === UserRole.MASTER) {
+      filteredUsers = company.users.filter(u => 
+        u.role === UserRole.COLLABORATOR || 
+        u.role === UserRole.MANAGER
+      );
+    }
+
+    const total = company._count.users;
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data: filteredUsers,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      }
+    };
   }
 } 

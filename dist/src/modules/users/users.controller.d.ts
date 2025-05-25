@@ -7,16 +7,16 @@ export declare class UsersController {
     private readonly usersService;
     constructor(usersService: UsersService);
     createAdmin(createAdminDto: CreateAdminDto): Promise<{
-        plan: import(".prisma/client").$Enums.PlanType;
         id: string;
-        name: string;
-        createdAt: Date;
-        updatedAt: Date;
         email: string;
         password: string;
+        name: string;
         role: import(".prisma/client").$Enums.UserRole;
+        plan: import(".prisma/client").$Enums.PlanType;
         maxCompanies: number;
         isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
         deletedAt: Date | null;
         managerId: string | null;
         maxActions: number;
@@ -24,16 +24,16 @@ export declare class UsersController {
     }>;
     createMaster(createMasterUserDto: CreateMasterUserDto): Promise<{
         user: {
-            plan: import(".prisma/client").$Enums.PlanType;
             id: string;
-            name: string;
-            createdAt: Date;
-            updatedAt: Date;
             email: string;
             password: string;
+            name: string;
             role: import(".prisma/client").$Enums.UserRole;
+            plan: import(".prisma/client").$Enums.PlanType;
             maxCompanies: number;
             isActive: boolean;
+            createdAt: Date;
+            updatedAt: Date;
             deletedAt: Date | null;
             managerId: string | null;
             maxActions: number;
@@ -41,15 +41,15 @@ export declare class UsersController {
         };
         company: {
             id: string;
+            email: string | null;
             name: string;
             createdAt: Date;
             updatedAt: Date;
-            planId: string;
-            email: string | null;
             deletedAt: Date | null;
             cnpj: string;
             address: string | null;
             phone: string | null;
+            planId: string;
             ownerId: string;
         };
         plan: {
@@ -57,48 +57,48 @@ export declare class UsersController {
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
+                planId: string;
                 feature: import(".prisma/client").$Enums.PlanFeature;
                 limit: number;
-                planId: string;
             }[];
         } & {
             id: string;
-            type: import(".prisma/client").$Enums.PlanType;
             name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            type: import(".prisma/client").$Enums.PlanType;
             description: string;
             price: number;
             features: import(".prisma/client").$Enums.PlanFeature[];
-            createdAt: Date;
-            updatedAt: Date;
         };
     }>;
     createManager(createManagerDto: CreateManagerDto, req: any): Promise<{
-        plan: import(".prisma/client").$Enums.PlanType;
         id: string;
-        name: string;
-        createdAt: Date;
-        updatedAt: Date;
         email: string;
         password: string;
+        name: string;
         role: import(".prisma/client").$Enums.UserRole;
+        plan: import(".prisma/client").$Enums.PlanType;
         maxCompanies: number;
         isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
         deletedAt: Date | null;
         managerId: string | null;
         maxActions: number;
         currentPlanId: string | null;
     }>;
     createCollaborator(createCollaboratorDto: CreateCollaboratorDto, req: any): Promise<{
-        plan: import(".prisma/client").$Enums.PlanType;
         id: string;
-        name: string;
-        createdAt: Date;
-        updatedAt: Date;
         email: string;
         password: string;
+        name: string;
         role: import(".prisma/client").$Enums.UserRole;
+        plan: import(".prisma/client").$Enums.PlanType;
         maxCompanies: number;
         isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
         deletedAt: Date | null;
         managerId: string | null;
         maxActions: number;
@@ -106,13 +106,35 @@ export declare class UsersController {
     }>;
     getManagerTeam(id: string, req: any): Promise<{
         id: string;
+        email: string;
         name: string;
+        role: import(".prisma/client").$Enums.UserRole;
         createdAt: Date;
         companies: {
             id: string;
             name: string;
         }[];
-        email: string;
-        role: import(".prisma/client").$Enums.UserRole;
     }[]>;
+    getCompanyEmployees(req: any, companyId: string, page?: number, limit?: number, name?: string, email?: string, isActive?: string, managerId?: string, onlyManagers?: string): Promise<{
+        data: {
+            id: string;
+            email: string;
+            name: string;
+            role: import(".prisma/client").$Enums.UserRole;
+            isActive: boolean;
+            managerId: string;
+            manager: {
+                id: string;
+                name: string;
+            };
+        }[];
+        meta: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+            hasNextPage: boolean;
+            hasPreviousPage: boolean;
+        };
+    }>;
 }

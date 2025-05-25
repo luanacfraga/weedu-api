@@ -41,6 +41,19 @@ let UsersController = class UsersController {
     getManagerTeam(id, req) {
         return this.usersService.getManagerTeam(id, req.user);
     }
+    async getCompanyEmployees(req, companyId, page = 1, limit = 10, name, email, isActive, managerId, onlyManagers) {
+        const userId = req.user.id;
+        const userRole = req.user.role;
+        return this.usersService.findCompanyEmployees(userId, userRole, companyId, {
+            page: Number(page),
+            limit: Number(limit),
+            name,
+            email,
+            isActive: isActive !== undefined ? isActive === 'true' : undefined,
+            managerId,
+            onlyManagers: onlyManagers === 'true',
+        });
+    }
 };
 exports.UsersController = UsersController;
 __decorate([
@@ -87,6 +100,22 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "getManagerTeam", null);
+__decorate([
+    (0, common_1.Get)('company'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Query)('companyId')),
+    __param(2, (0, common_1.Query)('page')),
+    __param(3, (0, common_1.Query)('limit')),
+    __param(4, (0, common_1.Query)('name')),
+    __param(5, (0, common_1.Query)('email')),
+    __param(6, (0, common_1.Query)('isActive')),
+    __param(7, (0, common_1.Query)('managerId')),
+    __param(8, (0, common_1.Query)('onlyManagers')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Number, Number, String, String, String, String, String]),
+    __metadata("design:returntype", Promise)
+], UsersController.prototype, "getCompanyEmployees", null);
 exports.UsersController = UsersController = __decorate([
     (0, common_1.Controller)('users'),
     __metadata("design:paramtypes", [users_service_1.UsersService])

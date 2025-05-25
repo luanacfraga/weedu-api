@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersService = void 0;
 const prisma_service_1 = require("../../infrastructure/database/prisma.service");
 const common_1 = require("@nestjs/common");
+const client_1 = require("@prisma/client");
 const bcrypt = require("bcrypt");
 let UsersService = class UsersService {
     constructor(prisma) {
@@ -282,6 +283,100 @@ let UsersService = class UsersService {
                 }
             }
         });
+    }
+    async findCompanyEmployees(userId, userRole, companyId, pagination) {
+        const { page, limit, name, email, isActive, managerId, onlyManagers } = pagination;
+        const skip = (page - 1) * limit;
+        const userWhere = {
+            isActive: true,
+            deletedAt: null,
+        };
+        if (typeof isActive === 'boolean')
+            userWhere.isActive = isActive;
+        if (name)
+            userWhere.name = { contains: name, mode: 'insensitive' };
+        if (email)
+            userWhere.email = { contains: email, mode: 'insensitive' };
+        if (managerId)
+            userWhere.managerId = managerId;
+        if (onlyManagers)
+            userWhere.role = client_1.UserRole.MANAGER;
+        const company = await this.prisma.company.findUnique({
+            where: { id: companyId },
+            include: {
+                users: {
+                    where: userWhere,
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        role: true,
+                        managerId: true,
+                        isActive: true,
+                        manager: {
+                            select: {
+                                id: true,
+                                name: true
+                            }
+                        }
+                    },
+                    skip,
+                    take: limit,
+                },
+                _count: {
+                    select: {
+                        users: {
+                            where: userWhere
+                        }
+                    }
+                }
+            },
+        });
+        if (!company) {
+            throw new common_1.NotFoundException('Empresa não encontrada');
+        }
+        let hasPermission = false;
+        if (userRole === client_1.UserRole.MASTER) {
+            const empresa = await this.prisma.company.findUnique({
+                where: { id: companyId },
+                select: { ownerId: true }
+            });
+            hasPermission = empresa && empresa.ownerId === userId;
+        }
+        else {
+            hasPermission = company.users.some((user) => user.id === userId);
+        }
+        if (!hasPermission) {
+            throw new common_1.ForbiddenException('Você não tem permissão para visualizar usuários desta empresa');
+        }
+        let filteredUsers = company.users;
+        if (userRole === client_1.UserRole.COLLABORATOR) {
+            const user = company.users.find(u => u.id === userId);
+            filteredUsers = user ? [user] : [];
+        }
+        else if (userRole === client_1.UserRole.MANAGER) {
+            const manager = company.users.find(u => u.id === userId);
+            const collaborators = company.users.filter(u => u.role === client_1.UserRole.COLLABORATOR &&
+                u.managerId === userId);
+            filteredUsers = manager ? [manager, ...collaborators] : collaborators;
+        }
+        else if (userRole === client_1.UserRole.MASTER) {
+            filteredUsers = company.users.filter(u => u.role === client_1.UserRole.COLLABORATOR ||
+                u.role === client_1.UserRole.MANAGER);
+        }
+        const total = company._count.users;
+        const totalPages = Math.ceil(total / limit);
+        return {
+            data: filteredUsers,
+            meta: {
+                total,
+                page,
+                limit,
+                totalPages,
+                hasNextPage: page < totalPages,
+                hasPreviousPage: page > 1,
+            }
+        };
     }
 };
 exports.UsersService = UsersService;
