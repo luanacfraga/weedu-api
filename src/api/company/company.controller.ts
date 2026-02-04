@@ -477,8 +477,39 @@ export class CompanyController {
         CompanyUserStatus.ACTIVE,
       );
 
+    // Fetch admin user to include in responsibles list
+    const adminUser = await this.userRepository.findById(company.adminId);
+
+    // Create a CompanyUserWithUser object for the admin
+    const adminAsCompanyUser = adminUser ? {
+      id: `admin-${company.id}`, // Synthetic ID for the admin "company user"
+      companyId: company.id,
+      userId: adminUser.id,
+      role: UserRole.ADMIN,
+      status: CompanyUserStatus.ACTIVE,
+      position: null,
+      notes: null,
+      metadata: null,
+      invitedAt: null,
+      invitedBy: null,
+      acceptedAt: null,
+      user: {
+        id: adminUser.id,
+        firstName: adminUser.firstName,
+        lastName: adminUser.lastName,
+        email: adminUser.email,
+        phone: adminUser.phone,
+        document: adminUser.document,
+        role: UserRole.ADMIN,
+        initials: adminUser.initials,
+      },
+    } : null;
+
     if (user.role === UserRole.ADMIN) {
-      return companyUsers.map((cu) => EmployeeResponseDto.fromDomain(cu));
+      const allResponsibles = adminAsCompanyUser
+        ? [adminAsCompanyUser, ...companyUsers]
+        : companyUsers;
+      return allResponsibles.map((cu) => EmployeeResponseDto.fromDomain(cu));
     }
 
     if (user.role === UserRole.EXECUTOR) {
@@ -511,10 +542,6 @@ export class CompanyController {
       }
 
       const responsibles = companyUsers.filter((cu) => {
-        if (cu.role === UserRole.ADMIN) {
-          return true;
-        }
-
         if (cu.userId === user.sub && cu.role === UserRole.MANAGER) {
           return true;
         }
@@ -526,7 +553,12 @@ export class CompanyController {
         return false;
       });
 
-      return responsibles.map((cu) => EmployeeResponseDto.fromDomain(cu));
+      // Include admin in the responsibles list for managers
+      const allResponsibles = adminAsCompanyUser
+        ? [adminAsCompanyUser, ...responsibles]
+        : responsibles;
+
+      return allResponsibles.map((cu) => EmployeeResponseDto.fromDomain(cu));
     }
 
     return [];
