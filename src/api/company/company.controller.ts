@@ -511,6 +511,10 @@ export class CompanyController {
       }
 
       const responsibles = companyUsers.filter((cu) => {
+        if (cu.role === UserRole.ADMIN) {
+          return true;
+        }
+
         if (cu.userId === user.sub && cu.role === UserRole.MANAGER) {
           return true;
         }
