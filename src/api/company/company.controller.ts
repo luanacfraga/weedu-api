@@ -44,7 +44,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { PlanResponseDto } from '../plan/dto/plan-response.dto';
-import { EmployeeResponseDto } from '../employee/dto/employee-response.dto';
+import { EmployeeResponseDto, CompanyUserWithUser } from '../employee/dto/employee-response.dto';
 import { ActiveCompanyWithPlanResponseDto } from './dto/active-company-with-plan-response.dto';
 import { CompanyDashboardSummaryResponseDto } from './dto/company-dashboard-summary-response.dto';
 import { CompanyResponseDto } from './dto/company-response.dto';
@@ -481,7 +481,7 @@ export class CompanyController {
     const adminUser = await this.userRepository.findById(company.adminId);
 
     // Create a CompanyUserWithUser object for the admin
-    const adminAsCompanyUser = adminUser ? {
+    const adminAsCompanyUser: CompanyUserWithUser | null = adminUser ? {
       id: `admin-${company.id}`, // Synthetic ID for the admin "company user"
       companyId: company.id,
       userId: adminUser.id,
@@ -503,7 +503,7 @@ export class CompanyController {
         role: UserRole.ADMIN,
         initials: adminUser.initials,
       },
-    } : null;
+    } as CompanyUserWithUser : null;
 
     if (user.role === UserRole.ADMIN) {
       const allResponsibles = adminAsCompanyUser
