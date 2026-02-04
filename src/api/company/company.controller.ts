@@ -7,8 +7,8 @@ import { GetCompanyDashboardSummaryService } from '@/application/services/compan
 import { GetExecutorDashboardService } from '@/application/services/company/get-executor-dashboard.service';
 import { ListActiveCompaniesWithPlansService } from '@/application/services/company/list-active-companies-with-plans.service';
 import { ListCompaniesService } from '@/application/services/company/list-companies.service';
-import { UpdateCompanyService } from '@/application/services/company/update-company.service';
 import { SetCompanyBlockedService } from '@/application/services/company/set-company-blocked.service';
+import { UpdateCompanyService } from '@/application/services/company/update-company.service';
 import { UpdateSubscriptionPlanByCompanyService } from '@/application/services/company/update-subscription-plan-by-company.service';
 import { Company } from '@/core/domain/company/company.entity';
 import { CompanyUserStatus, UserRole } from '@/core/domain/shared/enums';
@@ -43,8 +43,11 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import {
+  CompanyUserWithUser,
+  EmployeeResponseDto,
+} from '../employee/dto/employee-response.dto';
 import { PlanResponseDto } from '../plan/dto/plan-response.dto';
-import { EmployeeResponseDto } from '../employee/dto/employee-response.dto';
 import { ActiveCompanyWithPlanResponseDto } from './dto/active-company-with-plan-response.dto';
 import { CompanyDashboardSummaryResponseDto } from './dto/company-dashboard-summary-response.dto';
 import { CompanyResponseDto } from './dto/company-response.dto';
@@ -52,9 +55,9 @@ import { CompanySettingsResponseDto } from './dto/company-settings-response.dto'
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { ExecutorDashboardQueryDto } from './dto/executor-dashboard-query.dto';
 import { ExecutorDashboardResponseDto } from './dto/executor-dashboard-response.dto';
-import { UpdateCompanyDto } from './dto/update-company.dto';
 import { SetCompanyBlockedDto } from './dto/set-company-blocked.dto';
 import { UpdateCompanyPlanDto } from './dto/update-company-plan.dto';
+import { UpdateCompanyDto } from './dto/update-company.dto';
 
 @ApiTags('Company')
 @Controller('companies')
@@ -477,8 +480,41 @@ export class CompanyController {
         CompanyUserStatus.ACTIVE,
       );
 
+    // Fetch admin user to include in responsibles list
+    const adminUser = await this.userRepository.findById(company.adminId);
+
+    // Create a CompanyUserWithUser object for the admin
+    const adminAsCompanyUser: CompanyUserWithUser | null = adminUser
+      ? ({
+          id: `admin-${company.id}`, // Synthetic ID for the admin "company user"
+          companyId: company.id,
+          userId: adminUser.id,
+          role: UserRole.ADMIN,
+          status: CompanyUserStatus.ACTIVE,
+          position: null,
+          notes: null,
+          metadata: null,
+          invitedAt: null,
+          invitedBy: null,
+          acceptedAt: null,
+          user: {
+            id: adminUser.id,
+            firstName: adminUser.firstName,
+            lastName: adminUser.lastName,
+            email: adminUser.email,
+            phone: adminUser.phone,
+            document: adminUser.document,
+            role: UserRole.ADMIN,
+            initials: adminUser.initials,
+          },
+        } as CompanyUserWithUser)
+      : null;
+
     if (user.role === UserRole.ADMIN) {
-      return companyUsers.map((cu) => EmployeeResponseDto.fromDomain(cu));
+      const allResponsibles = adminAsCompanyUser
+        ? [adminAsCompanyUser, ...companyUsers]
+        : companyUsers;
+      return allResponsibles.map((cu) => EmployeeResponseDto.fromDomain(cu));
     }
 
     if (user.role === UserRole.EXECUTOR) {
@@ -522,7 +558,12 @@ export class CompanyController {
         return false;
       });
 
-      return responsibles.map((cu) => EmployeeResponseDto.fromDomain(cu));
+      // Include admin in the responsibles list for managers
+      const allResponsibles = adminAsCompanyUser
+        ? [adminAsCompanyUser, ...responsibles]
+        : responsibles;
+
+      return allResponsibles.map((cu) => EmployeeResponseDto.fromDomain(cu));
     }
 
     return [];
