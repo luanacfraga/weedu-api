@@ -18,7 +18,7 @@ export class TwilioConfig {
     this.whatsappContentSids = new Map<WhatsappTemplateKey, string>([
       [
         'OVERDUE_ACTION',
-        this.configService.get('TWILIO_WHATSAPP_OVERDUE_ACTION_CONTENT_SID') ||
+        this.configService.get('TWILIO_WHATSAPP_OVERDUE_ACTION_CONTENT_SID') ??
           '',
       ],
     ]);

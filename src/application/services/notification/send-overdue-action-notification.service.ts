@@ -39,8 +39,9 @@ export class SendOverdueActionNotificationService {
     try {
       normalizedPhone = PhoneValidator.normalize(trimmedPhone);
     } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
       this.logger.warn(
-        `Telefone inválido para notificação: ${trimmedPhone} - ${err instanceof Error ? err.message : err}`,
+        `Telefone inválido para notificação: ${trimmedPhone} - ${errorMessage}`,
       );
       return { smsSent: false, whatsappSent: false };
     }
@@ -64,14 +65,18 @@ export class SendOverdueActionNotificationService {
     const whatsappSent = whatsappResult.status === 'fulfilled';
 
     if (smsResult.status === 'rejected') {
+      const errorMessage =
+        smsResult.reason?.message ?? String(smsResult.reason);
       this.logger.warn(
-        `Falha ao enviar SMS para ${normalizedPhone}: ${smsResult.reason?.message || smsResult.reason}`,
+        `Falha ao enviar SMS para ${normalizedPhone}: ${errorMessage}`,
       );
     }
 
     if (whatsappResult.status === 'rejected') {
+      const errorMessage =
+        whatsappResult.reason?.message ?? String(whatsappResult.reason);
       this.logger.warn(
-        `Falha ao enviar WhatsApp para ${normalizedPhone}: ${whatsappResult.reason?.message || whatsappResult.reason}`,
+        `Falha ao enviar WhatsApp para ${normalizedPhone}: ${errorMessage}`,
       );
     }
 
