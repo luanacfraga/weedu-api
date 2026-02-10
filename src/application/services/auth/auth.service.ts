@@ -29,6 +29,9 @@ export interface LoginOutput {
     firstName: string;
     lastName: string;
     role: UserRole;
+    phone?: string | null;
+    initials?: string | null;
+    avatarColor?: string | null;
   };
 }
 
@@ -142,6 +145,9 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
+        phone: user.phone ?? null,
+        initials: user.initials ?? null,
+        avatarColor: user.avatarColor ?? null,
       },
     };
   }
@@ -181,6 +187,9 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
+        phone: user.phone ?? null,
+        initials: user.initials ?? null,
+        avatarColor: user.avatarColor ?? null,
       },
     };
   }
