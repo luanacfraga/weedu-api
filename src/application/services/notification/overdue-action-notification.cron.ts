@@ -53,8 +53,8 @@ export class OverdueActionNotificationCron {
         );
 
         // Filtra apenas ações que estão realmente atrasadas (calculado dinamicamente)
-        const overdueActions = allActions.filter((action) =>
-          action.calculateIsLate(now),
+        const overdueActions = allActions.filter(
+          (action) => action.calculateLateStatus(now) !== null,
         );
 
         this.logger.log(

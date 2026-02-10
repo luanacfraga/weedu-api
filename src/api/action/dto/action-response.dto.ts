@@ -76,12 +76,6 @@ export class ActionResponseDto {
   actualEndDate!: Date | null;
 
   @ApiProperty({
-    description: 'Indica se a ação está atrasada',
-    example: false,
-  })
-  isLate!: boolean;
-
-  @ApiProperty({
     description: 'Indica se a ação está bloqueada',
     example: false,
   })
@@ -178,7 +172,6 @@ export class ActionResponseDto {
     response.estimatedEndDate = action.estimatedEndDate;
     response.actualStartDate = action.actualStartDate;
     response.actualEndDate = action.actualEndDate;
-    response.isLate = action.isLate;
     response.isBlocked = action.isBlocked;
     response.blockedReason = action.blockedReason;
     response.companyId = action.companyId;

@@ -114,7 +114,7 @@ export class MoveActionService {
             status: updatedAction.status,
             actualStartDate: updatedAction.actualStartDate,
             actualEndDate: updatedAction.actualEndDate,
-            isLate: updatedAction.isLate,
+            lateStatus: updatedAction.lateStatus,
           },
           {
             column: toStatus,
@@ -143,9 +143,8 @@ export class MoveActionService {
     });
 
     // Notifica responsável quando a ação passa a estar atrasada (SMS/WhatsApp)
-    if (!action.isLate && result.action.isLate) {
+    if (action.lateStatus === null && result.action.lateStatus !== null) {
       try {
-        const now = new Date();
         const user = await this.userRepository.findById(
           result.action.responsibleId,
         );
@@ -157,7 +156,7 @@ export class MoveActionService {
             {
               taskTitle: result.action.title,
               status: result.action.status,
-              lateStatus: result.action.calculateLateStatus(now),
+              lateStatus: result.action.lateStatus,
               estimatedStartDate: result.action.estimatedStartDate,
               estimatedEndDate: result.action.estimatedEndDate,
             },

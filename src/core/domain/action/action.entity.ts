@@ -19,7 +19,7 @@ export class Action extends Entity {
     public readonly estimatedEndDate: Date,
     public readonly actualStartDate: Date | null,
     public readonly actualEndDate: Date | null,
-    public readonly isLate: boolean,
+    public readonly lateStatus: ActionLateStatus | null,
     public readonly isBlocked: boolean,
     public readonly blockedReason: string | null,
     public readonly companyId: string,
@@ -30,6 +30,10 @@ export class Action extends Entity {
   ) {
     super(id);
     this.validate();
+  }
+
+  get isLate(): boolean {
+    return this.lateStatus !== null;
   }
 
   protected getIdErrorMessage(): string {
@@ -94,10 +98,6 @@ export class Action extends Entity {
     }
   }
 
-  public calculateIsLate(currentDate: Date = new Date()): boolean {
-    return this.calculateLateStatus(currentDate) !== null;
-  }
-
   public calculateLateStatus(
     currentDate: Date = new Date(),
   ): ActionLateStatus | null {
@@ -141,7 +141,7 @@ export class Action extends Entity {
         ? new Date()
         : this.actualEndDate;
 
-    const isLate = this.calculateIsLate();
+    const lateStatus = this.calculateLateStatus();
 
     return new Action(
       this.id,
@@ -154,7 +154,7 @@ export class Action extends Entity {
       this.estimatedEndDate,
       actualStartDate,
       actualEndDate,
-      isLate,
+      lateStatus,
       this.isBlocked,
       this.blockedReason,
       this.companyId,
@@ -177,7 +177,7 @@ export class Action extends Entity {
       this.estimatedEndDate,
       this.actualStartDate,
       this.actualEndDate,
-      this.isLate,
+      this.lateStatus,
       true,
       reason,
       this.companyId,
@@ -200,7 +200,7 @@ export class Action extends Entity {
       this.estimatedEndDate,
       this.actualStartDate,
       this.actualEndDate,
-      this.isLate,
+      this.lateStatus,
       false,
       null,
       this.companyId,
@@ -223,7 +223,7 @@ export class Action extends Entity {
       this.estimatedEndDate,
       this.actualStartDate,
       this.actualEndDate,
-      this.isLate,
+      this.lateStatus,
       this.isBlocked,
       this.blockedReason,
       this.companyId,

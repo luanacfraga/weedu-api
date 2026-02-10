@@ -131,7 +131,6 @@ export class ActionController {
     isArray: true,
   })
   @ApiQuery({ name: 'priority', required: false, enum: ActionPriority })
-  @ApiQuery({ name: 'isLate', required: false, type: Boolean })
   @ApiQuery({ name: 'isBlocked', required: false, type: Boolean })
   @ApiQuery({
     name: 'lateStatus',
@@ -186,7 +185,6 @@ export class ActionController {
       status: query.status,
       statuses: query.statuses,
       priority: query.priority,
-      isLate: query.isLate,
       isBlocked: query.isBlocked,
       lateStatus: query.lateStatus,
       dateFrom: query.dateFrom,

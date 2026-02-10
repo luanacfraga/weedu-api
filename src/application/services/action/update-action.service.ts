@@ -230,7 +230,7 @@ export class UpdateActionService {
 
     // Notifica responsável quando a ação passa a estar atrasada (SMS/WhatsApp)
     const now = new Date();
-    const becameLate = !action.isLate && updated.calculateIsLate(now);
+    const becameLate = action.lateStatus === null && updated.calculateLateStatus(now) !== null;
     if (becameLate) {
       try {
         const user = await this.userRepository.findById(updated.responsibleId);
@@ -242,7 +242,7 @@ export class UpdateActionService {
             {
               taskTitle: updated.title,
               status: updated.status,
-              lateStatus: updated.calculateLateStatus(now),
+              lateStatus: updated.calculateLateStatus(now) ?? updated.lateStatus,
               estimatedStartDate: updated.estimatedStartDate,
               estimatedEndDate: updated.estimatedEndDate,
             },

@@ -226,7 +226,7 @@ model Action {
   actualStartDate    DateTime? @map("actual_start_date")
   actualEndDate      DateTime? @map("actual_end_date")
 
-  isLate        Boolean @default(false) @map("is_late")
+  lateStatus    String? @map("late_status")
   isBlocked     Boolean @default(false) @map("is_blocked")
   blockedReason String? @map("blocked_reason") @db.Text
 

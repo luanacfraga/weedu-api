@@ -1,6 +1,10 @@
 import { Action } from '@/core/domain/action/action.entity';
 import { ChecklistItem } from '@/core/domain/action/checklist-item.entity';
-import { ActionPriority, ActionStatus } from '@/core/domain/shared/enums';
+import {
+  ActionLateStatus,
+  ActionPriority,
+  ActionStatus,
+} from '@/core/domain/shared/enums';
 import type {
   ActionFilters,
   ActionRepository,
@@ -50,7 +54,7 @@ export class ActionPrismaRepository implements ActionRepository {
         estimatedEndDate: action.estimatedEndDate,
         actualStartDate: action.actualStartDate,
         actualEndDate: action.actualEndDate,
-        isLate: action.isLate,
+        lateStatus: action.lateStatus,
         isBlocked: action.isBlocked,
         blockedReason: action.blockedReason,
         companyId: action.companyId,
@@ -326,7 +330,7 @@ export class ActionPrismaRepository implements ActionRepository {
         estimatedEndDate: data.estimatedEndDate,
         actualStartDate: data.actualStartDate,
         actualEndDate: data.actualEndDate,
-        isLate: data.isLate,
+        lateStatus: data.lateStatus,
         isBlocked: data.isBlocked,
         blockedReason: data.blockedReason,
         responsibleId: data.responsibleId,
@@ -385,7 +389,7 @@ export class ActionPrismaRepository implements ActionRepository {
         estimatedEndDate: action.estimatedEndDate,
         actualStartDate: action.actualStartDate,
         actualEndDate: action.actualEndDate,
-        isLate: action.isLate,
+        lateStatus: action.lateStatus,
         isBlocked: action.isBlocked,
         blockedReason: action.blockedReason,
         companyId: action.companyId,
@@ -535,7 +539,7 @@ export class ActionPrismaRepository implements ActionRepository {
         estimatedEndDate: actionData.estimatedEndDate,
         actualStartDate: actionData.actualStartDate,
         actualEndDate: actionData.actualEndDate,
-        isLate: actionData.isLate,
+        lateStatus: actionData.lateStatus,
         isBlocked: actionData.isBlocked,
         blockedReason: actionData.blockedReason,
         responsibleId: actionData.responsibleId,
@@ -611,8 +615,12 @@ export class ActionPrismaRepository implements ActionRepository {
       where.teamId = filters.teamId;
     }
 
-    if (filters.isLate !== undefined) {
-      where.isLate = filters.isLate;
+    if (filters.lateStatus !== undefined) {
+      if (Array.isArray(filters.lateStatus)) {
+        where.lateStatus = { in: filters.lateStatus };
+      } else {
+        where.lateStatus = filters.lateStatus;
+      }
     }
 
     if (filters.isBlocked !== undefined) {
@@ -638,7 +646,7 @@ export class ActionPrismaRepository implements ActionRepository {
       prismaAction.estimatedEndDate,
       prismaAction.actualStartDate,
       prismaAction.actualEndDate,
-      prismaAction.isLate,
+      (prismaAction.lateStatus as ActionLateStatus) ?? null,
       prismaAction.isBlocked,
       prismaAction.blockedReason,
       prismaAction.companyId,

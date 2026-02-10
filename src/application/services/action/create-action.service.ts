@@ -80,7 +80,7 @@ export class CreateActionService {
         input.estimatedEndDate,
         null, // actualStartDate
         null, // actualEndDate
-        false, // isLate
+        null, // lateStatus
         false, // isBlocked
         null, // blockedReason
         input.companyId,

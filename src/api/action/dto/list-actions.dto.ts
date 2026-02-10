@@ -68,16 +68,6 @@ export class ListActionsQueryDto {
 
   @ApiProperty({
     required: false,
-    description: 'Filtrar por atrasadas',
-    type: Boolean,
-  })
-  @Type(() => Boolean)
-  @IsBoolean({ message: 'isLate deve ser boolean' })
-  @IsOptional()
-  isLate?: boolean;
-
-  @ApiProperty({
-    required: false,
     description: 'Filtrar por tipo de atraso específico',
     enum: ActionLateStatus,
     isArray: true,

@@ -22,7 +22,6 @@ export interface ListActionsInput {
   statuses?: ActionStatus[];
   priority?: ActionPriority;
   lateStatus?: ActionLateStatus[];
-  isLate?: boolean;
   isBlocked?: boolean;
   dateFrom?: string;
   dateTo?: string;
@@ -61,9 +60,7 @@ export class ListActionsService {
   async execute(input: ListActionsInput): Promise<ListActionsOutput> {
     let results: ActionWithChecklistItems[];
 
-    const wantsLate = input.isLate === true;
     const wantsBlocked = input.isBlocked === true;
-    const wantsLateOrBlocked = wantsLate && wantsBlocked;
 
     if (input.companyId) {
       const company = await this.companyRepository.findById(input.companyId);
@@ -78,7 +75,7 @@ export class ListActionsService {
           priority: input.priority,
           teamId: input.teamId,
           responsibleId: input.responsibleId,
-          isBlocked: wantsLateOrBlocked ? undefined : input.isBlocked,
+          isBlocked: input.isBlocked,
         },
       );
     } else if (input.teamId) {
@@ -93,7 +90,7 @@ export class ListActionsService {
           status: input.statuses?.length ? undefined : input.status,
           priority: input.priority,
           responsibleId: input.responsibleId,
-          isBlocked: wantsLateOrBlocked ? undefined : input.isBlocked,
+          isBlocked: input.isBlocked,
         },
       );
     } else if (input.responsibleId) {
@@ -103,7 +100,7 @@ export class ListActionsService {
           {
             status: input.statuses?.length ? undefined : input.status,
             priority: input.priority,
-            isBlocked: wantsLateOrBlocked ? undefined : input.isBlocked,
+            isBlocked: input.isBlocked,
           },
         );
     } else {
@@ -115,8 +112,8 @@ export class ListActionsService {
 
     const now = new Date();
     let mapped = results.map((r) => {
-      const actionWithDynamicIsLate = this.withDynamicIsLate(r.action, now);
-      const lateStatus = actionWithDynamicIsLate.calculateLateStatus(now);
+      const actionWithDynamicIsLate = this.withDynamicLateStatus(r.action, now);
+      const lateStatus = actionWithDynamicIsLate.lateStatus;
 
       return {
         ...r,
@@ -146,15 +143,8 @@ export class ListActionsService {
         mapped = mapped.filter((r) => r.action.isBlocked);
       }
     } else {
-      if (wantsLateOrBlocked) {
-        mapped = mapped.filter((r) => r.action.isBlocked || r.action.isLate);
-      } else {
-        if (wantsBlocked) {
-          mapped = mapped.filter((r) => r.action.isBlocked);
-        }
-        if (wantsLate) {
-          mapped = mapped.filter((r) => r.action.isLate);
-        }
+      if (wantsBlocked) {
+        mapped = mapped.filter((r) => r.action.isBlocked);
       }
     }
 
@@ -241,9 +231,9 @@ export class ListActionsService {
     };
   }
 
-  private withDynamicIsLate(action: Action, now: Date): Action {
-    const isLate = action.calculateIsLate(now);
-    if (isLate === action.isLate) {
+  private withDynamicLateStatus(action: Action, now: Date): Action {
+    const lateStatus = action.calculateLateStatus(now);
+    if (lateStatus === action.lateStatus) {
       return action;
     }
     return new Action(
@@ -257,7 +247,7 @@ export class ListActionsService {
       action.estimatedEndDate,
       action.actualStartDate,
       action.actualEndDate,
-      isLate,
+      lateStatus,
       action.isBlocked,
       action.blockedReason,
       action.companyId,
