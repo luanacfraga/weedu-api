@@ -12,11 +12,13 @@ import { DomainExceptionFilter } from './api/shared/filters/domain-exception.fil
 import { JwtExceptionFilter } from './api/shared/filters/jwt-exception.filter';
 import { TeamModule } from './api/team/team.module';
 import { UserModule } from './api/user/user.module';
+import { SchedulerModule } from './application/modules/scheduler.module';
 import { ConfigModule } from './infra/config/config.module';
 
 @Module({
   imports: [
     ConfigModule,
+    SchedulerModule,
     PlanModule,
     AuthModule,
     CompanyModule,

@@ -39,6 +39,7 @@
     "@nestjs/jwt": "^11.0.1",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/schedule": "^4.0.0",
     "@nestjs/swagger": "^11.2.1",
     "@prisma/client": "^6.19.0",
     "@react-email/render": "^2.0.1",
