@@ -1,12 +1,15 @@
-import { Action } from '@/core/domain/action/action.entity';
 import { ActionMovement } from '@/core/domain/action/action-movement.entity';
+import { Action } from '@/core/domain/action/action.entity';
 import { ActionStatus } from '@/core/domain/shared/enums';
 import { EntityNotFoundException } from '@/core/domain/shared/exceptions/domain.exception';
 import type { ActionMovementRepository } from '@/core/ports/repositories/action-movement.repository';
 import type { ActionRepository } from '@/core/ports/repositories/action.repository';
+import type { UserRepository } from '@/core/ports/repositories/user.repository';
 import type { TransactionManager } from '@/core/ports/services/transaction-manager.port';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+
+import { SendOverdueActionNotificationService } from '@/application/services/notification/send-overdue-action-notification.service';
 
 export interface MoveActionInput {
   actionId: string;
@@ -33,13 +36,18 @@ export interface MoveActionOutput {
 
 @Injectable()
 export class MoveActionService {
+  private readonly logger = new Logger(MoveActionService.name);
+
   constructor(
     @Inject('ActionRepository')
     private readonly actionRepository: ActionRepository,
     @Inject('ActionMovementRepository')
     private readonly actionMovementRepository: ActionMovementRepository,
+    @Inject('UserRepository')
+    private readonly userRepository: UserRepository,
     @Inject('TransactionManager')
     private readonly transactionManager: TransactionManager,
+    private readonly sendOverdueActionNotificationService: SendOverdueActionNotificationService,
   ) {}
 
   async execute(input: MoveActionInput): Promise<MoveActionOutput> {
@@ -62,7 +70,7 @@ export class MoveActionService {
 
     const updatedAction = action.updateStatus(toStatus);
 
-    return this.transactionManager.execute(async (tx) => {
+    const result = await this.transactionManager.execute(async (tx) => {
       let newPosition = input.position;
       if (newPosition === undefined) {
         const lastInColumn =
@@ -133,6 +141,37 @@ export class MoveActionService {
         kanbanOrder,
       };
     });
+
+    // Notifica responsável quando a ação passa a estar atrasada (SMS/WhatsApp)
+    if (!action.isLate && result.action.isLate) {
+      try {
+        const now = new Date();
+        const user = await this.userRepository.findById(
+          result.action.responsibleId,
+        );
+        if (user?.phone) {
+          await this.sendOverdueActionNotificationService.execute(
+            result.action.id,
+            result.action.responsibleId,
+            user.phone,
+            {
+              taskTitle: result.action.title,
+              status: result.action.status,
+              lateStatus: result.action.calculateLateStatus(now),
+              estimatedStartDate: result.action.estimatedStartDate,
+              estimatedEndDate: result.action.estimatedEndDate,
+            },
+          );
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        this.logger.warn(
+          `Falha ao enviar notificação de ação atrasada (ação ${result.action.id}): ${errorMessage}`,
+        );
+      }
+    }
+
+    return result;
   }
 
   private async handleCrossColumnMove(

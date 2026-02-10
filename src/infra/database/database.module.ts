@@ -1,4 +1,5 @@
 import { ActionMovementPrismaRepository } from '@/infra/database/repositories/action-movement.prisma.repository';
+import { ActionNotificationPrismaRepository } from '@/infra/database/repositories/action-notification.prisma.repository';
 import { ActionPrismaRepository } from '@/infra/database/repositories/action.prisma.repository';
 import { ChecklistItemPrismaRepository } from '@/infra/database/repositories/checklist-item.prisma.repository';
 import { CompanyPrismaRepository } from '@/infra/database/repositories/company.prisma.repository';
@@ -73,6 +74,11 @@ const iaUsageRepositoryProvider: ClassProvider = {
   useClass: IAUsagePrismaRepository,
 };
 
+const actionNotificationRepositoryProvider: ClassProvider = {
+  provide: 'ActionNotificationRepository',
+  useClass: ActionNotificationPrismaRepository,
+};
+
 @Module({
   providers: [
     PrismaService,
@@ -87,6 +93,7 @@ const iaUsageRepositoryProvider: ClassProvider = {
     actionRepositoryProvider,
     checklistItemRepositoryProvider,
     actionMovementRepositoryProvider,
+    actionNotificationRepositoryProvider,
     iaUsageRepositoryProvider,
   ],
   exports: [
@@ -102,6 +109,7 @@ const iaUsageRepositoryProvider: ClassProvider = {
     'ActionRepository',
     'ChecklistItemRepository',
     'ActionMovementRepository',
+    'ActionNotificationRepository',
     'IAUsageRepository',
   ],
 })

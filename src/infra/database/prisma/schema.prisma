@@ -67,9 +67,10 @@ model User {
   teamsManaged    Team[]     @relation("TeamManager")
   teamMemberships TeamUser[]
 
-  actionsCreated     Action[]         @relation("ActionCreator")
-  actionsResponsible Action[]         @relation("ActionResponsible")
-  actionMovements    ActionMovement[]
+  actionsCreated       Action[]             @relation("ActionCreator")
+  actionsResponsible   Action[]             @relation("ActionResponsible")
+  actionMovements      ActionMovement[]
+  actionNotifications  ActionNotification[]
 
   @@map("users")
 }
@@ -243,11 +244,12 @@ model Action {
   creator     User    @relation("ActionCreator", fields: [creatorId], references: [id])
   responsible User    @relation("ActionResponsible", fields: [responsibleId], references: [id])
 
-  checklistItems ChecklistItem[]
-  movements      ActionMovement[]
-  kanbanOrder    KanbanOrder?
-  tags           ActionTag[]
-  attachments    ActionAttachment[]
+  checklistItems  ChecklistItem[]
+  movements       ActionMovement[]
+  kanbanOrder     KanbanOrder?
+  tags            ActionTag[]
+  attachments     ActionAttachment[]
+  notifications   ActionNotification[]
 
   @@index([companyId, status])
   @@index([teamId, status])
@@ -351,4 +353,28 @@ model ActionAttachment {
 
   @@index([actionId])
   @@map("action_attachments")
+}
+
+enum NotificationType {
+  OVERDUE_SMS      @map("overdue_sms")
+  OVERDUE_WHATSAPP @map("overdue_whatsapp")
+}
+
+model ActionNotification {
+  id               String           @id @default(uuid())
+  actionId         String           @map("action_id")
+  userId           String           @map("user_id")
+  notificationType NotificationType @map("notification_type")
+  sentAt           DateTime         @default(now()) @map("sent_at")
+  smsSent          Boolean          @map("sms_sent")
+  whatsappSent     Boolean          @map("whatsapp_sent")
+  lateStatus       String?          @map("late_status") @db.VarChar(50)
+  createdAt        DateTime         @default(now()) @map("created_at")
+
+  action Action @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([actionId, sentAt(sort: Desc)])
+  @@index([userId, sentAt(sort: Desc)])
+  @@map("action_notifications")
 }

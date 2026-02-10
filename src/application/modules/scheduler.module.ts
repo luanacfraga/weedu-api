@@ -7,5 +7,6 @@ import { ScheduleModule } from '@nestjs/schedule';
 @Module({
   imports: [ScheduleModule.forRoot(), DatabaseModule, ActionApplicationModule],
   providers: [OverdueActionNotificationCron],
+  exports: [OverdueActionNotificationCron],
 })
 export class SchedulerModule {}

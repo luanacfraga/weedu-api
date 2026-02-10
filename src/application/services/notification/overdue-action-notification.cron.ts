@@ -29,7 +29,7 @@ export class OverdueActionNotificationCron {
     timeZone: 'America/Sao_Paulo',
   })
   async handleOverdueActionNotification(): Promise<void> {
-    this.logger.log('Iniciando job de notificação de ações atrasadas (9h).');
+    this.logger.log('🔔 Iniciando job de notificação de ações atrasadas');
 
     const now = new Date();
     let totalSent = 0;
@@ -38,29 +38,49 @@ export class OverdueActionNotificationCron {
 
     try {
       const companies = await this.companyRepository.findAll();
+      this.logger.log(
+        `📊 Encontradas ${companies.length} empresas para processar`,
+      );
 
       for (const company of companies) {
-        const actions = await this.actionRepository.findByCompanyId(
+        // Busca todas as ações TODO/IN_PROGRESS e filtra em memória as que estão atrasadas
+        const allActions = await this.actionRepository.findByCompanyId(
           company.id,
           {
-            isLate: true,
             status: [ActionStatus.TODO, ActionStatus.IN_PROGRESS],
             includeDeleted: false,
           },
         );
 
-        for (const action of actions) {
+        // Filtra apenas ações que estão realmente atrasadas (calculado dinamicamente)
+        const overdueActions = allActions.filter((action) =>
+          action.calculateIsLate(now),
+        );
+
+        this.logger.log(
+          `🏢 Empresa ${company.name} (${company.id}): ${allActions.length} ações TODO/IN_PROGRESS, ${overdueActions.length} atrasadas`,
+        );
+
+        for (const action of overdueActions) {
+          this.logger.debug(
+            `⏰ Processando ação atrasada: ${action.title} (${action.id})`,
+          );
           try {
             const user = await this.userRepository.findById(
               action.responsibleId,
             );
             if (!user?.phone) {
+              this.logger.debug(
+                `⏭️  Ação ${action.id} ignorada: usuário sem telefone`,
+              );
               totalSkipped += 1;
               continue;
             }
 
             const result =
               await this.sendOverdueActionNotificationService.execute(
+                action.id,
+                action.responsibleId,
                 user.phone,
                 {
                   taskTitle: action.title,
@@ -72,14 +92,21 @@ export class OverdueActionNotificationCron {
               );
 
             if (result.smsSent || result.whatsappSent) {
+              this.logger.log(
+                `✅ Notificação enviada para ação ${action.id}: SMS=${result.smsSent}, WhatsApp=${result.whatsappSent}`,
+              );
               totalSent += 1;
             } else {
+              this.logger.debug(
+                `⏭️  Notificação não enviada para ação ${action.id}`,
+              );
               totalSkipped += 1;
             }
           } catch (err) {
             totalErrors += 1;
+            const msg = err instanceof Error ? err.message : String(err);
             this.logger.warn(
-              `Erro ao notificar ação atrasada ${action.id}: ${err instanceof Error ? err.message : err}`,
+              `Erro ao notificar ação atrasada ${action.id}: ${msg}`,
             );
           }
         }
@@ -89,9 +116,8 @@ export class OverdueActionNotificationCron {
         `Job de ações atrasadas finalizado: ${totalSent} notificações enviadas, ${totalSkipped} ignoradas, ${totalErrors} erros.`,
       );
     } catch (err) {
-      this.logger.error(
-        `Falha no job de ações atrasadas: ${err instanceof Error ? err.message : err}`,
-      );
+      const msg = err instanceof Error ? err.message : String(err);
+      this.logger.error(`Falha no job de ações atrasadas: ${msg}`);
     }
   }
 }

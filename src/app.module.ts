@@ -7,6 +7,7 @@ import { RolesGuard } from './api/auth/guards/roles.guard';
 import { CompanyModule } from './api/company/company.module';
 import { EmployeeModule } from './api/employee/employee.module';
 import { HealthModule } from './api/health/health.module';
+import { NotificationModule } from './api/notification/notification.module';
 import { PlanModule } from './api/plan/plan.module';
 import { DomainExceptionFilter } from './api/shared/filters/domain-exception.filter';
 import { JwtExceptionFilter } from './api/shared/filters/jwt-exception.filter';
@@ -27,6 +28,7 @@ import { ConfigModule } from './infra/config/config.module';
     UserModule,
     ActionModule,
     HealthModule,
+    NotificationModule,
   ],
   controllers: [],
   providers: [

@@ -10,8 +10,10 @@ import type { ChecklistItemRepository } from '@/core/ports/repositories/checklis
 import type { UserRepository } from '@/core/ports/repositories/user.repository';
 import type { TransactionManager } from '@/core/ports/services/transaction-manager.port';
 import { ErrorMessages } from '@/shared/constants/error-messages';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+
+import { SendOverdueActionNotificationService } from '@/application/services/notification/send-overdue-action-notification.service';
 
 export interface UpdateActionInput {
   actionId: string;
@@ -38,6 +40,8 @@ export interface UpdateActionOutput {
 
 @Injectable()
 export class UpdateActionService {
+  private readonly logger = new Logger(UpdateActionService.name);
+
   constructor(
     @Inject('ActionRepository')
     private readonly actionRepository: ActionRepository,
@@ -47,6 +51,7 @@ export class UpdateActionService {
     private readonly checklistItemRepository: ChecklistItemRepository,
     @Inject('TransactionManager')
     private readonly transactionManager: TransactionManager,
+    private readonly sendOverdueActionNotificationService: SendOverdueActionNotificationService,
   ) {}
 
   async execute(input: UpdateActionInput): Promise<UpdateActionOutput> {
@@ -222,6 +227,34 @@ export class UpdateActionService {
         return updatedAction;
       }
     });
+
+    // Notifica responsável quando a ação passa a estar atrasada (SMS/WhatsApp)
+    const now = new Date();
+    const becameLate = !action.isLate && updated.calculateIsLate(now);
+    if (becameLate) {
+      try {
+        const user = await this.userRepository.findById(updated.responsibleId);
+        if (user?.phone) {
+          await this.sendOverdueActionNotificationService.execute(
+            updated.id,
+            updated.responsibleId,
+            user.phone,
+            {
+              taskTitle: updated.title,
+              status: updated.status,
+              lateStatus: updated.calculateLateStatus(now),
+              estimatedStartDate: updated.estimatedStartDate,
+              estimatedEndDate: updated.estimatedEndDate,
+            },
+          );
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        this.logger.warn(
+          `Falha ao enviar notificação de ação atrasada (ação ${updated.id}): ${msg}`,
+        );
+      }
+    }
 
     return {
       action: updated,
