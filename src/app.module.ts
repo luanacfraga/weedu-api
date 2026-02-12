@@ -8,6 +8,7 @@ import { CompanyModule } from './api/company/company.module';
 import { EmployeeModule } from './api/employee/employee.module';
 import { HealthModule } from './api/health/health.module';
 import { NotificationModule } from './api/notification/notification.module';
+import { PlatformSettingsModule } from './api/platform-settings/platform-settings.module';
 import { PlanModule } from './api/plan/plan.module';
 import { DomainExceptionFilter } from './api/shared/filters/domain-exception.filter';
 import { JwtExceptionFilter } from './api/shared/filters/jwt-exception.filter';
@@ -29,6 +30,7 @@ import { ConfigModule } from './infra/config/config.module';
     ActionModule,
     HealthModule,
     NotificationModule,
+    PlatformSettingsModule,
   ],
   controllers: [],
   providers: [

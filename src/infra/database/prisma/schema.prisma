@@ -385,3 +385,11 @@ model ActionNotification {
   @@index([userId, sentAt(sort: Desc)])
   @@map("action_notifications")
 }
+
+model PlatformSettings {
+  id              String  @id @default("global")
+  supportWhatsapp String? @map("support_whatsapp")
+  supportEmail    String? @map("support_email")
+
+  @@map("platform_settings")
+}
