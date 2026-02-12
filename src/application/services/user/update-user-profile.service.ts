@@ -54,7 +54,7 @@ export class UpdateUserProfileService {
     }
 
     if (typeof input.email === 'string') {
-      if (typeof input.currentPassword !== 'string' || input.currentPassword.length === 0) {
+      if (!input.currentPassword?.trim()) {
         throw new BadRequestException(
           'A senha atual é obrigatória para alterar o email.',
         );
@@ -80,7 +80,7 @@ export class UpdateUserProfileService {
         );
       }
 
-      updateData.email = input.email;
+      updateData.email = input.email.trim().toLowerCase();
     }
 
     return this.userRepository.update(

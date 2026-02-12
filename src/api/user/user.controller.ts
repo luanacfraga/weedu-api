@@ -137,7 +137,7 @@ export class UserController {
   @ApiOperation({
     summary: 'Atualizar dados básicos do perfil',
     description:
-      'Atualiza dados básicos do usuário autenticado (ex.: telefone).',
+      'Atualiza dados básicos do usuário autenticado (ex.: nome, telefone, email).',
   })
   @ApiResponse({
     status: 200,

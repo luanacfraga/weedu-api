@@ -68,9 +68,8 @@ describe('UpdateUserProfileService — email change', () => {
     const svc = makeService({
       findByEmail: jest.fn().mockResolvedValue({ id: 'user-1', email: 'same@example.com' }),
     });
-    await expect(
-      svc.execute({ userId: 'user-1', email: 'same@example.com', currentPassword: 'pass' }),
-    ).resolves.toBeDefined();
+    const result = await svc.execute({ userId: 'user-1', email: 'same@example.com', currentPassword: 'pass' });
+    expect(result).not.toBeNull();
   });
 
   it('updates email when all validations pass', async () => {
@@ -80,6 +79,6 @@ describe('UpdateUserProfileService — email change', () => {
       email: 'new@example.com',
       currentPassword: 'correct',
     });
-    expect(result).toBeDefined();
+    expect((result as any).email).toBe('new@example.com');
   });
 });
