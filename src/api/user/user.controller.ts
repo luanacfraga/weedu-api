@@ -158,6 +158,8 @@ export class UserController {
       firstName: body.firstName,
       lastName: body.lastName,
       notificationPreference: body.notificationPreference,
+      email: body.email,
+      currentPassword: body.currentPassword,
     });
 
     return UserMapper.toResponseDto(user);
