@@ -17,6 +17,7 @@ export class UserMapper {
     dto.profileImageUrl = user.profileImageUrl;
     dto.avatarColor = user.avatarColor;
     dto.initials = user.initials;
+    dto.notificationPreference = user.notificationPreference;
     return dto;
   }
 
@@ -30,6 +31,7 @@ export class UserMapper {
       phone: user.phone,
       initials: user.initials,
       avatarColor: user.avatarColor,
+      notificationPreference: user.notificationPreference,
     };
   }
 }

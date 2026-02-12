@@ -1,5 +1,5 @@
 import { ErrorMessages } from '@/shared/constants/error-messages';
-import { DocumentType, UserRole, UserStatus } from '../shared/enums';
+import { DocumentType, NotificationPreference, UserRole, UserStatus } from '../shared/enums';
 import { Entity } from '../shared/entity.base';
 import { DomainValidator } from '../shared/validators/domain.validator';
 
@@ -16,6 +16,7 @@ export class User extends Entity {
     public readonly role: UserRole,
     public readonly status: UserStatus,
     public readonly profileImageUrl: string | null = null,
+    public readonly notificationPreference: NotificationPreference = NotificationPreference.BOTH,
     public readonly avatarColor: string | null = null,
     public readonly initials: string | null = null,
     public readonly refreshToken: string | null = null,

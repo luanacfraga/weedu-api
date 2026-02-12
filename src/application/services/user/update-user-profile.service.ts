@@ -1,5 +1,6 @@
 import type { User } from '@/core/domain/user/user.entity';
 import type { UserRepository } from '@/core/ports/repositories/user.repository';
+import { NotificationPreference } from '@/core/domain/shared/enums';
 import { ConflictException, Inject, Injectable } from '@nestjs/common';
 
 export interface UpdateUserProfileInput {
@@ -7,6 +8,7 @@ export interface UpdateUserProfileInput {
   phone?: string;
   firstName?: string;
   lastName?: string;
+  notificationPreference?: NotificationPreference;
 }
 
 @Injectable()
@@ -33,6 +35,10 @@ export class UpdateUserProfileService {
 
     if (typeof input.lastName === 'string') {
       updateData.lastName = input.lastName;
+    }
+
+    if (input.notificationPreference !== undefined) {
+      updateData.notificationPreference = input.notificationPreference;
     }
 
     return this.userRepository.update(

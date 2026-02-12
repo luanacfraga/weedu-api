@@ -1,5 +1,5 @@
 import { User } from '@/core/domain/user/user.entity';
-import { UserRole, UserStatus } from '@/core/domain/shared/enums';
+import { NotificationPreference, UserRole, UserStatus } from '@/core/domain/shared/enums';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UserResponseDto {
@@ -81,6 +81,14 @@ export class UserResponseDto {
   })
   initials!: string | null;
 
+  @ApiProperty({
+    description: 'Preferência de notificação',
+    enum: NotificationPreference,
+    example: NotificationPreference.BOTH,
+    required: false,
+  })
+  notificationPreference!: NotificationPreference;
+
   static fromDomain(user: User): UserResponseDto {
     const dto = new UserResponseDto();
     dto.id = user.id;
@@ -95,6 +103,7 @@ export class UserResponseDto {
     dto.profileImageUrl = user.profileImageUrl;
     dto.avatarColor = user.avatarColor;
     dto.initials = user.initials;
+    dto.notificationPreference = user.notificationPreference;
     return dto;
   }
 }

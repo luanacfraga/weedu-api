@@ -2,7 +2,7 @@ import {
   ActionNotification,
   NotificationType,
 } from '@/core/domain/action/action-notification.entity';
-import type { ActionNotificationRepository } from '@/core/ports/repositories/action-notification.repository';
+import type { ActionNotificationRepository, NotificationWithTitle } from '@/core/ports/repositories/action-notification.repository';
 import { PrismaService } from '@/infra/database/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 import {
@@ -22,8 +22,6 @@ export class ActionNotificationPrismaRepository implements ActionNotificationRep
         return PrismaNotificationType.OVERDUE_SMS;
       case NotificationType.OVERDUE_WHATSAPP:
         return PrismaNotificationType.OVERDUE_WHATSAPP;
-      default:
-        return PrismaNotificationType.OVERDUE_SMS;
     }
   }
 
@@ -120,6 +118,32 @@ export class ActionNotificationPrismaRepository implements ActionNotificationRep
     });
 
     return notifications.map((n) => this.mapToDomain(n));
+  }
+
+  async findByUserIdWithTitle(
+    userId: string,
+    limit = 20,
+  ): Promise<NotificationWithTitle[]> {
+    const rows = await this.prisma.actionNotification.findMany({
+      where: { userId },
+      orderBy: { sentAt: 'desc' },
+      take: limit,
+      include: {
+        action: { select: { id: true, title: true } },
+      },
+    });
+
+    return rows.map((n) => ({
+      id: n.id,
+      actionId: n.actionId,
+      actionTitle: n.action?.title ?? '',
+      userId: n.userId,
+      notificationType: this.mapNotificationTypeToDomain(n.notificationType),
+      sentAt: n.sentAt,
+      smsSent: n.smsSent,
+      whatsappSent: n.whatsappSent,
+      lateStatus: n.lateStatus,
+    }));
   }
 
   private mapToDomain(

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import { DocumentType, UserRole, UserStatus } from '@/core/domain/shared/enums';
+import { DocumentType, NotificationPreference, UserRole, UserStatus } from '@/core/domain/shared/enums';
 import { EntityNotFoundException } from '@/core/domain/shared/exceptions/domain.exception';
 import { User } from '@/core/domain/user/user.entity';
 import type { UserRepository } from '@/core/ports/repositories/user.repository';
@@ -24,6 +24,7 @@ describe('UpdateUserAvatarColorService', () => {
     UserRole.EXECUTOR,
     UserStatus.ACTIVE,
     null,
+    NotificationPreference.BOTH,
     '#3B82F6',
     'JD',
   );
@@ -73,6 +74,7 @@ describe('UpdateUserAvatarColorService', () => {
         mockUser.role,
         mockUser.status,
         mockUser.profileImageUrl,
+        mockUser.notificationPreference,
         newColor,
         mockUser.initials,
       );
@@ -131,6 +133,7 @@ describe('UpdateUserAvatarColorService', () => {
             mockUser.role,
             mockUser.status,
             mockUser.profileImageUrl,
+            mockUser.notificationPreference,
             data.avatarColor ?? mockUser.avatarColor,
             mockUser.initials,
           );
@@ -164,6 +167,7 @@ describe('UpdateUserAvatarColorService', () => {
         mockUser.role,
         mockUser.status,
         mockUser.profileImageUrl,
+        mockUser.notificationPreference,
         newColor,
         mockUser.initials,
       );

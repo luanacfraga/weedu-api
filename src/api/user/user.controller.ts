@@ -19,6 +19,7 @@ import {
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AvatarColorsResponseDto } from './dto/avatar-colors-response.dto';
 import { UpdateAvatarColorDto } from './dto/update-avatar-color.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 
 @ApiTags('users')
@@ -149,13 +150,14 @@ export class UserController {
   })
   async updateProfile(
     @CurrentUser() currentUser: JwtPayload,
-    @Body() body: { phone?: string; firstName?: string; lastName?: string },
+    @Body() body: UpdateProfileDto,
   ): Promise<UserResponseDto> {
     const user = await this.updateUserProfileService.execute({
       userId: currentUser.sub,
       phone: body.phone,
       firstName: body.firstName,
       lastName: body.lastName,
+      notificationPreference: body.notificationPreference,
     });
 
     return UserMapper.toResponseDto(user);

@@ -1,9 +1,9 @@
-import { DocumentType, UserRole, UserStatus } from '@/core/domain/shared/enums';
+import { DocumentType, NotificationPreference, UserRole, UserStatus } from '@/core/domain/shared/enums';
 import { User } from '@/core/domain/user/user.entity';
 import type { UserRepository } from '@/core/ports/repositories/user.repository';
 import { PrismaService } from '@/infra/database/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
-import { Prisma, User as PrismaUser } from '@prisma/client';
+import { $Enums, Prisma, User as PrismaUser } from '@prisma/client';
 
 @Injectable()
 export class UserPrismaRepository implements UserRepository {
@@ -21,6 +21,7 @@ export class UserPrismaRepository implements UserRepository {
     role: true,
     status: true,
     profileImageUrl: true,
+    notificationPreference: true,
     refreshToken: true,
     refreshTokenExpiresAt: true,
   };
@@ -98,6 +99,7 @@ export class UserPrismaRepository implements UserRepository {
         role: user.role,
         status: user.status,
         profileImageUrl: user.profileImageUrl,
+        notificationPreference: this.mapNotificationPreferenceToPrisma(user.notificationPreference),
       },
       select: this.safeUserSelect,
     });
@@ -120,6 +122,7 @@ export class UserPrismaRepository implements UserRepository {
         role: data.role,
         status: data.status,
         profileImageUrl: data.profileImageUrl,
+        ...(data.notificationPreference !== undefined && { notificationPreference: this.mapNotificationPreferenceToPrisma(data.notificationPreference) }),
       },
       select: this.safeUserSelect,
     });
@@ -171,6 +174,32 @@ export class UserPrismaRepository implements UserRepository {
     };
   }
 
+  private mapNotificationPreferenceToPrisma(
+    pref: NotificationPreference,
+  ): $Enums.NotificationPreference {
+    switch (pref) {
+      case NotificationPreference.SMS_ONLY:
+        return $Enums.NotificationPreference.SMS_ONLY;
+      case NotificationPreference.WHATSAPP_ONLY:
+        return $Enums.NotificationPreference.WHATSAPP_ONLY;
+      case NotificationPreference.BOTH:
+        return $Enums.NotificationPreference.BOTH;
+    }
+  }
+
+  private mapNotificationPreferenceToDomain(
+    pref: $Enums.NotificationPreference,
+  ): NotificationPreference {
+    switch (pref) {
+      case $Enums.NotificationPreference.SMS_ONLY:
+        return NotificationPreference.SMS_ONLY;
+      case $Enums.NotificationPreference.WHATSAPP_ONLY:
+        return NotificationPreference.WHATSAPP_ONLY;
+      case $Enums.NotificationPreference.BOTH:
+        return NotificationPreference.BOTH;
+    }
+  }
+
   private mapToDomain(
     prismaUser: Pick<
       PrismaUser,
@@ -185,6 +214,7 @@ export class UserPrismaRepository implements UserRepository {
       | 'role'
       | 'status'
       | 'profileImageUrl'
+      | 'notificationPreference'
       | 'refreshToken'
       | 'refreshTokenExpiresAt'
     >,
@@ -201,6 +231,7 @@ export class UserPrismaRepository implements UserRepository {
       prismaUser.role as UserRole,
       prismaUser.status as UserStatus,
       prismaUser.profileImageUrl,
+      this.mapNotificationPreferenceToDomain(prismaUser.notificationPreference),
       null,
       null,
       prismaUser.refreshToken,

@@ -1,6 +1,6 @@
 import { OverdueActionNotificationCron } from '@/application/services/notification/overdue-action-notification.cron';
 import { UserRole } from '@/core/domain/shared/enums';
-import { Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Inject, Post } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiForbiddenResponse,
@@ -10,6 +10,9 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Roles } from '../auth/decorators/roles.decorator';
+import type { ActionNotificationRepository, NotificationWithTitle } from '@/core/ports/repositories/action-notification.repository';
+import { CurrentUser } from '@/api/auth/decorators/current-user.decorator';
+import type { JwtPayload } from '@/application/services/auth/auth.service';
 
 @ApiTags('Notifications')
 @ApiBearerAuth()
@@ -17,6 +20,8 @@ import { Roles } from '../auth/decorators/roles.decorator';
 export class NotificationController {
   constructor(
     private readonly overdueActionNotificationCron: OverdueActionNotificationCron,
+    @Inject('ActionNotificationRepository')
+    private readonly actionNotificationRepository: ActionNotificationRepository,
   ) {}
 
   @Post('trigger-overdue')
@@ -52,6 +57,14 @@ export class NotificationController {
       message: 'Notification job triggered',
       executedAt: new Date().toISOString(),
     };
+  }
+
+  @Get('my-history')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Histórico de notificações do usuário autenticado' })
+  @ApiOkResponse({ description: 'Lista das últimas 20 notificações' })
+  async getMyHistory(@CurrentUser() user: JwtPayload): Promise<NotificationWithTitle[]> {
+    return this.actionNotificationRepository.findByUserIdWithTitle(user.sub, 20);
   }
 
 }

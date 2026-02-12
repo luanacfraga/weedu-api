@@ -3,6 +3,7 @@ import {
   NotificationType,
 } from '@/core/domain/action/action-notification.entity';
 import { PhoneValidator } from '@/core/domain/shared/phone-validator';
+import { NotificationPreference } from '@/core/domain/shared/enums';
 import type { ActionNotificationRepository } from '@/core/ports/repositories/action-notification.repository';
 import type { SmsService } from '@/core/ports/services/sms-service.port';
 import type { WhatsappService } from '@/core/ports/services/whatsapp-service.port';
@@ -40,6 +41,7 @@ export class SendOverdueActionNotificationService {
     userId: string,
     phone: string,
     params: OverdueActionSmsParams,
+    notificationPreference: NotificationPreference = NotificationPreference.BOTH,
   ): Promise<{ smsSent: boolean; whatsappSent: boolean }> {
     // 1. Validação de telefone temporário ou vazio
     const trimmedPhone = phone?.trim();
@@ -78,13 +80,16 @@ export class SendOverdueActionNotificationService {
     const message = buildOverdueActionSmsBody(params);
 
     // 5. Envia SMS e WhatsApp em paralelo usando Promise.allSettled
+    const sendSms = notificationPreference !== NotificationPreference.WHATSAPP_ONLY;
+    const sendWhatsapp = notificationPreference !== NotificationPreference.SMS_ONLY;
+
     const [smsResult, whatsappResult] = await Promise.allSettled([
-      this.smsService.sendSms({ to: normalizedPhone, message }),
-      this.whatsappService.sendMessage({
-        to: normalizedPhone,
-        templateKey: 'OVERDUE_ACTION',
-        variables,
-      }),
+      sendSms
+        ? this.smsService.sendSms({ to: normalizedPhone, message })
+        : Promise.reject(new Error('SMS desativado pelo usuário')),
+      sendWhatsapp
+        ? this.whatsappService.sendMessage({ to: normalizedPhone, templateKey: 'OVERDUE_ACTION', variables })
+        : Promise.reject(new Error('WhatsApp desativado pelo usuário')),
     ]);
 
     // 6. Processa resultados
@@ -92,19 +97,27 @@ export class SendOverdueActionNotificationService {
     const whatsappSent = whatsappResult.status === 'fulfilled';
 
     if (smsResult.status === 'rejected') {
-      const errorMessage =
-        smsResult.reason?.message ?? String(smsResult.reason);
-      this.logger.warn(
-        `Falha ao enviar SMS para ${normalizedPhone}: ${errorMessage}`,
-      );
+      if (!sendSms) {
+        this.logger.debug(`SMS desativado pela preferência do usuário ${userId}`);
+      } else {
+        const errorMessage =
+          smsResult.reason?.message ?? String(smsResult.reason);
+        this.logger.warn(
+          `Falha ao enviar SMS para ${normalizedPhone}: ${errorMessage}`,
+        );
+      }
     }
 
     if (whatsappResult.status === 'rejected') {
-      const errorMessage =
-        whatsappResult.reason?.message ?? String(whatsappResult.reason);
-      this.logger.warn(
-        `Falha ao enviar WhatsApp para ${normalizedPhone}: ${errorMessage}`,
-      );
+      if (!sendWhatsapp) {
+        this.logger.debug(`WhatsApp desativado pela preferência do usuário ${userId}`);
+      } else {
+        const errorMessage =
+          whatsappResult.reason?.message ?? String(whatsappResult.reason);
+        this.logger.warn(
+          `Falha ao enviar WhatsApp para ${normalizedPhone}: ${errorMessage}`,
+        );
+      }
     }
 
     // 7. Registra notificação enviada no histórico

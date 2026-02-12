@@ -1,4 +1,17 @@
 import type { ActionNotification } from '@/core/domain/action/action-notification.entity';
+import type { NotificationType } from '@/core/domain/action/action-notification.entity';
+
+export interface NotificationWithTitle {
+  id: string;
+  actionId: string;
+  actionTitle: string;
+  userId: string;
+  notificationType: NotificationType;
+  sentAt: Date;
+  smsSent: boolean;
+  whatsappSent: boolean;
+  lateStatus: string | null;
+}
 
 export interface ActionNotificationRepository {
   /**
@@ -36,4 +49,9 @@ export interface ActionNotificationRepository {
    * Busca todas as notificações de um usuário.
    */
   findByUserId(userId: string): Promise<ActionNotification[]>;
+
+  /**
+   * Busca as últimas notificações de um usuário com o título da ação.
+   */
+  findByUserIdWithTitle(userId: string, limit?: number): Promise<NotificationWithTitle[]>;
 }

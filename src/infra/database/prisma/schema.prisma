@@ -40,6 +40,12 @@ enum CompanyUserStatus {
   REMOVED   @map("removed")
 }
 
+enum NotificationPreference {
+  SMS_ONLY      @map("sms_only")
+  WHATSAPP_ONLY @map("whatsapp_only")
+  BOTH          @map("both")
+}
+
 model User {
   id                     String    @id @default(uuid())
   firstName              String    @map("first_name")
@@ -56,6 +62,7 @@ model User {
   role                   UserRole
   refreshToken           String?   @map("refresh_token") @db.Text
   refreshTokenExpiresAt  DateTime? @map("refresh_token_expires_at")
+  notificationPreference NotificationPreference @default(BOTH) @map("notification_preference")
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
 
