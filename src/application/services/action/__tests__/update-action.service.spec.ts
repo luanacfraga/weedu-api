@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/unbound-method */
+import { SendOverdueActionNotificationService } from '@/application/services/notification/send-overdue-action-notification.service';
 import { Action } from '@/core/domain/action/action.entity';
 import { ActionPriority, ActionStatus } from '@/core/domain/shared/enums';
 import type { ActionRepository } from '@/core/ports/repositories/action.repository';
 import { Test, TestingModule } from '@nestjs/testing';
-import { SendOverdueActionNotificationService } from '@/application/services/notification/send-overdue-action-notification.service';
 import { UpdateActionService } from '../update-action.service';
 
 describe('UpdateActionService - Date-Driven Status Transitions', () => {
@@ -69,7 +69,9 @@ describe('UpdateActionService - Date-Driven Status Transitions', () => {
     };
 
     const mockSendOverdueActionNotificationService = {
-      execute: jest.fn().mockResolvedValue({ smsSent: false, whatsappSent: false }),
+      execute: jest
+        .fn()
+        .mockResolvedValue({ smsSent: false, whatsappSent: false }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
