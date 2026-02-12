@@ -1,6 +1,8 @@
 import { OverdueActionNotificationCron } from '@/application/services/notification/overdue-action-notification.cron';
+import { SendTestTwilioNotificationService } from '@/application/services/notification/send-test-twilio-notification.service';
+import type { JwtPayload } from '@/application/services/auth/auth.service';
 import { UserRole } from '@/core/domain/shared/enums';
-import { Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { BadRequestException, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiForbiddenResponse,
@@ -9,6 +11,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 
 @ApiTags('Notifications')
@@ -17,6 +20,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 export class NotificationController {
   constructor(
     private readonly overdueActionNotificationCron: OverdueActionNotificationCron,
+    private readonly sendTestTwilioNotificationService: SendTestTwilioNotificationService,
   ) {}
 
   @Post('trigger-overdue')
@@ -51,6 +55,43 @@ export class NotificationController {
     return {
       message: 'Notification job triggered',
       executedAt: new Date().toISOString(),
+    };
+  }
+
+  @Post('test-twilio')
+  @HttpCode(HttpStatus.OK)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({
+    summary: 'Send test Twilio SMS (admin only)',
+    description:
+      'Envia um SMS de teste via Twilio para o telefone do admin logado. Apenas para testes. Apenas usuários ADMIN.',
+  })
+  @ApiOkResponse({
+    description: 'Result of the test send',
+    schema: {
+      type: 'object',
+      properties: {
+        sent: { type: 'boolean' },
+        message: { type: 'string' },
+        sentAt: { type: 'string', format: 'date-time', nullable: true },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({
+    description: 'Forbidden - Only ADMIN can access',
+  })
+  async sendTestTwilio(@CurrentUser() user: JwtPayload) {
+    const result = await this.sendTestTwilioNotificationService.execute(
+      user.sub,
+    );
+    if (!result.sent) {
+      throw new BadRequestException(result.message);
+    }
+    return {
+      sent: result.sent,
+      message: result.message,
+      sentAt: new Date().toISOString(),
     };
   }
 }

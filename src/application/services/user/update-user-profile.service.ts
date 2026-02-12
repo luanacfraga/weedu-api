@@ -1,6 +1,6 @@
 import type { User } from '@/core/domain/user/user.entity';
 import type { UserRepository } from '@/core/ports/repositories/user.repository';
-import { Inject, Injectable } from '@nestjs/common';
+import { ConflictException, Inject, Injectable } from '@nestjs/common';
 
 export interface UpdateUserProfileInput {
   userId: string;
@@ -20,6 +20,10 @@ export class UpdateUserProfileService {
     const updateData: Record<string, unknown> = {};
 
     if (typeof input.phone === 'string') {
+      const existing = await this.userRepository.findByPhone(input.phone);
+      if (existing && existing.id !== input.userId) {
+        throw new ConflictException('Este telefone já está em uso por outro usuário.');
+      }
       updateData.phone = input.phone;
     }
 
