@@ -1,6 +1,12 @@
 import { NotificationPreference } from '@/core/domain/shared/enums';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class UpdateProfileDto {
   @ApiPropertyOptional({ description: 'Novo primeiro nome' })
@@ -33,7 +39,9 @@ export class UpdateProfileDto {
   @IsEmail({}, { message: 'Email inválido' })
   email?: string;
 
-  @ApiPropertyOptional({ description: 'Senha atual (obrigatória ao alterar o email)' })
+  @ApiPropertyOptional({
+    description: 'Senha atual (obrigatória ao alterar o email)',
+  })
   @IsOptional()
   @IsString()
   @MinLength(1)

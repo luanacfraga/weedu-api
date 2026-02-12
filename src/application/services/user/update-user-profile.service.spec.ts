@@ -1,4 +1,11 @@
-import { BadRequestException, ConflictException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import type { UserRepository } from '@/core/ports/repositories/user.repository';
+import type { PasswordHasher } from '@/core/ports/services/password-hasher.port';
 import { UpdateUserProfileService } from './update-user-profile.service';
 
 describe('UpdateUserProfileService — email change', () => {
@@ -18,13 +25,18 @@ describe('UpdateUserProfileService — email change', () => {
       findById: overrides?.findById ?? jest.fn().mockResolvedValue(mockUser),
       findByEmail: overrides?.findByEmail ?? jest.fn().mockResolvedValue(null),
       findByPhone: jest.fn().mockResolvedValue(null),
-      update: jest.fn().mockImplementation((_id, data) => ({ ...mockUser, ...data })),
+      update: jest
+        .fn()
+        .mockImplementation((_id, data) => ({ ...mockUser, ...data })),
     };
     const passwordHasher = {
       compare: overrides?.compare ?? jest.fn().mockResolvedValue(true),
       hash: jest.fn(),
     };
-    return new UpdateUserProfileService(userRepository as any, passwordHasher as any);
+    return new UpdateUserProfileService(
+      userRepository as unknown as UserRepository,
+      passwordHasher as unknown as PasswordHasher,
+    );
   };
 
   it('throws BadRequestException when email provided without currentPassword', async () => {
@@ -37,38 +49,62 @@ describe('UpdateUserProfileService — email change', () => {
   it('throws BadRequestException when email provided with empty currentPassword', async () => {
     const svc = makeService();
     await expect(
-      svc.execute({ userId: 'user-1', email: 'new@example.com', currentPassword: '' }),
+      svc.execute({
+        userId: 'user-1',
+        email: 'new@example.com',
+        currentPassword: '',
+      }),
     ).rejects.toThrow(BadRequestException);
   });
 
   it('throws NotFoundException when user not found', async () => {
     const svc = makeService({ findById: jest.fn().mockResolvedValue(null) });
     await expect(
-      svc.execute({ userId: 'user-1', email: 'new@example.com', currentPassword: 'pass' }),
+      svc.execute({
+        userId: 'user-1',
+        email: 'new@example.com',
+        currentPassword: 'pass',
+      }),
     ).rejects.toThrow(NotFoundException);
   });
 
   it('throws UnauthorizedException when password is wrong', async () => {
     const svc = makeService({ compare: jest.fn().mockResolvedValue(false) });
     await expect(
-      svc.execute({ userId: 'user-1', email: 'new@example.com', currentPassword: 'wrong' }),
+      svc.execute({
+        userId: 'user-1',
+        email: 'new@example.com',
+        currentPassword: 'wrong',
+      }),
     ).rejects.toThrow(UnauthorizedException);
   });
 
   it('throws ConflictException when email is taken by another user', async () => {
     const svc = makeService({
-      findByEmail: jest.fn().mockResolvedValue({ id: 'other-user', email: 'new@example.com' }),
+      findByEmail: jest
+        .fn()
+        .mockResolvedValue({ id: 'other-user', email: 'new@example.com' }),
     });
     await expect(
-      svc.execute({ userId: 'user-1', email: 'new@example.com', currentPassword: 'pass' }),
+      svc.execute({
+        userId: 'user-1',
+        email: 'new@example.com',
+        currentPassword: 'pass',
+      }),
     ).rejects.toThrow(ConflictException);
   });
 
   it('does not throw ConflictException when email belongs to the same user', async () => {
     const svc = makeService({
-      findByEmail: jest.fn().mockResolvedValue({ id: 'user-1', email: 'same@example.com' }),
+      findByEmail: jest
+        .fn()
+        .mockResolvedValue({ id: 'user-1', email: 'same@example.com' }),
     });
-    const result = await svc.execute({ userId: 'user-1', email: 'same@example.com', currentPassword: 'pass' });
+    const result = await svc.execute({
+      userId: 'user-1',
+      email: 'same@example.com',
+      currentPassword: 'pass',
+    });
     expect(result).not.toBeNull();
   });
 
@@ -79,6 +115,6 @@ describe('UpdateUserProfileService — email change', () => {
       email: 'new@example.com',
       currentPassword: 'correct',
     });
-    expect((result as any).email).toBe('new@example.com');
+    expect(result.email).toBe('new@example.com');
   });
 });

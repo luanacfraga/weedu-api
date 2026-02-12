@@ -2,5 +2,8 @@ import { PlatformSettings } from '@/core/domain/platform-settings/platform-setti
 
 export interface PlatformSettingsRepository {
   get(): Promise<PlatformSettings | null>;
-  upsert(data: { supportWhatsapp?: string | null; supportEmail?: string | null }): Promise<PlatformSettings>;
+  upsert(data: {
+    supportWhatsapp?: string | null;
+    supportEmail?: string | null;
+  }): Promise<PlatformSettings>;
 }

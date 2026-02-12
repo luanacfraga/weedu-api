@@ -1,5 +1,9 @@
+import {
+  NotificationPreference,
+  UserRole,
+  UserStatus,
+} from '@/core/domain/shared/enums';
 import { User } from '@/core/domain/user/user.entity';
-import { NotificationPreference, UserRole, UserStatus } from '@/core/domain/shared/enums';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UserResponseDto {

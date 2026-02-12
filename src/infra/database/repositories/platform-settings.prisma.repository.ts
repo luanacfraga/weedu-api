@@ -6,14 +6,18 @@ import { Injectable } from '@nestjs/common';
 const GLOBAL_ID = 'global';
 
 @Injectable()
-export class PlatformSettingsPrismaRepository implements PlatformSettingsRepository {
+export class PlatformSettingsPrismaRepository
+  implements PlatformSettingsRepository
+{
   constructor(private readonly prisma: PrismaService) {}
 
   async get(): Promise<PlatformSettings | null> {
     const row = await this.prisma.platformSettings.findUnique({
       where: { id: GLOBAL_ID },
     });
-    if (!row) return null;
+    if (!row) {
+      return null;
+    }
     return new PlatformSettings(row.id, row.supportWhatsapp, row.supportEmail);
   }
 
@@ -29,8 +33,12 @@ export class PlatformSettingsPrismaRepository implements PlatformSettingsReposit
         supportEmail: data.supportEmail ?? null,
       },
       update: {
-        ...(data.supportWhatsapp !== undefined && { supportWhatsapp: data.supportWhatsapp }),
-        ...(data.supportEmail !== undefined && { supportEmail: data.supportEmail }),
+        ...(data.supportWhatsapp !== undefined && {
+          supportWhatsapp: data.supportWhatsapp,
+        }),
+        ...(data.supportEmail !== undefined && {
+          supportEmail: data.supportEmail,
+        }),
       },
     });
     return new PlatformSettings(row.id, row.supportWhatsapp, row.supportEmail);

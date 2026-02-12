@@ -1,5 +1,7 @@
-import type { ActionNotification } from '@/core/domain/action/action-notification.entity';
-import type { NotificationType } from '@/core/domain/action/action-notification.entity';
+import type {
+  ActionNotification,
+  NotificationType,
+} from '@/core/domain/action/action-notification.entity';
 
 export interface NotificationWithTitle {
   id: string;
@@ -53,5 +55,8 @@ export interface ActionNotificationRepository {
   /**
    * Busca as últimas notificações de um usuário com o título da ação.
    */
-  findByUserIdWithTitle(userId: string, limit?: number): Promise<NotificationWithTitle[]>;
+  findByUserIdWithTitle(
+    userId: string,
+    limit?: number,
+  ): Promise<NotificationWithTitle[]>;
 }

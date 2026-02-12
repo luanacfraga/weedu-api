@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import { DocumentType, NotificationPreference, UserRole, UserStatus } from '@/core/domain/shared/enums';
+import {
+  DocumentType,
+  NotificationPreference,
+  UserRole,
+  UserStatus,
+} from '@/core/domain/shared/enums';
 import { EntityNotFoundException } from '@/core/domain/shared/exceptions/domain.exception';
 import { User } from '@/core/domain/user/user.entity';
 import type { UserRepository } from '@/core/ports/repositories/user.repository';

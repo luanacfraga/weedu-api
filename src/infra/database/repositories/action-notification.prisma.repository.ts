@@ -2,7 +2,10 @@ import {
   ActionNotification,
   NotificationType,
 } from '@/core/domain/action/action-notification.entity';
-import type { ActionNotificationRepository, NotificationWithTitle } from '@/core/ports/repositories/action-notification.repository';
+import type {
+  ActionNotificationRepository,
+  NotificationWithTitle,
+} from '@/core/ports/repositories/action-notification.repository';
 import { PrismaService } from '@/infra/database/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 import {
@@ -11,7 +14,9 @@ import {
 } from '@prisma/client';
 
 @Injectable()
-export class ActionNotificationPrismaRepository implements ActionNotificationRepository {
+export class ActionNotificationPrismaRepository
+  implements ActionNotificationRepository
+{
   constructor(private readonly prisma: PrismaService) {}
 
   private mapNotificationTypeToPrisma(

@@ -1,4 +1,9 @@
-import { DocumentType, NotificationPreference, UserRole, UserStatus } from '@/core/domain/shared/enums';
+import {
+  DocumentType,
+  NotificationPreference,
+  UserRole,
+  UserStatus,
+} from '@/core/domain/shared/enums';
 import { User } from '@/core/domain/user/user.entity';
 import { Injectable } from '@nestjs/common';
 

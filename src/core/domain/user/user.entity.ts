@@ -1,6 +1,11 @@
 import { ErrorMessages } from '@/shared/constants/error-messages';
-import { DocumentType, NotificationPreference, UserRole, UserStatus } from '../shared/enums';
 import { Entity } from '../shared/entity.base';
+import {
+  DocumentType,
+  NotificationPreference,
+  UserRole,
+  UserStatus,
+} from '../shared/enums';
 import { DomainValidator } from '../shared/validators/domain.validator';
 
 export class User extends Entity {

@@ -1,4 +1,9 @@
-import { DocumentType, NotificationPreference, UserRole, UserStatus } from '@/core/domain/shared/enums';
+import {
+  DocumentType,
+  NotificationPreference,
+  UserRole,
+  UserStatus,
+} from '@/core/domain/shared/enums';
 import { User } from '@/core/domain/user/user.entity';
 import type { UserRepository } from '@/core/ports/repositories/user.repository';
 import { PrismaService } from '@/infra/database/prisma/prisma.service';
@@ -99,7 +104,9 @@ export class UserPrismaRepository implements UserRepository {
         role: user.role,
         status: user.status,
         profileImageUrl: user.profileImageUrl,
-        notificationPreference: this.mapNotificationPreferenceToPrisma(user.notificationPreference),
+        notificationPreference: this.mapNotificationPreferenceToPrisma(
+          user.notificationPreference,
+        ),
       },
       select: this.safeUserSelect,
     });
@@ -122,7 +129,11 @@ export class UserPrismaRepository implements UserRepository {
         role: data.role,
         status: data.status,
         profileImageUrl: data.profileImageUrl,
-        ...(data.notificationPreference !== undefined && { notificationPreference: this.mapNotificationPreferenceToPrisma(data.notificationPreference) }),
+        ...(data.notificationPreference !== undefined && {
+          notificationPreference: this.mapNotificationPreferenceToPrisma(
+            data.notificationPreference,
+          ),
+        }),
       },
       select: this.safeUserSelect,
     });

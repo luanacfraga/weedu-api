@@ -2,8 +2,8 @@ import {
   ActionNotification,
   NotificationType,
 } from '@/core/domain/action/action-notification.entity';
-import { PhoneValidator } from '@/core/domain/shared/phone-validator';
 import { NotificationPreference } from '@/core/domain/shared/enums';
+import { PhoneValidator } from '@/core/domain/shared/phone-validator';
 import type { ActionNotificationRepository } from '@/core/ports/repositories/action-notification.repository';
 import type { SmsService } from '@/core/ports/services/sms-service.port';
 import type { WhatsappService } from '@/core/ports/services/whatsapp-service.port';
@@ -80,15 +80,21 @@ export class SendOverdueActionNotificationService {
     const message = buildOverdueActionSmsBody(params);
 
     // 5. Envia SMS e WhatsApp em paralelo usando Promise.allSettled
-    const sendSms = notificationPreference !== NotificationPreference.WHATSAPP_ONLY;
-    const sendWhatsapp = notificationPreference !== NotificationPreference.SMS_ONLY;
+    const sendSms =
+      notificationPreference !== NotificationPreference.WHATSAPP_ONLY;
+    const sendWhatsapp =
+      notificationPreference !== NotificationPreference.SMS_ONLY;
 
     const [smsResult, whatsappResult] = await Promise.allSettled([
       sendSms
         ? this.smsService.sendSms({ to: normalizedPhone, message })
         : Promise.reject(new Error('SMS desativado pelo usuário')),
       sendWhatsapp
-        ? this.whatsappService.sendMessage({ to: normalizedPhone, templateKey: 'OVERDUE_ACTION', variables })
+        ? this.whatsappService.sendMessage({
+            to: normalizedPhone,
+            templateKey: 'OVERDUE_ACTION',
+            variables,
+          })
         : Promise.reject(new Error('WhatsApp desativado pelo usuário')),
     ]);
 
@@ -98,7 +104,9 @@ export class SendOverdueActionNotificationService {
 
     if (smsResult.status === 'rejected') {
       if (!sendSms) {
-        this.logger.debug(`SMS desativado pela preferência do usuário ${userId}`);
+        this.logger.debug(
+          `SMS desativado pela preferência do usuário ${userId}`,
+        );
       } else {
         const errorMessage =
           smsResult.reason?.message ?? String(smsResult.reason);
@@ -110,7 +118,9 @@ export class SendOverdueActionNotificationService {
 
     if (whatsappResult.status === 'rejected') {
       if (!sendWhatsapp) {
-        this.logger.debug(`WhatsApp desativado pela preferência do usuário ${userId}`);
+        this.logger.debug(
+          `WhatsApp desativado pela preferência do usuário ${userId}`,
+        );
       } else {
         const errorMessage =
           whatsappResult.reason?.message ?? String(whatsappResult.reason);

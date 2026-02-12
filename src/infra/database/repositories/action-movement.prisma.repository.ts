@@ -6,7 +6,9 @@ import { Injectable } from '@nestjs/common';
 import { ActionMovement as PrismaActionMovement } from '@prisma/client';
 
 @Injectable()
-export class ActionMovementPrismaRepository implements ActionMovementRepository {
+export class ActionMovementPrismaRepository
+  implements ActionMovementRepository
+{
   constructor(private readonly prisma: PrismaService) {}
 
   async create(

@@ -1,7 +1,7 @@
+import { NotificationPreference } from '@/core/domain/shared/enums';
 import type { User } from '@/core/domain/user/user.entity';
 import type { UserRepository } from '@/core/ports/repositories/user.repository';
 import type { PasswordHasher } from '@/core/ports/services/password-hasher.port';
-import { NotificationPreference } from '@/core/domain/shared/enums';
 import {
   BadRequestException,
   ConflictException,
@@ -36,7 +36,9 @@ export class UpdateUserProfileService {
     if (typeof input.phone === 'string') {
       const existing = await this.userRepository.findByPhone(input.phone);
       if (existing && existing.id !== input.userId) {
-        throw new ConflictException('Este telefone já está em uso por outro usuário.');
+        throw new ConflictException(
+          'Este telefone já está em uso por outro usuário.',
+        );
       }
       updateData.phone = input.phone;
     }

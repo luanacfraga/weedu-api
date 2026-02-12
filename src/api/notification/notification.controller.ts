@@ -1,6 +1,19 @@
+import { CurrentUser } from '@/api/auth/decorators/current-user.decorator';
+import type { JwtPayload } from '@/application/services/auth/auth.service';
 import { OverdueActionNotificationCron } from '@/application/services/notification/overdue-action-notification.cron';
 import { UserRole } from '@/core/domain/shared/enums';
-import { Controller, Get, HttpCode, HttpStatus, Inject, Post } from '@nestjs/common';
+import type {
+  ActionNotificationRepository,
+  NotificationWithTitle,
+} from '@/core/ports/repositories/action-notification.repository';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Inject,
+  Post,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiForbiddenResponse,
@@ -10,9 +23,6 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Roles } from '../auth/decorators/roles.decorator';
-import type { ActionNotificationRepository, NotificationWithTitle } from '@/core/ports/repositories/action-notification.repository';
-import { CurrentUser } from '@/api/auth/decorators/current-user.decorator';
-import type { JwtPayload } from '@/application/services/auth/auth.service';
 
 @ApiTags('Notifications')
 @ApiBearerAuth()
@@ -63,8 +73,12 @@ export class NotificationController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Histórico de notificações do usuário autenticado' })
   @ApiOkResponse({ description: 'Lista das últimas 20 notificações' })
-  async getMyHistory(@CurrentUser() user: JwtPayload): Promise<NotificationWithTitle[]> {
-    return this.actionNotificationRepository.findByUserIdWithTitle(user.sub, 20);
+  async getMyHistory(
+    @CurrentUser() user: JwtPayload,
+  ): Promise<NotificationWithTitle[]> {
+    return this.actionNotificationRepository.findByUserIdWithTitle(
+      user.sub,
+      20,
+    );
   }
-
 }
