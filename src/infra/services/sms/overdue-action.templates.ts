@@ -11,7 +11,7 @@ export const SMS_TEMPLATES: Record<SmsTemplateKey, SmsTemplateConfig> = {
   OVERDUE_ACTION: {
     placeholders: 3,
     template:
-      'Atenção: a tarefa {{1}} está {{2}}. Prazo: {{3}}. Acesse o ToolDo para mais detalhes.',
+      'Sua tarefa "{{1}}" está {{2}} (prazo: {{3}}). Abra o board do ToolDo agora e execute! Você consegue 💪',
   },
 };
 
