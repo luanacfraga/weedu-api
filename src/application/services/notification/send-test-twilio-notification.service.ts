@@ -1,11 +1,11 @@
 import { PhoneValidator } from '@/core/domain/shared/phone-validator';
-import type { SmsService } from '@/core/ports/services/sms-service.port';
 import type { UserRepository } from '@/core/ports/repositories/user.repository';
+import { WhatsappService } from '@/core/ports/services/whatsapp-service.port';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 
 const TEMP_PHONE_PREFIX = 'temp_';
-const TEST_MESSAGE =
-  'ToolDo - Teste de notificação Twilio. Se você recebeu esta mensagem, o envio está funcionando.';
+// const TEST_MESSAGE =
+//   'ToolDo - Teste de notificação Twilio. Se você recebeu esta mensagem, o envio está funcionando.';
 
 export interface SendTestTwilioResult {
   sent: boolean;
@@ -14,15 +14,15 @@ export interface SendTestTwilioResult {
 
 @Injectable()
 export class SendTestTwilioNotificationService {
-  private readonly logger = new Logger(
-    SendTestTwilioNotificationService.name,
-  );
+  private readonly logger = new Logger(SendTestTwilioNotificationService.name);
 
   constructor(
     @Inject('UserRepository')
     private readonly userRepository: UserRepository,
-    @Inject('SmsService')
-    private readonly smsService: SmsService,
+    // @Inject('SmsService')
+    // private readonly smsService: SmsService,
+    @Inject('WhatsappService')
+    private readonly whatsappService: WhatsappService,
   ) {}
 
   /**
@@ -49,7 +49,9 @@ export class SendTestTwilioNotificationService {
       normalizedPhone = PhoneValidator.normalize(trimmedPhone);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
-      this.logger.warn(`Telefone inválido para teste: ${trimmedPhone} - ${errorMessage}`);
+      this.logger.warn(
+        `Telefone inválido para teste: ${trimmedPhone} - ${errorMessage}`,
+      );
       return {
         sent: false,
         message: `Telefone inválido. Use formato E.164 (ex: +5511999999999). Detalhe: ${errorMessage}`,
@@ -57,11 +59,18 @@ export class SendTestTwilioNotificationService {
     }
 
     try {
-      await this.smsService.sendSms({
+      await this.whatsappService.sendMessage({
         to: normalizedPhone,
-        message: TEST_MESSAGE,
+        templateKey: 'OVERDUE_ACTION',
+        variables: [
+          'Teste de notificação WhatsApp',
+          'Atrasada para iniciar',
+          new Date().toLocaleDateString('pt-BR'),
+        ],
       });
-      this.logger.log(`SMS de teste enviado para ${normalizedPhone} (usuário ${userId})`);
+      this.logger.log(
+        `WPP de teste enviado para ${normalizedPhone} (usuário ${userId})`,
+      );
       return {
         sent: true,
         message: 'SMS de teste enviado com sucesso para o seu telefone.',
