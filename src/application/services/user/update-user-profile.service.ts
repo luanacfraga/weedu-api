@@ -54,7 +54,7 @@ export class UpdateUserProfileService {
     }
 
     if (typeof input.email === 'string') {
-      if (!input.currentPassword) {
+      if (typeof input.currentPassword !== 'string' || input.currentPassword.length === 0) {
         throw new BadRequestException(
           'A senha atual é obrigatória para alterar o email.',
         );
