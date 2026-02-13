@@ -209,10 +209,7 @@ export class MoveActionService {
     }
 
     // Notificação: ação concluída (movida para DONE com actualEndDate)
-    if (
-      toStatus === ActionStatus.DONE &&
-      result.action.actualEndDate
-    ) {
+    if (toStatus === ActionStatus.DONE && result.action.actualEndDate) {
       try {
         const [user, company] = await Promise.all([
           this.userRepository.findById(result.action.responsibleId),

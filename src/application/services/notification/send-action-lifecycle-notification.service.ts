@@ -48,7 +48,9 @@ export class SendActionLifecycleNotificationService {
       normalizedPhone = PhoneValidator.normalize(trimmedPhone);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      this.logger.warn(`Telefone inválido para notificação: ${trimmedPhone} - ${msg}`);
+      this.logger.warn(
+        `Telefone inválido para notificação: ${trimmedPhone} - ${msg}`,
+      );
       return { smsSent: false, whatsappSent: false };
     }
 

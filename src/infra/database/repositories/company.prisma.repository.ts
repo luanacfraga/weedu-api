@@ -21,7 +21,9 @@ export class CompanyPrismaRepository implements CompanyRepository {
         description: company.description,
         adminId: company.adminId,
         isBlocked: company.isBlocked,
-        notificationPreference: this.mapNotificationPreferenceToPrisma(company.notificationPreference),
+        notificationPreference: this.mapNotificationPreferenceToPrisma(
+          company.notificationPreference,
+        ),
       },
     });
 
@@ -79,7 +81,8 @@ export class CompanyPrismaRepository implements CompanyRepository {
       updateData.isBlocked = data.isBlocked;
     }
     if (data.notificationPreference !== undefined) {
-      updateData.notificationPreference = this.mapNotificationPreferenceToPrisma(data.notificationPreference);
+      updateData.notificationPreference =
+        this.mapNotificationPreferenceToPrisma(data.notificationPreference);
     }
     const updated = await client.company.update({
       where: { id },
@@ -103,7 +106,9 @@ export class CompanyPrismaRepository implements CompanyRepository {
       description: prismaCompany.description,
       adminId: prismaCompany.adminId,
       isBlocked: prismaCompany.isBlocked,
-      notificationPreference: this.mapNotificationPreferenceToDomain(prismaCompany.notificationPreference),
+      notificationPreference: this.mapNotificationPreferenceToDomain(
+        prismaCompany.notificationPreference,
+      ),
     });
   }
 

@@ -35,7 +35,10 @@ export class PlatformSettingsPrismaRepository
       } else if (digits.length >= 10 && digits.length <= 11) {
         // Formato brasileiro (10 ou 11 dígitos), adiciona +55
         normalizedWhatsapp = `+55${digits}`;
-      } else if (data.supportWhatsapp.startsWith('+55') && /^\+55\d{10,11}$/.test(data.supportWhatsapp)) {
+      } else if (
+        data.supportWhatsapp.startsWith('+55') &&
+        /^\+55\d{10,11}$/.test(data.supportWhatsapp)
+      ) {
         // Já está no formato E.164 correto
         normalizedWhatsapp = data.supportWhatsapp;
       }
