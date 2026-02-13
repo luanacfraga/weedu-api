@@ -115,6 +115,7 @@ export class CompanyController {
       name: createCompanyDto.name,
       description: createCompanyDto.description,
       adminId,
+      notificationPreference: createCompanyDto.notificationPreference,
     });
 
     return CompanyResponseDto.fromDomain(result.company);

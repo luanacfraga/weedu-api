@@ -1,4 +1,5 @@
 import { Company } from '@/core/domain/company/company.entity';
+import { NotificationPreference } from '@/core/domain/shared/enums';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CompanyResponseDto {
@@ -33,6 +34,13 @@ export class CompanyResponseDto {
   })
   isBlocked!: boolean;
 
+  @ApiProperty({
+    description: 'Canal de notificação configurado para a empresa',
+    enum: NotificationPreference,
+    example: NotificationPreference.BOTH,
+  })
+  notificationPreference!: NotificationPreference;
+
   static fromDomain(company: Company): CompanyResponseDto {
     const response = new CompanyResponseDto();
     response.id = company.id;
@@ -40,6 +48,7 @@ export class CompanyResponseDto {
     response.description = company.description;
     response.adminId = company.adminId;
     response.isBlocked = company.isBlocked;
+    response.notificationPreference = company.notificationPreference;
     return response;
   }
 }

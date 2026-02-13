@@ -3,6 +3,7 @@ import {
   UpdateCompanyData,
 } from '@/core/domain/company/company.entity';
 import { EntityNotFoundException } from '@/core/domain/shared/exceptions/domain.exception';
+import { NotificationPreference } from '@/core/domain/shared/enums';
 import type { CompanyRepository } from '@/core/ports/repositories/company.repository';
 import { Inject, Injectable } from '@nestjs/common';
 
@@ -10,6 +11,7 @@ export interface UpdateCompanyInput {
   id: string;
   name?: string;
   description?: string;
+  notificationPreference?: NotificationPreference;
 }
 
 export interface UpdateCompanyOutput {
@@ -35,6 +37,9 @@ export class UpdateCompanyService {
     }
     if (input.description !== undefined) {
       updateData.description = input.description;
+    }
+    if (input.notificationPreference !== undefined) {
+      updateData.notificationPreference = input.notificationPreference;
     }
 
     const updatedCompany = await this.companyRepository.update(

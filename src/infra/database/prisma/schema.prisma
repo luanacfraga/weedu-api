@@ -119,7 +119,8 @@ model Company {
   name        String
   description String?
   adminId     String   @map("admin_id")
-  isBlocked   Boolean  @default(false) @map("is_blocked")
+  isBlocked              Boolean                @default(false) @map("is_blocked")
+  notificationPreference NotificationPreference @default(BOTH) @map("notification_preference")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 

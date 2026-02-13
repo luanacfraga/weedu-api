@@ -20,7 +20,7 @@ import { UpdatePlatformSettingsDto } from './dto/update-platform-settings.dto';
 @ApiTags('platform-settings')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Controller('api/v1/platform-settings')
+@Controller('platform-settings')
 export class PlatformSettingsController {
   constructor(
     @Inject('PlatformSettingsRepository')

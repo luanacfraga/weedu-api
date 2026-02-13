@@ -89,7 +89,7 @@ export class OverdueActionNotificationCron {
                   estimatedStartDate: action.estimatedStartDate,
                   estimatedEndDate: action.estimatedEndDate,
                 },
-                user.notificationPreference,
+                company.notificationPreference,
               );
 
             if (result.smsSent || result.whatsappSent) {

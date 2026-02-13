@@ -3,6 +3,7 @@ import {
   DomainValidationException,
   EntityNotFoundException,
 } from '@/core/domain/shared/exceptions/domain.exception';
+import { NotificationPreference } from '@/core/domain/shared/enums';
 import type { CompanyRepository } from '@/core/ports/repositories/company.repository';
 import type { PlanRepository } from '@/core/ports/repositories/plan.repository';
 import type { SubscriptionRepository } from '@/core/ports/repositories/subscription.repository';
@@ -15,6 +16,7 @@ export interface CreateCompanyInput {
   adminId: string;
   name: string;
   description?: string;
+  notificationPreference?: NotificationPreference;
 }
 
 export interface CreateCompanyOutput {
@@ -49,6 +51,7 @@ export class CreateCompanyService {
       name: input.name,
       description: input.description,
       adminId: input.adminId,
+      notificationPreference: input.notificationPreference,
     });
 
     const createdCompany = await this.companyRepository.create(company);

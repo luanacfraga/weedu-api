@@ -2,10 +2,11 @@ import {
   Company,
   UpdateCompanyData,
 } from '@/core/domain/company/company.entity';
+import { NotificationPreference } from '@/core/domain/shared/enums';
 import type { CompanyRepository } from '@/core/ports/repositories/company.repository';
 import { PrismaService } from '@/infra/database/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
-import { Company as PrismaCompany } from '@prisma/client';
+import { $Enums, Company as PrismaCompany } from '@prisma/client';
 
 @Injectable()
 export class CompanyPrismaRepository implements CompanyRepository {
@@ -20,6 +21,7 @@ export class CompanyPrismaRepository implements CompanyRepository {
         description: company.description,
         adminId: company.adminId,
         isBlocked: company.isBlocked,
+        notificationPreference: this.mapNotificationPreferenceToPrisma(company.notificationPreference),
       },
     });
 
@@ -76,6 +78,9 @@ export class CompanyPrismaRepository implements CompanyRepository {
     if (data.isBlocked !== undefined) {
       updateData.isBlocked = data.isBlocked;
     }
+    if (data.notificationPreference !== undefined) {
+      updateData.notificationPreference = this.mapNotificationPreferenceToPrisma(data.notificationPreference);
+    }
     const updated = await client.company.update({
       where: { id },
       data: updateData,
@@ -98,6 +103,33 @@ export class CompanyPrismaRepository implements CompanyRepository {
       description: prismaCompany.description,
       adminId: prismaCompany.adminId,
       isBlocked: prismaCompany.isBlocked,
+      notificationPreference: this.mapNotificationPreferenceToDomain(prismaCompany.notificationPreference),
     });
+  }
+
+  private mapNotificationPreferenceToPrisma(
+    pref: NotificationPreference,
+  ): $Enums.NotificationPreference {
+    switch (pref) {
+      case NotificationPreference.SMS_ONLY:
+        return $Enums.NotificationPreference.SMS_ONLY;
+      case NotificationPreference.WHATSAPP_ONLY:
+        return $Enums.NotificationPreference.WHATSAPP_ONLY;
+      case NotificationPreference.BOTH:
+        return $Enums.NotificationPreference.BOTH;
+    }
+  }
+
+  private mapNotificationPreferenceToDomain(
+    pref: $Enums.NotificationPreference,
+  ): NotificationPreference {
+    switch (pref) {
+      case $Enums.NotificationPreference.SMS_ONLY:
+        return NotificationPreference.SMS_ONLY;
+      case $Enums.NotificationPreference.WHATSAPP_ONLY:
+        return NotificationPreference.WHATSAPP_ONLY;
+      case $Enums.NotificationPreference.BOTH:
+        return NotificationPreference.BOTH;
+    }
   }
 }
