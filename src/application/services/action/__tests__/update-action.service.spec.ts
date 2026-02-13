@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method */
+import { SendActionLifecycleNotificationService } from '@/application/services/notification/send-action-lifecycle-notification.service';
 import { SendOverdueActionNotificationService } from '@/application/services/notification/send-overdue-action-notification.service';
 import { Action } from '@/core/domain/action/action.entity';
 import { ActionPriority, ActionStatus } from '@/core/domain/shared/enums';
@@ -74,6 +75,19 @@ describe('UpdateActionService - Date-Driven Status Transitions', () => {
         .mockResolvedValue({ smsSent: false, whatsappSent: false }),
     };
 
+    const mockSendActionLifecycleNotificationService = {
+      sendActionStarted: jest
+        .fn()
+        .mockResolvedValue({ smsSent: false, whatsappSent: false }),
+      sendActionCompleted: jest
+        .fn()
+        .mockResolvedValue({ smsSent: false, whatsappSent: false }),
+    };
+
+    const mockCompanyRepository = {
+      findById: jest.fn().mockResolvedValue(null),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UpdateActionService,
@@ -90,12 +104,20 @@ describe('UpdateActionService - Date-Driven Status Transitions', () => {
           useValue: mockChecklistItemRepository,
         },
         {
+          provide: 'CompanyRepository',
+          useValue: mockCompanyRepository,
+        },
+        {
           provide: 'TransactionManager',
           useValue: mockTransactionManager,
         },
         {
           provide: SendOverdueActionNotificationService,
           useValue: mockSendOverdueActionNotificationService,
+        },
+        {
+          provide: SendActionLifecycleNotificationService,
+          useValue: mockSendActionLifecycleNotificationService,
         },
       ],
     }).compile();

@@ -14,6 +14,7 @@ import { ErrorMessages } from '@/shared/constants/error-messages';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 
+import { SendActionLifecycleNotificationService } from '@/application/services/notification/send-action-lifecycle-notification.service';
 import { SendOverdueActionNotificationService } from '@/application/services/notification/send-overdue-action-notification.service';
 
 export interface UpdateActionInput {
@@ -55,6 +56,7 @@ export class UpdateActionService {
     @Inject('TransactionManager')
     private readonly transactionManager: TransactionManager,
     private readonly sendOverdueActionNotificationService: SendOverdueActionNotificationService,
+    private readonly sendActionLifecycleNotificationService: SendActionLifecycleNotificationService,
   ) {}
 
   async execute(input: UpdateActionInput): Promise<UpdateActionOutput> {
@@ -261,6 +263,69 @@ export class UpdateActionService {
         const msg = err instanceof Error ? err.message : String(err);
         this.logger.warn(
           `Falha ao enviar notificação de ação atrasada (ação ${updated.id}): ${msg}`,
+        );
+      }
+    }
+
+    // Notificação: ação iniciada (actualStartDate definido, TODO → IN_PROGRESS)
+    if (
+      statusChanged &&
+      action.status === ActionStatus.TODO &&
+      updated.status === ActionStatus.IN_PROGRESS &&
+      updated.actualStartDate
+    ) {
+      try {
+        const [user, company] = await Promise.all([
+          this.userRepository.findById(updated.responsibleId),
+          this.companyRepository.findById(updated.companyId),
+        ]);
+        if (user?.phone) {
+          await this.sendActionLifecycleNotificationService.sendActionStarted(
+            updated.id,
+            updated.responsibleId,
+            user.phone,
+            {
+              taskTitle: updated.title,
+              startedDate: updated.actualStartDate,
+            },
+            company?.notificationPreference,
+          );
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        this.logger.warn(
+          `Falha ao enviar notificação de ação iniciada (ação ${updated.id}): ${msg}`,
+        );
+      }
+    }
+
+    // Notificação: ação concluída (actualEndDate definido, → DONE)
+    if (
+      statusChanged &&
+      updated.status === ActionStatus.DONE &&
+      updated.actualEndDate
+    ) {
+      try {
+        const [user, company] = await Promise.all([
+          this.userRepository.findById(updated.responsibleId),
+          this.companyRepository.findById(updated.companyId),
+        ]);
+        if (user?.phone) {
+          await this.sendActionLifecycleNotificationService.sendActionCompleted(
+            updated.id,
+            updated.responsibleId,
+            user.phone,
+            {
+              taskTitle: updated.title,
+              completedDate: updated.actualEndDate,
+            },
+            company?.notificationPreference,
+          );
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        this.logger.warn(
+          `Falha ao enviar notificação de ação concluída (ação ${updated.id}): ${msg}`,
         );
       }
     }
