@@ -31,7 +31,7 @@ export class SendActionLifecycleNotificationService {
     phone: string,
     userId: string,
     preference: NotificationPreference | undefined,
-    buildMessage: (isWhatsapp: boolean) => string,
+    buildMessage: () => string,
     buildVariables: () => string[],
     templateKey: 'ACTION_STARTED' | 'ACTION_COMPLETED',
   ): Promise<{ smsSent: boolean; whatsappSent: boolean }> {
@@ -59,7 +59,7 @@ export class SendActionLifecycleNotificationService {
     const sendWhatsapp = pref !== NotificationPreference.SMS_ONLY;
 
     const variables = buildVariables();
-    const message = buildMessage(false);
+    const message = buildMessage();
 
     const [smsResult, whatsappResult] = await Promise.allSettled([
       sendSms
@@ -111,7 +111,7 @@ export class SendActionLifecycleNotificationService {
       phone,
       userId,
       notificationPreference,
-      (isWa) => buildActionStartedSmsBody(params, isWa),
+      () => buildActionStartedSmsBody(params),
       () => buildActionStartedVariables(params),
       'ACTION_STARTED',
     );
@@ -131,7 +131,7 @@ export class SendActionLifecycleNotificationService {
       phone,
       userId,
       notificationPreference,
-      (isWa) => buildActionCompletedSmsBody(params, isWa),
+      () => buildActionCompletedSmsBody(params),
       () => buildActionCompletedVariables(params),
       'ACTION_COMPLETED',
     );

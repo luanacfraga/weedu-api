@@ -3,10 +3,10 @@ import type {
   WhatsappService,
 } from '@/core/ports/services/whatsapp-service.port';
 import { withRetry } from '@/infra/services/shared/retry.helper';
-import { TEMPLATE_PLACEHOLDERS } from '@/infra/services/sms/action-notification.templates';
 import { TwilioConfig } from '@/infra/services/twilio/twilio.config';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import twilio from 'twilio';
+import * as templates from '../templates/wpp-message-templates.json';
 
 const WHATSAPP_TIMEOUT_MS = 10000;
 
@@ -27,15 +27,22 @@ export class TwilioWhatsappServiceImpl implements WhatsappService {
     to,
     variables,
   }: SendWhatsappMessageInput): Promise<void> {
-    const placeholders = TEMPLATE_PLACEHOLDERS[templateKey];
-    if (variables.length !== placeholders) {
+    const template = templates[templateKey];
+    if (variables.length !== template.placeholders) {
       throw new BadRequestException(
-        `Template "${templateKey}": esperadas ${placeholders} variáveis, recebidas ${variables.length}.`,
+        `Template "${templateKey}": esperadas ${template.placeholders} variáveis, recebidas ${variables.length}.`,
+      );
+    }
+
+    if (!template.sid) {
+      throw new Error(
+        `WhatsApp Content SID não configurado para o template "${templateKey}". ` +
+          `Preencha o campo "sid" em wpp-message-templates.json.`,
       );
     }
 
     await withRetry(
-      () => this.sendWhatsappWithTimeout(templateKey, to, variables),
+      () => this.sendWhatsappWithTimeout(template.sid, to, variables),
       {
         maxRetries: 3,
         delayMs: 1000,
@@ -49,7 +56,7 @@ export class TwilioWhatsappServiceImpl implements WhatsappService {
   }
 
   private async sendWhatsappWithTimeout(
-    templateKey: SendWhatsappMessageInput['templateKey'],
+    contentSid: string,
     to: string,
     variables: string[],
   ): Promise<void> {
@@ -58,13 +65,10 @@ export class TwilioWhatsappServiceImpl implements WhatsappService {
       contentVariables[(index + 1).toString()] = value;
     });
 
-    const contentSid = this.twilioConfig.getWhatsappContentSid(templateKey);
-    const from = this.twilioConfig.getWhatsappFrom();
-
     const sendPromise = this.client.messages.create({
       contentSid,
       contentVariables: JSON.stringify(contentVariables),
-      from,
+      from: this.twilioConfig.getWhatsappFrom(),
       to: `whatsapp:${to}`,
     });
 

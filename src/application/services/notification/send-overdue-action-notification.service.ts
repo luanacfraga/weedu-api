@@ -77,7 +77,7 @@ export class SendOverdueActionNotificationService {
 
     // 4. Prepara mensagens
     const variables = buildOverdueActionVariables(params);
-    const message = buildOverdueActionSmsBody(params, false); // SMS sem emojis extras
+    const message = buildOverdueActionSmsBody(params);
 
     // 5. Envia SMS e WhatsApp em paralelo usando Promise.allSettled
     const sendSms =
