@@ -128,9 +128,13 @@ export class ActionNotificationPrismaRepository
   async findByUserIdWithTitle(
     userId: string,
     limit = 20,
+    companyId?: string,
   ): Promise<NotificationWithTitle[]> {
     const rows = await this.prisma.actionNotification.findMany({
-      where: { userId },
+      where: {
+        userId,
+        ...(companyId ? { action: { companyId } } : {}),
+      },
       orderBy: { sentAt: 'desc' },
       take: limit,
       include: {

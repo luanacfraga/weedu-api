@@ -4,6 +4,7 @@ import { ActionStatus } from '@/core/domain/shared/enums';
 import { EntityNotFoundException } from '@/core/domain/shared/exceptions/domain.exception';
 import type { ActionMovementRepository } from '@/core/ports/repositories/action-movement.repository';
 import type { ActionRepository } from '@/core/ports/repositories/action.repository';
+import type { CompanyRepository } from '@/core/ports/repositories/company.repository';
 import type { UserRepository } from '@/core/ports/repositories/user.repository';
 import type { TransactionManager } from '@/core/ports/services/transaction-manager.port';
 import { Inject, Injectable, Logger } from '@nestjs/common';
@@ -45,6 +46,8 @@ export class MoveActionService {
     private readonly actionMovementRepository: ActionMovementRepository,
     @Inject('UserRepository')
     private readonly userRepository: UserRepository,
+    @Inject('CompanyRepository')
+    private readonly companyRepository: CompanyRepository,
     @Inject('TransactionManager')
     private readonly transactionManager: TransactionManager,
     private readonly sendOverdueActionNotificationService: SendOverdueActionNotificationService,
@@ -145,9 +148,10 @@ export class MoveActionService {
     // Notifica responsável quando a ação passa a estar atrasada (SMS/WhatsApp)
     if (action.lateStatus === null && result.action.lateStatus !== null) {
       try {
-        const user = await this.userRepository.findById(
-          result.action.responsibleId,
-        );
+        const [user, company] = await Promise.all([
+          this.userRepository.findById(result.action.responsibleId),
+          this.companyRepository.findById(result.action.companyId),
+        ]);
         if (user?.phone) {
           await this.sendOverdueActionNotificationService.execute(
             result.action.id,
@@ -160,6 +164,7 @@ export class MoveActionService {
               estimatedStartDate: result.action.estimatedStartDate,
               estimatedEndDate: result.action.estimatedEndDate,
             },
+            company?.notificationPreference,
           );
         }
       } catch (err) {

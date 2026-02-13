@@ -54,9 +54,11 @@ export interface ActionNotificationRepository {
 
   /**
    * Busca as últimas notificações de um usuário com o título da ação.
+   * Se companyId for informado, filtra apenas as notificações da empresa.
    */
   findByUserIdWithTitle(
     userId: string,
     limit?: number,
+    companyId?: string,
   ): Promise<NotificationWithTitle[]>;
 }

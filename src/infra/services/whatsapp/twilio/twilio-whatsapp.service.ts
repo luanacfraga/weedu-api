@@ -3,7 +3,7 @@ import type {
   WhatsappService,
 } from '@/core/ports/services/whatsapp-service.port';
 import { withRetry } from '@/infra/services/shared/retry.helper';
-import { TEMPLATE_PLACEHOLDERS } from '@/infra/services/sms/overdue-action.templates';
+import { TEMPLATE_PLACEHOLDERS } from '@/infra/services/sms/action-notification.templates';
 import { TwilioConfig } from '@/infra/services/twilio/twilio.config';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import twilio from 'twilio';

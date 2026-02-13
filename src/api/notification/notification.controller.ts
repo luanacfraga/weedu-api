@@ -13,6 +13,7 @@ import {
   HttpStatus,
   Inject,
   Post,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -75,10 +76,12 @@ export class NotificationController {
   @ApiOkResponse({ description: 'Lista das últimas 20 notificações' })
   async getMyHistory(
     @CurrentUser() user: JwtPayload,
+    @Query('companyId') companyId?: string,
   ): Promise<NotificationWithTitle[]> {
     return this.actionNotificationRepository.findByUserIdWithTitle(
       user.sub,
       20,
+      companyId,
     );
   }
 }

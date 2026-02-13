@@ -21,6 +21,17 @@ export class TwilioConfig {
         this.configService.get('TWILIO_WHATSAPP_OVERDUE_ACTION_CONTENT_SID') ??
           '',
       ],
+      [
+        'ACTION_STARTED',
+        this.configService.get('TWILIO_WHATSAPP_ACTION_STARTED_CONTENT_SID') ??
+          '',
+      ],
+      [
+        'ACTION_COMPLETED',
+        this.configService.get(
+          'TWILIO_WHATSAPP_ACTION_COMPLETED_CONTENT_SID',
+        ) ?? '',
+      ],
     ]);
   }
 

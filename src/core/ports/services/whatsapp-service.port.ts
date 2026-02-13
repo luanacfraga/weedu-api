@@ -1,4 +1,4 @@
-export type WhatsappTemplateKey = 'OVERDUE_ACTION';
+export type WhatsappTemplateKey = 'OVERDUE_ACTION' | 'ACTION_STARTED' | 'ACTION_COMPLETED';
 
 export interface SendWhatsappMessageInput {
   to: string;

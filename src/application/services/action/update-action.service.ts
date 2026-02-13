@@ -7,6 +7,7 @@ import {
 } from '@/core/domain/shared/exceptions/domain.exception';
 import type { ActionRepository } from '@/core/ports/repositories/action.repository';
 import type { ChecklistItemRepository } from '@/core/ports/repositories/checklist-item.repository';
+import type { CompanyRepository } from '@/core/ports/repositories/company.repository';
 import type { UserRepository } from '@/core/ports/repositories/user.repository';
 import type { TransactionManager } from '@/core/ports/services/transaction-manager.port';
 import { ErrorMessages } from '@/shared/constants/error-messages';
@@ -49,6 +50,8 @@ export class UpdateActionService {
     private readonly userRepository: UserRepository,
     @Inject('ChecklistItemRepository')
     private readonly checklistItemRepository: ChecklistItemRepository,
+    @Inject('CompanyRepository')
+    private readonly companyRepository: CompanyRepository,
     @Inject('TransactionManager')
     private readonly transactionManager: TransactionManager,
     private readonly sendOverdueActionNotificationService: SendOverdueActionNotificationService,
@@ -234,7 +237,10 @@ export class UpdateActionService {
       action.lateStatus === null && updated.calculateLateStatus(now) !== null;
     if (becameLate) {
       try {
-        const user = await this.userRepository.findById(updated.responsibleId);
+        const [user, company] = await Promise.all([
+          this.userRepository.findById(updated.responsibleId),
+          this.companyRepository.findById(updated.companyId),
+        ]);
         if (user?.phone) {
           await this.sendOverdueActionNotificationService.execute(
             updated.id,
@@ -248,6 +254,7 @@ export class UpdateActionService {
               estimatedStartDate: updated.estimatedStartDate,
               estimatedEndDate: updated.estimatedEndDate,
             },
+            company?.notificationPreference,
           );
         }
       } catch (err) {

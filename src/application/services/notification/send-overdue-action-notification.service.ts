@@ -11,7 +11,7 @@ import {
   buildOverdueActionSmsBody,
   buildOverdueActionVariables,
   type OverdueActionSmsParams,
-} from '@/infra/services/sms/overdue-action.templates';
+} from '@/infra/services/sms/action-notification.templates';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 
@@ -77,7 +77,7 @@ export class SendOverdueActionNotificationService {
 
     // 4. Prepara mensagens
     const variables = buildOverdueActionVariables(params);
-    const message = buildOverdueActionSmsBody(params);
+    const message = buildOverdueActionSmsBody(params, false); // SMS sem emojis extras
 
     // 5. Envia SMS e WhatsApp em paralelo usando Promise.allSettled
     const sendSms =
