@@ -1,4 +1,4 @@
-import { ActionStatus } from '@/core/domain/shared/enums';
+import { ActionLateStatus, ActionStatus } from '@/core/domain/shared/enums';
 import { ApiProperty } from '@nestjs/swagger';
 
 class CompanyDashboardSummaryActionItemDto {
@@ -11,8 +11,12 @@ class CompanyDashboardSummaryActionItemDto {
   @ApiProperty({ enum: ActionStatus, example: ActionStatus.IN_PROGRESS })
   status!: ActionStatus;
 
-  @ApiProperty({ example: false })
-  isLate!: boolean;
+  @ApiProperty({
+    enum: ActionLateStatus,
+    nullable: true,
+    example: ActionLateStatus.LATE_TO_START,
+  })
+  lateStatus!: ActionLateStatus | null;
 
   @ApiProperty({ example: false })
   isBlocked!: boolean;

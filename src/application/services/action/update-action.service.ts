@@ -7,11 +7,15 @@ import {
 } from '@/core/domain/shared/exceptions/domain.exception';
 import type { ActionRepository } from '@/core/ports/repositories/action.repository';
 import type { ChecklistItemRepository } from '@/core/ports/repositories/checklist-item.repository';
+import type { CompanyRepository } from '@/core/ports/repositories/company.repository';
 import type { UserRepository } from '@/core/ports/repositories/user.repository';
 import type { TransactionManager } from '@/core/ports/services/transaction-manager.port';
 import { ErrorMessages } from '@/shared/constants/error-messages';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+
+import { SendActionLifecycleNotificationService } from '@/application/services/notification/send-action-lifecycle-notification.service';
+import { SendOverdueActionNotificationService } from '@/application/services/notification/send-overdue-action-notification.service';
 
 export interface UpdateActionInput {
   actionId: string;
@@ -38,6 +42,8 @@ export interface UpdateActionOutput {
 
 @Injectable()
 export class UpdateActionService {
+  private readonly logger = new Logger(UpdateActionService.name);
+
   constructor(
     @Inject('ActionRepository')
     private readonly actionRepository: ActionRepository,
@@ -45,8 +51,12 @@ export class UpdateActionService {
     private readonly userRepository: UserRepository,
     @Inject('ChecklistItemRepository')
     private readonly checklistItemRepository: ChecklistItemRepository,
+    @Inject('CompanyRepository')
+    private readonly companyRepository: CompanyRepository,
     @Inject('TransactionManager')
     private readonly transactionManager: TransactionManager,
+    private readonly sendOverdueActionNotificationService: SendOverdueActionNotificationService,
+    private readonly sendActionLifecycleNotificationService: SendActionLifecycleNotificationService,
   ) {}
 
   async execute(input: UpdateActionInput): Promise<UpdateActionOutput> {
@@ -222,6 +232,103 @@ export class UpdateActionService {
         return updatedAction;
       }
     });
+
+    // Notifica responsável quando a ação passa a estar atrasada (SMS/WhatsApp)
+    const now = new Date();
+    const becameLate =
+      action.lateStatus === null && updated.calculateLateStatus(now) !== null;
+    if (becameLate) {
+      try {
+        const [user, company] = await Promise.all([
+          this.userRepository.findById(updated.responsibleId),
+          this.companyRepository.findById(updated.companyId),
+        ]);
+        if (user?.phone) {
+          await this.sendOverdueActionNotificationService.execute(
+            updated.id,
+            updated.responsibleId,
+            user.phone,
+            {
+              taskTitle: updated.title,
+              status: updated.status,
+              lateStatus:
+                updated.calculateLateStatus(now) ?? updated.lateStatus,
+              estimatedStartDate: updated.estimatedStartDate,
+              estimatedEndDate: updated.estimatedEndDate,
+            },
+            company?.notificationPreference,
+          );
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        this.logger.warn(
+          `Falha ao enviar notificação de ação atrasada (ação ${updated.id}): ${msg}`,
+        );
+      }
+    }
+
+    // Notificação: ação iniciada (actualStartDate definido, TODO → IN_PROGRESS)
+    if (
+      statusChanged &&
+      action.status === ActionStatus.TODO &&
+      updated.status === ActionStatus.IN_PROGRESS &&
+      updated.actualStartDate
+    ) {
+      try {
+        const [user, company] = await Promise.all([
+          this.userRepository.findById(updated.responsibleId),
+          this.companyRepository.findById(updated.companyId),
+        ]);
+        if (user?.phone) {
+          await this.sendActionLifecycleNotificationService.sendActionStarted(
+            updated.id,
+            updated.responsibleId,
+            user.phone,
+            {
+              taskTitle: updated.title,
+              startedDate: updated.actualStartDate,
+            },
+            company?.notificationPreference,
+          );
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        this.logger.warn(
+          `Falha ao enviar notificação de ação iniciada (ação ${updated.id}): ${msg}`,
+        );
+      }
+    }
+
+    // Notificação: ação concluída (actualEndDate definido, → DONE)
+    if (
+      statusChanged &&
+      updated.status === ActionStatus.DONE &&
+      updated.actualEndDate
+    ) {
+      try {
+        const [user, company] = await Promise.all([
+          this.userRepository.findById(updated.responsibleId),
+          this.companyRepository.findById(updated.companyId),
+        ]);
+        if (user?.phone) {
+          await this.sendActionLifecycleNotificationService.sendActionCompleted(
+            updated.id,
+            updated.responsibleId,
+            user.phone,
+            {
+              taskTitle: updated.title,
+              completedDate: updated.actualEndDate,
+            },
+            company?.notificationPreference,
+          );
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        this.logger.warn(
+          `Falha ao enviar notificação de ação concluída (ação ${updated.id}): ${msg}`,
+        );
+      }
+    }
 
     return {
       action: updated,

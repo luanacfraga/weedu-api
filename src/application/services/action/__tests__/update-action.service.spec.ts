@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/unbound-method */
+import { SendActionLifecycleNotificationService } from '@/application/services/notification/send-action-lifecycle-notification.service';
+import { SendOverdueActionNotificationService } from '@/application/services/notification/send-overdue-action-notification.service';
 import { Action } from '@/core/domain/action/action.entity';
 import { ActionPriority, ActionStatus } from '@/core/domain/shared/enums';
 import type { ActionRepository } from '@/core/ports/repositories/action.repository';
@@ -33,7 +35,7 @@ describe('UpdateActionService - Date-Driven Status Transitions', () => {
       new Date('2024-01-31'),
       actualStartDate,
       actualEndDate,
-      false,
+      null,
       false,
       null,
       mockCompanyId,
@@ -67,6 +69,25 @@ describe('UpdateActionService - Date-Driven Status Transitions', () => {
       execute: jest.fn((callback) => callback(null)),
     };
 
+    const mockSendOverdueActionNotificationService = {
+      execute: jest
+        .fn()
+        .mockResolvedValue({ smsSent: false, whatsappSent: false }),
+    };
+
+    const mockSendActionLifecycleNotificationService = {
+      sendActionStarted: jest
+        .fn()
+        .mockResolvedValue({ smsSent: false, whatsappSent: false }),
+      sendActionCompleted: jest
+        .fn()
+        .mockResolvedValue({ smsSent: false, whatsappSent: false }),
+    };
+
+    const mockCompanyRepository = {
+      findById: jest.fn().mockResolvedValue(null),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UpdateActionService,
@@ -83,8 +104,20 @@ describe('UpdateActionService - Date-Driven Status Transitions', () => {
           useValue: mockChecklistItemRepository,
         },
         {
+          provide: 'CompanyRepository',
+          useValue: mockCompanyRepository,
+        },
+        {
           provide: 'TransactionManager',
           useValue: mockTransactionManager,
+        },
+        {
+          provide: SendOverdueActionNotificationService,
+          useValue: mockSendOverdueActionNotificationService,
+        },
+        {
+          provide: SendActionLifecycleNotificationService,
+          useValue: mockSendActionLifecycleNotificationService,
         },
       ],
     }).compile();
@@ -124,7 +157,7 @@ describe('UpdateActionService - Date-Driven Status Transitions', () => {
             mockAction.estimatedEndDate,
             newStartDate,
             null,
-            false,
+            null,
             false,
             null,
             mockCompanyId,
@@ -179,7 +212,7 @@ describe('UpdateActionService - Date-Driven Status Transitions', () => {
             mockAction.estimatedEndDate,
             newStartDate,
             null,
-            false,
+            null,
             false,
             null,
             mockCompanyId,
@@ -225,7 +258,7 @@ describe('UpdateActionService - Date-Driven Status Transitions', () => {
             mockAction.estimatedEndDate,
             newStartDate,
             existingEndDate,
-            false,
+            null,
             false,
             null,
             mockCompanyId,
@@ -275,7 +308,7 @@ describe('UpdateActionService - Date-Driven Status Transitions', () => {
             mockAction.estimatedEndDate,
             null,
             newEndDate,
-            false,
+            null,
             false,
             null,
             mockCompanyId,
@@ -338,7 +371,7 @@ describe('UpdateActionService - Date-Driven Status Transitions', () => {
             mockAction.estimatedEndDate,
             existingStartDate,
             newEndDate,
-            false,
+            null,
             false,
             null,
             mockCompanyId,
@@ -395,7 +428,7 @@ describe('UpdateActionService - Date-Driven Status Transitions', () => {
             mockAction.estimatedEndDate,
             existingStartDate,
             newEndDate,
-            false,
+            null,
             false,
             null,
             mockCompanyId,
@@ -446,7 +479,7 @@ describe('UpdateActionService - Date-Driven Status Transitions', () => {
             mockAction.estimatedEndDate,
             newStartDate,
             newEndDate,
-            false,
+            null,
             false,
             null,
             mockCompanyId,
@@ -488,7 +521,7 @@ describe('UpdateActionService - Date-Driven Status Transitions', () => {
             mockAction.estimatedEndDate,
             null,
             null,
-            false,
+            null,
             false,
             null,
             mockCompanyId,

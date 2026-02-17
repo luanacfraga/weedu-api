@@ -1,4 +1,9 @@
-import { DocumentType, UserRole, UserStatus } from '@/core/domain/shared/enums';
+import {
+  DocumentType,
+  NotificationPreference,
+  UserRole,
+  UserStatus,
+} from '@/core/domain/shared/enums';
 import { User } from '@/core/domain/user/user.entity';
 import { Injectable } from '@nestjs/common';
 
@@ -36,6 +41,7 @@ export class UserFactory {
       UserRole.ADMIN,
       UserStatus.ACTIVE,
       input.profileImageUrl ?? null,
+      NotificationPreference.BOTH,
       avatarColor,
       initials,
     );
@@ -59,6 +65,7 @@ export class UserFactory {
       UserRole.MASTER,
       UserStatus.ACTIVE,
       input.profileImageUrl ?? null,
+      NotificationPreference.BOTH,
       avatarColor,
       initials,
     );
@@ -82,6 +89,7 @@ export class UserFactory {
       input.role,
       input.status ?? UserStatus.ACTIVE,
       input.profileImageUrl ?? null,
+      NotificationPreference.BOTH,
       avatarColor,
       initials,
     );

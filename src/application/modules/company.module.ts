@@ -2,6 +2,7 @@ import { CreateCompanyService } from '@/application/services/company/create-comp
 import { DeleteCompanyService } from '@/application/services/company/delete-company.service';
 import { GetCompanyDashboardSummaryService } from '@/application/services/company/get-company-dashboard-summary.service';
 import { GetExecutorDashboardService } from '@/application/services/company/get-executor-dashboard.service';
+import { GetManagerDashboardService } from '@/application/services/company/get-manager-dashboard.service';
 import { ListActiveCompaniesWithPlansService } from '@/application/services/company/list-active-companies-with-plans.service';
 import { ListCompaniesService } from '@/application/services/company/list-companies.service';
 import { SetCompanyBlockedService } from '@/application/services/company/set-company-blocked.service';
@@ -23,6 +24,7 @@ import { Module } from '@nestjs/common';
     DeleteCompanyService,
     GetCompanyDashboardSummaryService,
     GetExecutorDashboardService,
+    GetManagerDashboardService,
   ],
   exports: [
     CreateCompanyService,
@@ -34,6 +36,7 @@ import { Module } from '@nestjs/common';
     DeleteCompanyService,
     GetCompanyDashboardSummaryService,
     GetExecutorDashboardService,
+    GetManagerDashboardService,
   ],
 })
 export class CompanyApplicationModule {}

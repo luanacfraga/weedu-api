@@ -1,4 +1,4 @@
-import { ActionStatus } from '@/core/domain/shared/enums';
+import { ActionLateStatus, ActionStatus } from '@/core/domain/shared/enums';
 import { EntityNotFoundException } from '@/core/domain/shared/exceptions/domain.exception';
 import type { ActionRepository } from '@/core/ports/repositories/action.repository';
 import type { CompanyRepository } from '@/core/ports/repositories/company.repository';
@@ -8,7 +8,7 @@ export type CompanyDashboardSummaryActionItem = {
   id: string;
   title: string;
   status: ActionStatus;
-  isLate: boolean;
+  lateStatus: ActionLateStatus | null;
   isBlocked: boolean;
   estimatedEndDate: Date;
 };
@@ -54,7 +54,7 @@ export class GetCompanyDashboardSummaryService {
       .filter((a) => !a.isDeleted())
       .map((a) => ({
         action: a,
-        isLate: a.calculateIsLate(now),
+        lateStatus: a.calculateLateStatus(now),
       }));
 
     const todo = normalized.filter(
@@ -67,7 +67,7 @@ export class GetCompanyDashboardSummaryService {
       (a) => a.action.status === ActionStatus.DONE,
     );
     const blocked = normalized.filter((a) => a.action.isBlocked);
-    const late = normalized.filter((a) => a.isLate);
+    const late = normalized.filter((a) => a.lateStatus !== null);
 
     const total = normalized.length;
     const completionRate = total > 0 ? (done.length / total) * 100 : 0;
@@ -84,7 +84,7 @@ export class GetCompanyDashboardSummaryService {
         id: a.action.id,
         title: a.action.title,
         status: a.action.status,
-        isLate: a.isLate,
+        lateStatus: a.lateStatus,
         isBlocked: a.action.isBlocked,
         estimatedEndDate: a.action.estimatedEndDate,
       }));
@@ -101,7 +101,7 @@ export class GetCompanyDashboardSummaryService {
         id: a.action.id,
         title: a.action.title,
         status: a.action.status,
-        isLate: a.isLate,
+        lateStatus: a.lateStatus,
         isBlocked: a.action.isBlocked,
         estimatedEndDate: a.action.estimatedEndDate,
       }));

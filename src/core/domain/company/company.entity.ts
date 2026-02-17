@@ -1,6 +1,7 @@
 import { ErrorMessages } from '@/shared/constants/error-messages';
 import { Entity } from '../shared/entity.base';
 import { DomainValidator } from '../shared/validators/domain.validator';
+import { NotificationPreference } from '../shared/enums';
 
 export class Company extends Entity {
   private constructor(
@@ -9,6 +10,7 @@ export class Company extends Entity {
     public readonly description: string | null,
     public readonly adminId: string,
     public readonly isBlocked: boolean,
+    public readonly notificationPreference: NotificationPreference,
   ) {
     super(id);
     this.validate();
@@ -20,6 +22,7 @@ export class Company extends Entity {
     description?: string | null;
     adminId: string;
     isBlocked?: boolean;
+    notificationPreference?: NotificationPreference;
   }): Company {
     return new Company(
       params.id,
@@ -27,6 +30,7 @@ export class Company extends Entity {
       params.description ?? null,
       params.adminId,
       params.isBlocked ?? false,
+      params.notificationPreference ?? NotificationPreference.BOTH,
     );
   }
 
@@ -50,4 +54,5 @@ export type UpdateCompanyData = {
   name?: string;
   description?: string | null;
   isBlocked?: boolean;
+  notificationPreference?: NotificationPreference;
 };

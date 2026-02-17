@@ -43,3 +43,9 @@ export enum ActionLateStatus {
   LATE_TO_FINISH = 'LATE_TO_FINISH',
   COMPLETED_LATE = 'COMPLETED_LATE',
 }
+
+export enum NotificationPreference {
+  SMS_ONLY = 'sms_only',
+  WHATSAPP_ONLY = 'whatsapp_only',
+  BOTH = 'both',
+}

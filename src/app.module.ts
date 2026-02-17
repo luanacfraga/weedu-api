@@ -7,16 +7,20 @@ import { RolesGuard } from './api/auth/guards/roles.guard';
 import { CompanyModule } from './api/company/company.module';
 import { EmployeeModule } from './api/employee/employee.module';
 import { HealthModule } from './api/health/health.module';
+import { NotificationModule } from './api/notification/notification.module';
+import { PlatformSettingsModule } from './api/platform-settings/platform-settings.module';
 import { PlanModule } from './api/plan/plan.module';
 import { DomainExceptionFilter } from './api/shared/filters/domain-exception.filter';
 import { JwtExceptionFilter } from './api/shared/filters/jwt-exception.filter';
 import { TeamModule } from './api/team/team.module';
 import { UserModule } from './api/user/user.module';
+import { SchedulerModule } from './application/modules/scheduler.module';
 import { ConfigModule } from './infra/config/config.module';
 
 @Module({
   imports: [
     ConfigModule,
+    SchedulerModule,
     PlanModule,
     AuthModule,
     CompanyModule,
@@ -25,6 +29,8 @@ import { ConfigModule } from './infra/config/config.module';
     UserModule,
     ActionModule,
     HealthModule,
+    NotificationModule,
+    PlatformSettingsModule,
   ],
   controllers: [],
   providers: [

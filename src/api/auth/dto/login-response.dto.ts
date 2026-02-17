@@ -1,3 +1,4 @@
+import { NotificationPreference } from '@/core/domain/shared/enums';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class LoginUserDto {
@@ -39,6 +40,14 @@ export class LoginUserDto {
     nullable: true,
   })
   avatarColor?: string | null;
+
+  @ApiProperty({
+    description: 'Preferência de notificação',
+    enum: NotificationPreference,
+    example: NotificationPreference.BOTH,
+    required: false,
+  })
+  notificationPreference?: NotificationPreference;
 }
 
 export class LoginResponseDto {

@@ -2,10 +2,11 @@ import { ListUsersService } from '@/application/services/user/list-users.service
 import { UpdateUserAvatarColorService } from '@/application/services/user/update-user-avatar-color.service';
 import { UpdateUserProfileService } from '@/application/services/user/update-user-profile.service';
 import { DatabaseModule } from '@/infra/database/database.module';
+import { SharedServicesModule } from '@/infra/services/shared-services.module';
 import { Module } from '@nestjs/common';
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, SharedServicesModule],
   providers: [
     UpdateUserAvatarColorService,
     ListUsersService,

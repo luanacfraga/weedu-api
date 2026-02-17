@@ -1,4 +1,8 @@
-import { ActionPriority, ActionStatus } from '@/core/domain/shared/enums';
+import {
+  ActionLateStatus,
+  ActionPriority,
+  ActionStatus,
+} from '@/core/domain/shared/enums';
 import { EntityNotFoundException } from '@/core/domain/shared/exceptions/domain.exception';
 import type { ActionMovementRepository } from '@/core/ports/repositories/action-movement.repository';
 import type { ActionRepository } from '@/core/ports/repositories/action.repository';
@@ -124,7 +128,7 @@ export type ExecutorDashboardNextAction = {
   title: string;
   status: ActionStatus;
   priority: ActionPriority;
-  isLate: boolean;
+  lateStatus: ActionLateStatus | null;
   isBlocked: boolean;
   blockedReason?: string | null;
   estimatedEndDate: Date;
@@ -240,7 +244,7 @@ export class GetExecutorDashboardService {
 
     const normalized = myActions
       .filter((a) => !a.isDeleted())
-      .map((a) => ({ action: a, isLate: a.calculateIsLate(now) }));
+      .map((a) => ({ action: a, lateStatus: a.calculateLateStatus(now) }));
 
     const todo = normalized.filter(
       (a) => a.action.status === ActionStatus.TODO,
@@ -252,7 +256,7 @@ export class GetExecutorDashboardService {
       (a) => a.action.status === ActionStatus.DONE,
     );
     const blocked = normalized.filter((a) => a.action.isBlocked);
-    const late = normalized.filter((a) => a.isLate);
+    const late = normalized.filter((a) => a.lateStatus !== null);
 
     const total = normalized.length;
     const completionRate = total > 0 ? (done.length / total) * 100 : 0;
@@ -399,8 +403,10 @@ export class GetExecutorDashboardService {
       )
       .slice()
       .sort((a, b) => {
-        if (a.isLate !== b.isLate) {
-          return a.isLate ? -1 : 1;
+        const aIsLate = a.lateStatus !== null;
+        const bIsLate = b.lateStatus !== null;
+        if (aIsLate !== bIsLate) {
+          return aIsLate ? -1 : 1;
         }
         const pw =
           priorityWeight(b.action.priority) - priorityWeight(a.action.priority);
@@ -418,7 +424,7 @@ export class GetExecutorDashboardService {
         title: a.action.title,
         status: a.action.status,
         priority: a.action.priority,
-        isLate: a.isLate,
+        lateStatus: a.lateStatus,
         isBlocked: a.action.isBlocked,
         blockedReason: a.action.blockedReason,
         estimatedEndDate: a.action.estimatedEndDate,
@@ -440,7 +446,7 @@ export class GetExecutorDashboardService {
         title: a.action.title,
         status: a.action.status,
         priority: a.action.priority,
-        isLate: a.isLate,
+        lateStatus: a.lateStatus,
         isBlocked: a.action.isBlocked,
         blockedReason: a.action.blockedReason,
         estimatedEndDate: a.action.estimatedEndDate,

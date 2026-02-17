@@ -6,6 +6,8 @@ import { CryptoIdGenerator } from '@/infra/services/id-generator.service';
 import { JwtInviteTokenService } from '@/infra/services/invite-token.service';
 import { BcryptPasswordHasher } from '@/infra/services/password-hasher.service';
 import { JwtPasswordResetTokenService } from '@/infra/services/password-reset-token.service';
+import { SmsModule } from '@/infra/services/sms/sms.module';
+import { WhatsappModule } from '@/infra/services/whatsapp/whatsapp.module';
 import { ClassProvider, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 
@@ -47,6 +49,8 @@ const aiServiceProvider: ClassProvider = {
       secret: process.env.JWT_SECRET ?? 'your-secret-key',
       signOptions: { expiresIn: '7d' },
     }),
+    SmsModule,
+    WhatsappModule,
   ],
   providers: [
     passwordHasherProvider,
@@ -63,6 +67,8 @@ const aiServiceProvider: ClassProvider = {
     'InviteTokenService',
     'PasswordResetTokenService',
     'AIService',
+    SmsModule,
+    WhatsappModule,
   ],
 })
 export class SharedServicesModule {}

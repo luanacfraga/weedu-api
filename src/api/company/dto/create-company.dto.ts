@@ -1,5 +1,12 @@
+import { NotificationPreference } from '@/core/domain/shared/enums';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
 export class CreateCompanyDto {
   @ApiProperty({
@@ -26,4 +33,16 @@ export class CreateCompanyDto {
   @IsString({ message: 'A descrição da empresa deve ser uma string' })
   @IsOptional()
   description?: string;
+
+  @ApiProperty({
+    description: 'Preferência de canal de notificação da empresa',
+    enum: NotificationPreference,
+    example: NotificationPreference.BOTH,
+    required: false,
+  })
+  @IsEnum(NotificationPreference, {
+    message: 'notificationPreference deve ser sms_only, whatsapp_only ou both',
+  })
+  @IsOptional()
+  notificationPreference?: NotificationPreference;
 }

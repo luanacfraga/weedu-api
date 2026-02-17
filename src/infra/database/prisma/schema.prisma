@@ -40,6 +40,12 @@ enum CompanyUserStatus {
   REMOVED   @map("removed")
 }
 
+enum NotificationPreference {
+  SMS_ONLY      @map("sms_only")
+  WHATSAPP_ONLY @map("whatsapp_only")
+  BOTH          @map("both")
+}
+
 model User {
   id                     String    @id @default(uuid())
   firstName              String    @map("first_name")
@@ -56,6 +62,7 @@ model User {
   role                   UserRole
   refreshToken           String?   @map("refresh_token") @db.Text
   refreshTokenExpiresAt  DateTime? @map("refresh_token_expires_at")
+  notificationPreference NotificationPreference @default(BOTH) @map("notification_preference")
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
 
@@ -67,9 +74,10 @@ model User {
   teamsManaged    Team[]     @relation("TeamManager")
   teamMemberships TeamUser[]
 
-  actionsCreated     Action[]         @relation("ActionCreator")
-  actionsResponsible Action[]         @relation("ActionResponsible")
-  actionMovements    ActionMovement[]
+  actionsCreated       Action[]             @relation("ActionCreator")
+  actionsResponsible   Action[]             @relation("ActionResponsible")
+  actionMovements      ActionMovement[]
+  actionNotifications  ActionNotification[]
 
   @@map("users")
 }
@@ -111,7 +119,8 @@ model Company {
   name        String
   description String?
   adminId     String   @map("admin_id")
-  isBlocked   Boolean  @default(false) @map("is_blocked")
+  isBlocked              Boolean                @default(false) @map("is_blocked")
+  notificationPreference NotificationPreference @default(BOTH) @map("notification_preference")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
@@ -225,7 +234,7 @@ model Action {
   actualStartDate    DateTime? @map("actual_start_date")
   actualEndDate      DateTime? @map("actual_end_date")
 
-  isLate        Boolean @default(false) @map("is_late")
+  lateStatus    String? @map("late_status")
   isBlocked     Boolean @default(false) @map("is_blocked")
   blockedReason String? @map("blocked_reason") @db.Text
 
@@ -243,11 +252,12 @@ model Action {
   creator     User    @relation("ActionCreator", fields: [creatorId], references: [id])
   responsible User    @relation("ActionResponsible", fields: [responsibleId], references: [id])
 
-  checklistItems ChecklistItem[]
-  movements      ActionMovement[]
-  kanbanOrder    KanbanOrder?
-  tags           ActionTag[]
-  attachments    ActionAttachment[]
+  checklistItems  ChecklistItem[]
+  movements       ActionMovement[]
+  kanbanOrder     KanbanOrder?
+  tags            ActionTag[]
+  attachments     ActionAttachment[]
+  notifications   ActionNotification[]
 
   @@index([companyId, status])
   @@index([teamId, status])
@@ -351,4 +361,36 @@ model ActionAttachment {
 
   @@index([actionId])
   @@map("action_attachments")
+}
+
+enum NotificationType {
+  OVERDUE_SMS      @map("overdue_sms")
+  OVERDUE_WHATSAPP @map("overdue_whatsapp")
+}
+
+model ActionNotification {
+  id               String           @id @default(uuid())
+  actionId         String           @map("action_id")
+  userId           String           @map("user_id")
+  notificationType NotificationType @map("notification_type")
+  sentAt           DateTime         @default(now()) @map("sent_at")
+  smsSent          Boolean          @map("sms_sent")
+  whatsappSent     Boolean          @map("whatsapp_sent")
+  lateStatus       String?          @map("late_status") @db.VarChar(50)
+  createdAt        DateTime         @default(now()) @map("created_at")
+
+  action Action @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([actionId, sentAt(sort: Desc)])
+  @@index([userId, sentAt(sort: Desc)])
+  @@map("action_notifications")
+}
+
+model PlatformSettings {
+  id              String  @id @default("global")
+  supportWhatsapp String? @map("support_whatsapp")
+  supportEmail    String? @map("support_email")
+
+  @@map("platform_settings")
 }

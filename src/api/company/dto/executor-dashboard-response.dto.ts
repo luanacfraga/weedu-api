@@ -1,4 +1,8 @@
-import { ActionPriority, ActionStatus } from '@/core/domain/shared/enums';
+import {
+  ActionLateStatus,
+  ActionPriority,
+  ActionStatus,
+} from '@/core/domain/shared/enums';
 import { ApiProperty } from '@nestjs/swagger';
 
 type ImpactCategory =
@@ -85,8 +89,12 @@ class ExecutorNextActionDto {
   @ApiProperty({ enum: ActionPriority, example: ActionPriority.HIGH })
   priority!: ActionPriority;
 
-  @ApiProperty({ example: false })
-  isLate!: boolean;
+  @ApiProperty({
+    enum: ActionLateStatus,
+    nullable: true,
+    example: ActionLateStatus.LATE_TO_FINISH,
+  })
+  lateStatus!: ActionLateStatus | null;
 
   @ApiProperty({ example: false })
   isBlocked!: boolean;

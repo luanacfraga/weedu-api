@@ -12,7 +12,6 @@ export interface ActionFilters {
   responsibleId?: string;
   teamId?: string;
   lateStatus?: ActionLateStatus | ActionLateStatus[];
-  isLate?: boolean;
   isBlocked?: boolean;
   includeDeleted?: boolean;
 }
@@ -27,7 +26,7 @@ export interface UpdateActionData {
   estimatedEndDate?: Date;
   actualStartDate?: Date | null;
   actualEndDate?: Date | null;
-  isLate?: boolean;
+  lateStatus?: ActionLateStatus | null;
   isBlocked?: boolean;
   blockedReason?: string | null;
   responsibleId?: string;

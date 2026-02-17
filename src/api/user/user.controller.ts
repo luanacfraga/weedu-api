@@ -19,6 +19,7 @@ import {
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AvatarColorsResponseDto } from './dto/avatar-colors-response.dto';
 import { UpdateAvatarColorDto } from './dto/update-avatar-color.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 
 @ApiTags('users')
@@ -136,7 +137,7 @@ export class UserController {
   @ApiOperation({
     summary: 'Atualizar dados básicos do perfil',
     description:
-      'Atualiza dados básicos do usuário autenticado (ex.: telefone).',
+      'Atualiza dados básicos do usuário autenticado (ex.: nome, telefone, email).',
   })
   @ApiResponse({
     status: 200,
@@ -149,13 +150,16 @@ export class UserController {
   })
   async updateProfile(
     @CurrentUser() currentUser: JwtPayload,
-    @Body() body: { phone?: string; firstName?: string; lastName?: string },
+    @Body() body: UpdateProfileDto,
   ): Promise<UserResponseDto> {
     const user = await this.updateUserProfileService.execute({
       userId: currentUser.sub,
       phone: body.phone,
       firstName: body.firstName,
       lastName: body.lastName,
+      notificationPreference: body.notificationPreference,
+      email: body.email,
+      currentPassword: body.currentPassword,
     });
 
     return UserMapper.toResponseDto(user);

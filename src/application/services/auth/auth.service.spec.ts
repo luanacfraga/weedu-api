@@ -164,6 +164,9 @@ describe('AuthService', () => {
           firstName: mockUser.firstName,
           lastName: mockUser.lastName,
           role: mockUser.role,
+          phone: mockUser.phone,
+          avatarColor: null,
+          initials: null,
         },
       });
       expect(userRepository.findByEmail).toHaveBeenCalledWith(loginInput.email);

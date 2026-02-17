@@ -11,6 +11,8 @@ import { AddChecklistItemService } from '@/application/services/checklist/add-ch
 import { ToggleChecklistItemService } from '@/application/services/checklist/toggle-checklist-item.service';
 import { ReorderChecklistItemsService } from '@/application/services/checklist/reorder-checklist-items.service';
 import { IAUsageService } from '@/application/services/ia-usage/ia-usage.service';
+import { SendActionLifecycleNotificationService } from '@/application/services/notification/send-action-lifecycle-notification.service';
+import { SendOverdueActionNotificationService } from '@/application/services/notification/send-overdue-action-notification.service';
 import { DatabaseModule } from '@/infra/database/database.module';
 import { SharedServicesModule } from '@/infra/services/shared-services.module';
 import { Module } from '@nestjs/common';
@@ -31,6 +33,8 @@ import { Module } from '@nestjs/common';
     ToggleChecklistItemService,
     ReorderChecklistItemsService,
     IAUsageService,
+    SendOverdueActionNotificationService,
+    SendActionLifecycleNotificationService,
   ],
   exports: [
     CreateActionService,
@@ -46,6 +50,8 @@ import { Module } from '@nestjs/common';
     ToggleChecklistItemService,
     ReorderChecklistItemsService,
     IAUsageService,
+    SendOverdueActionNotificationService,
+    SendActionLifecycleNotificationService,
   ],
 })
 export class ActionApplicationModule {}
