@@ -5,6 +5,7 @@ import { CreateCompanyService } from '@/application/services/company/create-comp
 import { DeleteCompanyService } from '@/application/services/company/delete-company.service';
 import { GetCompanyDashboardSummaryService } from '@/application/services/company/get-company-dashboard-summary.service';
 import { GetExecutorDashboardService } from '@/application/services/company/get-executor-dashboard.service';
+import { GetManagerDashboardService } from '@/application/services/company/get-manager-dashboard.service';
 import { ListActiveCompaniesWithPlansService } from '@/application/services/company/list-active-companies-with-plans.service';
 import { ListCompaniesService } from '@/application/services/company/list-companies.service';
 import { SetCompanyBlockedService } from '@/application/services/company/set-company-blocked.service';
@@ -55,6 +56,8 @@ import { CompanySettingsResponseDto } from './dto/company-settings-response.dto'
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { ExecutorDashboardQueryDto } from './dto/executor-dashboard-query.dto';
 import { ExecutorDashboardResponseDto } from './dto/executor-dashboard-response.dto';
+import { ManagerDashboardQueryDto } from './dto/manager-dashboard-query.dto';
+import { ManagerDashboardResponseDto } from './dto/manager-dashboard-response.dto';
 import { SetCompanyBlockedDto } from './dto/set-company-blocked.dto';
 import { UpdateCompanyPlanDto } from './dto/update-company-plan.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
@@ -72,6 +75,7 @@ export class CompanyController {
     private readonly deleteCompanyService: DeleteCompanyService,
     private readonly getCompanyDashboardSummaryService: GetCompanyDashboardSummaryService,
     private readonly getExecutorDashboardService: GetExecutorDashboardService,
+    private readonly getManagerDashboardService: GetManagerDashboardService,
     @Inject('CompanyUserRepository')
     private readonly companyUserRepository: CompanyUserRepository,
     @Inject('CompanyRepository')
@@ -683,5 +687,31 @@ export class CompanyController {
   })
   async delete(@Param('id') id: string): Promise<void> {
     await this.deleteCompanyService.execute({ id });
+  }
+
+  @Get(':id/manager-dashboard')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Dashboard do gestor (totais da equipe + ações críticas)' })
+  @ApiParam({
+    name: 'id',
+    description: 'ID da empresa',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
+  @ApiOkResponse({
+    description: 'Dashboard do gestor retornado com sucesso',
+    type: ManagerDashboardResponseDto,
+  })
+  async managerDashboard(
+    @Param('id') companyId: string,
+    @CurrentUser() user: JwtPayload,
+    @Query() query: ManagerDashboardQueryDto,
+  ): Promise<ManagerDashboardResponseDto> {
+    return this.getManagerDashboardService.execute({
+      companyId,
+      managerId: user.sub,
+      dateFrom: query.dateFrom,
+      dateTo: query.dateTo,
+    });
   }
 }
